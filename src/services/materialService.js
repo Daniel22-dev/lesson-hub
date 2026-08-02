@@ -1,3 +1,5 @@
+import { recordAnonymousOutput } from '../core/telemetry.js';
+
 const normalizeText = (value) => String(value ?? '').trim().replace(/\s+/g, ' ');
 const lower = (value) => normalizeText(value).toLocaleLowerCase('cs-CZ').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -169,6 +171,7 @@ export class MaterialService {
     await this.setMaterialLinks(material.id, { groupIds, lessonIds });
     await this.setMaterialTags(material.id, tagIds);
     await this.audit('material-created', 'material', material.id, { materialType, sourceType, linkCount: unique([...groupIds, ...lessonIds]).length });
+    recordAnonymousOutput('material-record');
     return { material: await this.getMaterial(material.id), reused: false };
   }
 

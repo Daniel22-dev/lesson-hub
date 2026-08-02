@@ -1,4 +1,5 @@
 import { normalizeText } from '../core/html.js';
+import { recordAnonymousOutput } from '../core/telemetry.js';
 
 export const LESSON_STATUSES = Object.freeze({
   draft: { label: 'Koncept', variant: 'neutral' },
@@ -220,6 +221,7 @@ export class LessonService {
       substitutionSourceId: input.substitutionSourceId || null,
     });
     await this.audit('lesson-created', 'lesson', created.id, { groupInstanceId: group.id, status, date });
+    recordAnonymousOutput(COMPLETED_STATUSES.has(status) ? 'lesson-record' : 'lesson-plan');
     return created;
   }
 
@@ -261,6 +263,7 @@ export class LessonService {
       completedAt: COMPLETED_STATUSES.has(status) ? (current.completedAt || new Date().toISOString()) : null,
     });
     if (audit) await this.audit('lesson-updated', 'lesson', id, { status, date, groupInstanceId: group.id });
+    if (!COMPLETED_STATUSES.has(current.status) && COMPLETED_STATUSES.has(status)) recordAnonymousOutput('lesson-record');
     return updated;
   }
 

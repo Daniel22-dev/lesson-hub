@@ -7,26 +7,34 @@
   },
   "version": "__APP_VERSION__",
   "status": {
-    "cs": "Řízený vývoj – akademické jádro",
-    "en": "Controlled development – academic core"
+    "cs": "Připraveno k řízenému pilotu",
+    "en": "Ready for controlled pilot"
   },
   "description": {
-    "cs": "Prémiová osobní paměť učitele pro plánování, evidenci, materiály, připomínky a kontinuitu výuky.",
-    "en": "A premium personal teacher memory for planning, lesson records, materials, reminders and continuity."
+    "cs": "Local-first osobní paměť učitele pro kontinuitu skupin, plánování a záznam výuky, povinnosti, materiály, šablony, bezpečné zálohy, komunikaci a zastupování.",
+    "en": "A local-first personal teacher memory for group continuity, lesson planning and records, tasks, materials, templates, safe backups, communication and substitution."
   },
   "launchUrl": "https://daniel22-dev.github.io/lesson-hub/",
   "manualUrl": "https://daniel22-dev.github.io/lesson-hub/manual/",
   "repository": "daniel22-dev/lesson-hub",
   "icon": "icons/icon-512.png",
-  "accent": "#167f79",
+  "accent": "#167F79",
   "tags": [
     {
-      "cs": "Plánování výuky",
-      "en": "Lesson planning"
+      "cs": "Kontinuita výuky",
+      "en": "Teaching continuity"
     },
     {
-      "cs": "Paměť učitele",
-      "en": "Teacher memory"
+      "cs": "Plánování a záznam",
+      "en": "Planning and records"
+    },
+    {
+      "cs": "Local-first",
+      "en": "Local-first"
+    },
+    {
+      "cs": "Připraveno na server",
+      "en": "Server-ready"
     }
   ],
   "capabilities": [
@@ -34,15 +42,39 @@
     "subjects",
     "group-continuity",
     "group-promotion",
-    "planning",
-    "materials",
+    "lesson-planning",
+    "lesson-records",
+    "quick-notes",
+    "tasks",
     "reminders",
-    "local-first"
+    "reflection",
+    "tags",
+    "materials",
+    "global-search",
+    "lesson-templates",
+    "teaching-cycles",
+    "local-first",
+    "indexeddb",
+    "export-import",
+    "local-backups",
+    "integrity-diagnostics",
+    "studio-handoff",
+    "anonymous-output-telemetry",
+    "communication-drafts",
+    "substitution",
+    "server-ready",
+    "server-sync-adapter",
+    "server-attachments",
+    "smtp-adapter",
+    "operations-snapshots",
+    "internal-self-tests",
+    "ghrab-qa-1.0.2"
   ],
   "compatibility": {
-    "studioMinVersion": "0.18.11",
+    "studioMinVersion": "0.19.0",
     "materialSchema": "ghrab-material-v1",
-    "studioBridge": "1.1"
+    "studioBridge": "1.1",
+    "accessGuard": "signed-serverless-permit"
   },
   "publishedAt": "__BUILD_TIME__"
 }

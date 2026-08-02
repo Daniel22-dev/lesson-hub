@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'lesson-hub-pwa-v';
-const CACHE_NAME = 'lesson-hub-pwa-v1.1.6';
+const CACHE_NAME = 'lesson-hub-pwa-v1.2.0';
 const CORE_ASSETS = /*__CORE_ASSETS__*/[
   './', './index.html', './manifest.webmanifest', './src/bootstrap.js', './src/main.js', './src/styles.css'
 ];

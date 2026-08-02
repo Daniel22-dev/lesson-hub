@@ -1,9 +1,9 @@
 {
   "name": "lesson-hub",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Lesson Hub – local-first učitelská paměť pro AI Studio GHRAB.",
+  "description": "Lesson Hub – local-first osobní paměť učitele plně integrovaná do AI Studio GHRAB.",
   "scripts": {
     "start": "npm run build && node scripts/serve.mjs",
     "build": "node scripts/build.mjs",

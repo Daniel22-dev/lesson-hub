@@ -1,4 +1,5 @@
 import { APP_RELEASE } from '../core/release.js';
+import { recordAnonymousOutput } from '../core/telemetry.js';
 import { DATABASE_VERSION, SCHEMA_VERSION, STORE_DEFINITIONS, createId } from '../core/schema.js';
 import { ENTITY_STORES } from '../core/constants.js';
 import { loadSettings, saveSettings } from '../core/settings.js';
@@ -206,7 +207,9 @@ export class BackupService {
       data,
     };
 
-    return { ...unsigned, checksum: await sha256(unsigned) };
+    const backupPackage = { ...unsigned, checksum: await sha256(unsigned) };
+    recordAnonymousOutput('backup-export');
+    return backupPackage;
   }
 
   async validatePackage(input) {

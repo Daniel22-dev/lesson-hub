@@ -1,8 +1,12 @@
-# Lesson Hub 1.1.6
+# Lesson Hub 1.2.0
 
 Lesson Hub je local-first osobní paměť učitele v ekosystému AI Studio GHRAB. Pro běžné pilotní používání **nepotřebuje server**: data ukládá do IndexedDB v prohlížeči a nabízí export, import i lokální body obnovy.
 
 Serverová část je v repozitáři připravena pro budoucí školní nasazení, ale ve výchozím stavu není připojena, synchronizace je vypnutá a e-mailová brána je zakázaná.
+
+## Integrace s AI Studiem GHRAB
+
+Verze 1.2.0 je plně připravena jako osmá chráněná aplikace AI Studia GHRAB 0.19.0. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -24,9 +28,9 @@ Aplikace se otevře na `http://localhost:4173`. Produkční GitHub Pages build v
 
 Workflow nasazení nevydá aplikaci, pokud selže čistá instalace, bezpečnostní audit nebo některá povinná QA brána.
 
-## Oprava GitHub QA 1.1.6
+## Stabilizovaná GitHub QA
 
-Verze 1.1.6 opravuje poslední dvě vady z reálných běhů GitHub Actions:
+Verze 1.2.0 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 
 - funkční kroky `evaluate` se nyní v Node Playwrightu i Python fallbacku skutečně vykonají; dříve se pouze vytvořil objekt funkce, takže se hash trasa nezměnila,
 - headless smoke test používá explicitní lokální QA přístup a čeká na dokončený render požadované trasy.
@@ -52,7 +56,7 @@ npm run server:init -- --name="Správce"
 npm run server:start
 ```
 
-Heslo se nepředává v argumentu příkazu. Podrobnosti jsou v `server/README.md` a `docs/SERVEROVE-NASAZENI-1.1.6.md`.
+Heslo se nepředává v argumentu příkazu. Podrobnosti jsou v `server/README.md` a `docs/SERVEROVE-NASAZENI-1.2.0.md`.
 
 Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při startu i v provozním centru zobrazí výrazné varování, dokud není nastaveno `LESSON_HUB_BACKUP_ENABLED=true`.
 

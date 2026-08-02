@@ -42,7 +42,7 @@ try {
     await import('./manual.js');
   } else {
     const { protectApp } = await import(GUARD_URL);
-    const allowed = await protectApp(APP_ID, { studioUrl: STUDIO_URL });
+    const allowed = await protectApp(APP_ID, { studioUrl: STUDIO_URL, telemetry: false, errorReporter: false });
     if (allowed) await import('./manual.js');
   }
 } catch (error) {

@@ -23,6 +23,7 @@ const sections = [
   ['storage', 'Ukládání dat'],
   ['access', 'Přístup a soukromí'],
   ['diagnostics', 'Diagnostika'],
+  ['ecosystem', 'Propojení s AI Studiem'],
   ['limits', 'Co zatím není hotové'],
 ];
 
@@ -34,6 +35,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
     </div>
     <div class="manual-actions">
       <button id="manual-theme" type="button" aria-label="Přepnout vzhled">◐</button>
+      <a href="https://daniel22-dev.github.io/AI-Studio-GHRAB/">AI Studio</a>
       <a href="../">Zpět do aplikace</a>
     </div>
   </header>
@@ -42,13 +44,13 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       <label for="manual-search">Hledat v manuálu</label>
       <input id="manual-search" type="search" placeholder="např. postup skupin" />
       <nav>${sections.map(([id, label]) => `<a href="#${id}">${label}</a>`).join('')}</nav>
-      <p class="manual-version">Řízený vývoj · Produkční stabilizace · verze __APP_VERSION__</p>
+      <p class="manual-version">Řízený pilot · Local-first provoz · verze __APP_VERSION__</p>
     </aside>
     <main>
       <section class="manual-hero">
         <span>AI STUDIO GHRAB</span>
         <h1>Lesson Hub</h1>
-        <p>Prémiová osobní paměť učitele pro plánování, evidenci, materiály, připomínky a kontinuitu výuky.</p>
+        <p>Local-first osobní paměť učitele pro kontinuitu skupin, plánování a záznam výuky, materiály, povinnosti, komunikaci a bezpečné zálohy.</p>
       </section>
       <section id="start" data-search="začít spuštění dashboard přehled průvodce první skupina">
         <h2>Jak začít</h2>
@@ -239,6 +241,16 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       <section id="diagnostics" data-search="diagnostika self test test lab databáze schéma migrace skupina školní rok předmět">
         <h2>Diagnostika</h2>
         <p>Správce může v aplikaci otevřít Test Lab. Kontroluje inicializaci, schéma databáze, čtení a zápis, migrace, centrální přístup, PWA, Studio Bridge, akademické a lekční jádro, povinnosti, materiály, šablony, cykly, studenty, komunikační koncepty, serverové přílohy, doručenky, stav poštovní brány, zastupovací období a plány, konflikty, připojení, export, kontrolní součet, lokální bod obnovy, kapacitu úložiště a integritu vazeb. Výsledek lze stáhnout jako JSON protokol.</p>
+      </section>
+      <section id="ecosystem" data-search="ai studio ekosystém manifest přístup telemetrie manuál bridge handoff návrat">
+        <h2>Propojení s AI Studiem</h2>
+        <p>Lesson Hub je osmou chráněnou aplikací AI Studia GHRAB. Přístup ověřuje společný Access Guard; katalog Studia načítá verzi, popis a adresu manuálu z veřejného manifestu aplikace.</p>
+        <div class="manual-grid">
+          <article><b>Studio Bridge</b><p>Anonymní výukový materiál schématu <code>ghrab-material-v1</code> lze předat do knihovny Lesson Hubu. Předávka expiruje a po převzetí se odstraní.</p></article>
+          <article><b>Pilotní metriky</b><p>Po souhlasu v rámci školního pilotu se ukládají pouze technické počty plánů, záznamů výuky, materiálů, importů a exportů. Neukládají se názvy, poznámky ani obsah výuky.</p></article>
+          <article><b>Manuál</b><p>AI Studio otevírá vždy tento aktuální manuál přímo z repozitáře Lesson Hubu. Nevzniká zastaralá duplicitní kopie.</p></article>
+          <article><b>Návrat</b><p>V levém dolním rohu aplikace je trvalý odkaz zpět do AI Studia. Manuál nabízí návrat do aplikace i do centrálního portálu.</p></article>
+        </div>
       </section>
       <section id="limits" data-search="omezení není hotové vlna 3 hodiny plán připomínky materiály">
         <h2>Co zatím není hotové</h2>

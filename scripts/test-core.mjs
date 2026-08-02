@@ -264,6 +264,8 @@ const safeStorageFixture = {
 };
 globalThis.localStorage = safeStorageFixture;
 globalThis.location = { search: '?studioHandoff=1' };
+const telemetryOutputs = [];
+globalThis.GHRABTelemetry = { recordOutput: (payload) => { telemetryOutputs.push(payload); return true; } };
 const backups = new BackupService(database, repositories);
 
 const material = {
@@ -287,8 +289,8 @@ const imported = await consumeStudioHandoff(repositories);
 assert.equal(imported.stored.sourceMaterialId, material.id);
 assert.equal(await repositories.materials.count(), 1);
 assert.equal(safeStorageFixture.getItem('ghrab.handoff.v1'), null, 'Úspěšný handoff musí být odstraněn.');
-const events = JSON.parse(safeStorageFixture.getItem('ghrab.pilot.events.v2'));
-assert.equal(events.at(-1).appId, 'lesson-hub');
+assert.equal(telemetryOutputs.at(-1).outputKind, 'material-import');
+assert.equal(safeStorageFixture.getItem('ghrab.pilot.events.v2'), null, 'Lesson Hub nesmí zapisovat vlastní obsahovou telemetrii mimo centrální API.');
 
 safeStorageFixture.setItem('ghrab.handoff.v1', JSON.stringify({
   schema: 'ghrab-handoff-v1',

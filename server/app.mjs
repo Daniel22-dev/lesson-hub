@@ -14,7 +14,7 @@ import { MessageDispatcher } from './lib/messageDispatcher.mjs';
 import { OperationsManager } from './lib/operations.mjs';
 import { canEditPeriod, canViewPeriod, createItem, createPeriod, createPlan, listSubstitutionBundles, publicItem, publicPeriod, publicPlan, updateItemByOwner, updateItemProgress, updatePeriod, updatePlan } from './lib/substitution.mjs';
 
-export const SERVER_VERSION = '1.1.6';
+export const SERVER_VERSION = '1.2.0';
 export const API_CONTRACT = 'lesson-hub-api-v1';
 export const SYNC_CONTRACT = 'lesson-hub-sync-v1';
 export const RESOURCE_NAMES = Object.freeze([

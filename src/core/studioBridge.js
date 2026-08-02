@@ -1,7 +1,7 @@
 import { createId } from './schema.js';
+import { recordAnonymousOutput } from './telemetry.js';
 
 const HANDOFF_KEY = 'ghrab.handoff.v1';
-const EVENTS_KEY = 'ghrab.pilot.events.v2';
 const MAX_HANDOFF_BYTES = 500_000;
 
 function readJson(key, fallback) {
@@ -57,18 +57,6 @@ function readHandoff() {
   return payload;
 }
 
-function recordConsumption(material) {
-  const events = readJson(EVENTS_KEY, []);
-  const list = Array.isArray(events) ? events : [];
-  list.push({
-    at: new Date().toISOString(),
-    type: 'handoff-consumed',
-    appId: 'lesson-hub',
-    materialId: material.id,
-    estimatedMinutes: 3,
-  });
-  writeJson(EVENTS_KEY, list.slice(-500));
-}
 
 export async function consumeStudioHandoff(repositories) {
   const payload = readHandoff();
@@ -101,6 +89,6 @@ export async function consumeStudioHandoff(repositories) {
     ? await repositories.materials.update(existing.id, data)
     : await repositories.materials.create({ id: createId('studioMaterial'), ...data });
   remove(HANDOFF_KEY);
-  recordConsumption(material);
+  recordAnonymousOutput('material-import');
   return { stored, payload };
 }
