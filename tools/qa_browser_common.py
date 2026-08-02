@@ -86,6 +86,31 @@ async def set_document(page, url):
         await page.wait_for_timeout(350)
 
 
+async def wait_for_app_idle(page, timeout=10000):
+    await page.wait_for_timeout(100)
+    if not await page.locator('#app').count():
+        return
+    await page.wait_for_function(
+        """() => {
+          const app = document.querySelector('#app');
+          const content = document.querySelector('#page-content');
+          const bodyVisible = getComputedStyle(document.body).visibility !== 'hidden';
+          return Boolean(app && content && bodyVisible && !app.hasAttribute('aria-busy'));
+        }""",
+        timeout=timeout,
+    )
+
+
+async def resolve_step_value(page, value):
+    if value != '__TODAY__':
+        return '' if value is None else str(value)
+    return await page.evaluate("""() => {
+      const now = new Date();
+      const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 10);
+    }""")
+
+
 async def run_steps(page, steps):
     for step in steps or []:
         action = step.get('action')
@@ -98,19 +123,21 @@ async def run_steps(page, steps):
             if await locator.count() and await locator.first.is_visible():
                 await locator.first.click(timeout=int(step.get('timeout', 5000)))
         elif action == 'fill':
-            await page.locator(step['selector']).first.fill(str(step.get('value', '')), timeout=int(step.get('timeout', 5000)))
+            await page.locator(step['selector']).first.fill(await resolve_step_value(page, step.get('value')), timeout=int(step.get('timeout', 5000)))
         elif action == 'select':
             await page.locator(step['selector']).first.select_option(str(step.get('value', '')), timeout=int(step.get('timeout', 5000)))
         elif action == 'press':
             await page.keyboard.press(step.get('key', 'Enter'))
         elif action == 'evaluate':
             await page.evaluate(step.get('script', ''))
-        elif action == 'assertText':
+        if action in {'click', 'clickIfVisible', 'select', 'press', 'evaluate'}:
+            await wait_for_app_idle(page, timeout=int(step.get('timeout', 10000)))
+        if action == 'assertText':
             locator = page.locator(step.get('selector', 'body')).first
             text = await locator.inner_text()
             if str(step.get('text', '')).lower() not in text.lower():
                 raise AssertionError(f"Chybí text: {step.get('text', '')}")
-        elif action == 'assertVisible':
+        if action == 'assertVisible':
             locator = page.locator(step['selector'])
             if not await locator.count() or not await locator.first.is_visible():
                 raise AssertionError(f"Prvek není viditelný: {step['selector']}")

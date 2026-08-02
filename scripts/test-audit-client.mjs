@@ -26,6 +26,17 @@ await assert.rejects(
 const visualReporterSource = await readFile(new URL('./qa-visual-playwright.mjs', import.meta.url), 'utf8');
 assert.equal(visualReporterSource.includes('item.message || item.summary || "Nález bez popisu"'), true, 'Vizuální reportér musí vždy vypsat skutečnou zprávu nebo bezpečný fallback.');
 assert.equal(visualReporterSource.includes(': ${item.summary}`'), false, 'Vizuální reportér nesmí používat samotné neexistující pole summary.');
+assert.equal(visualReporterSource.includes('rect.top < vh'), false, 'Povinný prvek níže pod prvním svislým viewportem nesmí být označen jako skrytý.');
+assert.equal(visualReporterSource.includes('rect.left < vw'), true, 'Vizuální brána musí nadále hlídat vodorovné umístění povinných prvků.');
+const criticalRunnerSource = await readFile(new URL('./qa-critical-playwright.mjs', import.meta.url), 'utf8');
+const criticalFlowsSource = await readFile(new URL('../qa/critical-flows.json', import.meta.url), 'utf8');
+assert.equal(criticalRunnerSource.includes('async function waitForAppReady'), true, 'Kritická brána musí čekat na dokončení asynchronního vykreslení aplikace.');
+assert.equal(criticalRunnerSource.includes("value !== '__TODAY__'"), true, 'Kritická brána musí podporovat dynamické dnešní datum.');
+assert.equal(criticalFlowsSource.includes('2026-07-30'), false, 'Kritické scénáře nesmí používat prošlé pevné datum dnešní výuky.');
+assert.equal((criticalFlowsSource.match(/__TODAY__/g) || []).length, 3, 'Tři scénáře výuky musí používat dynamické dnešní datum.');
+const pythonBrowserCommonSource = await readFile(new URL('../tools/qa_browser_common.py', import.meta.url), 'utf8');
+assert.equal(pythonBrowserCommonSource.includes('async def wait_for_app_idle'), true, 'Python fallback musí stejně jako Node runner čekat na vykreslení aplikace.');
+assert.equal(pythonBrowserCommonSource.includes("value != '__TODAY__'"), true, 'Python fallback musí podporovat dynamické dnešní datum.');
 
 if (!globalThis.localStorage) {
   const values = new Map();
@@ -111,4 +122,4 @@ assert.equal(restored.restoreSyncQueued > 0, true, 'Obnova musí explicitně př
 assert.equal(restoreQueue.some((item) => item.entityId === 'restored_lesson' && item.status === 'pending'), true, 'Obnovená hodina musí čekat na odeslání na server.');
 assert.equal((await backupService.restoreSyncStatus()).queued, restored.restoreSyncQueued);
 
-console.log('Auditní klientské regrese prošly: hashové QA cesty, čitelný vizuální reportér, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');
+console.log('Auditní klientské regrese prošly: hashové QA cesty, čitelný vizuální reportér, stabilní čekání kritických workflow, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

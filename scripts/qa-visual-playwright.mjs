@@ -211,7 +211,6 @@ async function inspectPage(page, scenario) {
           Number(style.opacity || 1) > 0.01 &&
           rect.bottom > 0 &&
           rect.right > 0 &&
-          rect.top < vh &&
           rect.left < vw;
         return { selector, ok, reason: ok ? "" : "hidden-or-outside" };
       });

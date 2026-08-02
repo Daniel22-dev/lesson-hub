@@ -58,6 +58,34 @@ async function closeWithLimit(target, ms = 4000) {
     new Promise((resolve) => setTimeout(resolve, ms)),
   ]);
 }
+
+async function waitForAppReady(page, timeout = 12000) {
+  await page.waitForSelector('#app', { state: 'attached', timeout });
+  await page.waitForFunction(() => {
+    const app = document.querySelector('#app');
+    const content = document.querySelector('#page-content');
+    const bodyVisible = getComputedStyle(document.body).visibility !== 'hidden';
+    return Boolean(app && content && bodyVisible && !app.hasAttribute('aria-busy'));
+  }, null, { timeout });
+}
+
+async function settleAppAfterAction(page, timeout = 10000) {
+  // Give async event handlers time to mark the app busy before testing the idle state.
+  await page.waitForTimeout(100);
+  await page.waitForFunction(() => {
+    const app = document.querySelector('#app');
+    return !app || !app.hasAttribute('aria-busy');
+  }, null, { timeout });
+}
+
+async function resolveStepValue(page, value) {
+  if (value !== '__TODAY__') return value ?? '';
+  return page.evaluate(() => {
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 10);
+  });
+}
 try {
   browser = await launchBrowser();
   for (const flow of plan.flows || []) {
@@ -106,6 +134,7 @@ try {
           flow.url,
           baseUrl,
         );
+        await waitForAppReady(page);
         for (const step of flow.steps || []) {
           if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
           if (step.action === "click")
@@ -122,11 +151,14 @@ try {
             await page
               .locator(step.selector)
               .first()
-              .fill(step.value || "");
+              .fill(await resolveStepValue(page, step.value));
           if (step.action === "select")
             await page.locator(step.selector).first().selectOption(step.value);
           if (step.action === "press") await page.keyboard.press(step.key);
           if (step.action === "evaluate") await page.evaluate(step.script);
+          if (["click", "clickIfVisible", "select", "press", "evaluate"].includes(step.action)) {
+            await settleAppAfterAction(page, step.timeout || 10000);
+          }
           if (step.action === "assertText") {
             const txt = await page.locator(step.selector || "body").innerText();
             if (!txt.toLowerCase().includes(String(step.text).toLowerCase()))

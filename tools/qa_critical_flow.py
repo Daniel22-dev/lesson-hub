@@ -6,7 +6,7 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
-from qa_browser_common import ROOT, load_json, fulfill_route, set_document, run_steps
+from qa_browser_common import ROOT, load_json, fulfill_route, set_document, run_steps, wait_for_app_idle
 
 
 EXECUTABLE = os.environ.get('GHRAB_CHROMIUM_PATH') or '/usr/bin/chromium'
@@ -30,6 +30,7 @@ async def execute_flow(flow):
 
     async def scenario():
         await set_document(page, flow['url'])
+        await wait_for_app_idle(page, timeout=12000)
         await run_steps(page, flow.get('steps'))
         body = await page.text_content('body') or ''
         if flow.get('expectedText') and flow['expectedText'] not in body:
