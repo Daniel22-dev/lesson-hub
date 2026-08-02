@@ -615,6 +615,8 @@ console.log(
   `VISUAL ${result.status}: ${findings.length} nálezů, ${matrix.length} běhů`,
 );
 for (const item of findings) {
-  console.log(`VISUAL FINDING [${item.code}]: ${item.summary}`);
+  const message = item.message || item.summary || "Nález bez popisu";
+  console.log(`VISUAL FINDING [${item.code}]: ${message}`);
+  if (item.evidence) console.log(`VISUAL EVIDENCE [${item.code}]: ${item.evidence}`);
 }
 process.exit(result.status === "FAIL" ? 1 : 0);

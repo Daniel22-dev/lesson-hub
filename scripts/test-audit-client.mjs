@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { createDatabase } from '../src/core/database.js';
 import { createRepositories } from '../src/repositories/repositoryFactory.js';
 import { SyncService } from '../src/services/syncService.js';
@@ -7,6 +8,24 @@ import { BackupService, sha256Fallback } from '../src/services/backupService.js'
 import { findUnsafeHtmlAssignments } from './qa-security-utils.mjs';
 import { ENTITY_STORES } from '../src/core/constants.js';
 import { BaseRepository } from '../src/repositories/BaseRepository.js';
+import { setLocalDocument } from './qa-core.mjs';
+
+
+const projectRoot = fileURLToPath(new URL('../', import.meta.url));
+let qaDocumentHtml = '';
+const qaPageProbe = {
+  async setContent(html) { qaDocumentHtml = html; },
+};
+const qaDocumentTarget = await setLocalDocument(qaPageProbe, projectRoot, '/index.html#/groups', 'http://127.0.0.1:4173');
+assert.equal(qaDocumentTarget.endsWith('/index.html'), true, 'Hashová trasa nesmí být součástí cesty k souboru.');
+assert.equal(qaDocumentHtml.includes('const initialHash = "#/groups";'), true, 'Hashová trasa musí být nastavena před spuštěním aplikace.');
+await assert.rejects(
+  () => setLocalDocument(qaPageProbe, projectRoot, '/../outside.html#/overview', 'http://127.0.0.1:4173'),
+  /escapes serve root/,
+);
+const visualReporterSource = await readFile(new URL('./qa-visual-playwright.mjs', import.meta.url), 'utf8');
+assert.equal(visualReporterSource.includes('item.message || item.summary || "Nález bez popisu"'), true, 'Vizuální reportér musí vždy vypsat skutečnou zprávu nebo bezpečný fallback.');
+assert.equal(visualReporterSource.includes(': ${item.summary}`'), false, 'Vizuální reportér nesmí používat samotné neexistující pole summary.');
 
 if (!globalThis.localStorage) {
   const values = new Map();
@@ -92,4 +111,4 @@ assert.equal(restored.restoreSyncQueued > 0, true, 'Obnova musí explicitně př
 assert.equal(restoreQueue.some((item) => item.entityId === 'restored_lesson' && item.status === 'pending'), true, 'Obnovená hodina musí čekat na odeslání na server.');
 assert.equal((await backupService.restoreSyncStatus()).queued, restored.restoreSyncQueued);
 
-console.log('Auditní klientské regrese prošly: XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');
+console.log('Auditní klientské regrese prošly: hashové QA cesty, čitelný vizuální reportér, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

@@ -1,8 +1,8 @@
-# Lesson Hub Server 1.1.2 – produkční stabilizace
+# Lesson Hub Server 1.1.3 – produkční stabilizace
 
 ## Rozsah
 
-Verze 1.1.2 rozšiřuje server 1.0.0 o provozní monitoring, ruční a automatické snapshoty, kontrolovaný návrat ze zálohy a správní údržbu. Nemění model vlastnictví dat ani klientské schéma IndexedDB.
+Verze 1.1.3 zachovává provozní funkce 1.1.2 a opravuje GitHub QA spuštění. Serverová část nadále rozšiřuje server 1.0.0 o provozní monitoring, ruční a automatické snapshoty, kontrolovaný návrat ze zálohy a správní údržbu. Nemění model vlastnictví dat ani klientské schéma IndexedDB.
 
 ## Doporučené cesty
 

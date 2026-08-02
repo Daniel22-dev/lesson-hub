@@ -1,4 +1,4 @@
-# Lesson Hub Server 1.1.2
+# Lesson Hub Server 1.1.3
 
 Server používá pouze standardní knihovny Node.js 22. Poskytuje účty, role, relace, auditní historii, obecné REST zdroje, obousměrnou synchronizaci, binární přílohy, skutečné zpracování naplánovaných zpráv a režim zastupování.
 

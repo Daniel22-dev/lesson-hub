@@ -198,13 +198,17 @@ export async function startStaticServer(rootDir) {
 }
 
 export async function setLocalDocument(page, rootDir, urlPath, baseUrl) {
-  const clean =
-    String(urlPath || "/index.html")
-      .split("?")[0]
-      .replace(/^\/+/, "") || "index.html";
-  let target = path.join(rootDir, clean);
-  if ((await stat(target)).isDirectory())
-    target = path.join(target, "index.html");
+  const rawUrl = String(urlPath || "/index.html");
+  const hashIndex = rawUrl.indexOf("#");
+  const initialHash = hashIndex >= 0 ? rawUrl.slice(hashIndex) : "";
+  const pathAndQuery = hashIndex >= 0 ? rawUrl.slice(0, hashIndex) : rawUrl;
+  const clean = pathAndQuery.split("?")[0].replace(/^\/+/, "") || "index.html";
+  const resolvedRoot = path.resolve(rootDir);
+  let target = path.resolve(resolvedRoot, clean);
+  if (target !== resolvedRoot && !target.startsWith(`${resolvedRoot}${path.sep}`)) {
+    throw new Error(`QA document path escapes serve root: ${clean}`);
+  }
+  if ((await stat(target)).isDirectory()) target = path.join(target, "index.html");
   let html = await readFile(target, "utf8");
   html = html.replace(
     /<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi,
@@ -212,46 +216,25 @@ export async function setLocalDocument(page, rootDir, urlPath, baseUrl) {
   );
   const basePath = path.posix.dirname("/" + clean).replace(/\/$/, "") + "/";
   const base = `<base href="${baseUrl}${basePath}">`;
-  html = /<head[^>]*>/i.test(html)
-    ? html.replace(/<head([^>]*)>/i, `<head$1>${base}`)
-    : base + html;
-  await page.addInitScript(() => {
-    const makeStorage = () => {
-      const values = new Map();
-      return {
-        get length() {
-          return values.size;
-        },
-        key(i) {
-          return [...values.keys()][i] ?? null;
-        },
-        getItem(k) {
-          return values.has(String(k)) ? values.get(String(k)) : null;
-        },
-        setItem(k, v) {
-          values.set(String(k), String(v));
-        },
-        removeItem(k) {
-          values.delete(String(k));
-        },
-        clear() {
-          values.clear();
-        },
-      };
+  const qaBootstrap = `<script data-ghrab-qa-bootstrap>
+(() => {
+  const initialHash = ${JSON.stringify(initialHash)};
+  if (initialHash) window.location.hash = initialHash;
+  const makeStorage = () => {
+    const values = new Map();
+    return {
+      get length() { return values.size; },
+      key(index) { return [...values.keys()][index] ?? null; },
+      getItem(key) { return values.has(String(key)) ? values.get(String(key)) : null; },
+      setItem(key, value) { values.set(String(key), String(value)); },
+      removeItem(key) { values.delete(String(key)); },
+      clear() { values.clear(); },
     };
+  };
+  try { Object.defineProperty(window, "localStorage", { configurable: true, value: makeStorage() }); } catch {}
+  try { Object.defineProperty(window, "sessionStorage", { configurable: true, value: makeStorage() }); } catch {}
+  if (!navigator.serviceWorker) {
     try {
-      Object.defineProperty(window, "localStorage", {
-        configurable: true,
-        value: makeStorage(),
-      });
-    } catch {}
-    try {
-      Object.defineProperty(window, "sessionStorage", {
-        configurable: true,
-        value: makeStorage(),
-      });
-    } catch {}
-    if (!navigator.serviceWorker) {
       Object.defineProperty(navigator, "serviceWorker", {
         configurable: true,
         value: {
@@ -260,8 +243,14 @@ export async function setLocalDocument(page, rootDir, urlPath, baseUrl) {
           ready: Promise.resolve({}),
         },
       });
-    }
-  });
+    } catch {}
+  }
+})();
+</script>`;
+  const injected = `${base}${qaBootstrap}`;
+  html = /<head[^>]*>/i.test(html)
+    ? html.replace(/<head([^>]*)>/i, `<head$1>${injected}`)
+    : injected + html;
   await page.setContent(html, { waitUntil: "load", timeout: 20000 });
   return target;
 }

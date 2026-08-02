@@ -1,4 +1,4 @@
-# Lesson Hub 1.1.2 – pilotní checklist
+# Lesson Hub 1.1.3 – pilotní checklist
 
 ## GitHub a klientská aplikace
 
