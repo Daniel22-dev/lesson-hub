@@ -122,4 +122,15 @@ assert.equal(restored.restoreSyncQueued > 0, true, 'Obnova musí explicitně př
 assert.equal(restoreQueue.some((item) => item.entityId === 'restored_lesson' && item.status === 'pending'), true, 'Obnovená hodina musí čekat na odeslání na server.');
 assert.equal((await backupService.restoreSyncStatus()).queued, restored.restoreSyncQueued);
 
-console.log('Auditní klientské regrese prošly: hashové QA cesty, čitelný vizuální reportér, stabilní čekání kritických workflow, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');
+const mainSource = await readFile(new URL('../src/main.js', import.meta.url), 'utf8');
+assert.match(mainSource, /currentSequence === renderSequence/, 'Starší render nesmí ukončit novější render.');
+assert.match(mainSource, /catch \(error\) \{\s*if \(currentSequence !== renderSequence\) return;/, 'Starší chybový render nesmí přepsat novější trasu.');
+assert.match(mainSource, /dataset\.renderedRoute/, 'Aplikace musí zveřejnit dokončenou hash trasu pro spolehlivou diagnostiku.');
+assert.match(criticalRunnerSource, /dataset\.renderedRoute === expectedRoute/, 'Kritická QA musí čekat na render aktuální hash trasy.');
+assert.match(pythonBrowserCommonSource, /dataset\.renderedRoute === expectedRoute/, 'Python fallback musí čekat na render aktuální hash trasy.');
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+assert.equal(packageJson.overrides?.['brace-expansion'], '5.0.8', 'Bezpečnostní override brace-expansion musí zůstat připnutý.');
+const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
+assert.equal(packageLock.packages?.['node_modules/brace-expansion']?.version, '5.0.8', 'Lockfile nesmí obsahovat zranitelný brace-expansion.');
+
+console.log('Auditní klientské regrese prošly: hashové QA cesty, čitelný vizuální reportér, trasově stabilní čekání kritických workflow a render race pojistku, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

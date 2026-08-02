@@ -52,6 +52,8 @@ function bindCommonPageActions() {
 async function renderRoute(context = parseCurrentRoute()) {
   const currentSequence = ++renderSequence;
   const page = getPage(context.route);
+  const routeKey = context.raw || context.route;
+  app.dataset.pendingRoute = routeKey;
   app.setAttribute('aria-busy', 'true');
   try {
     const model = await page.render(context);
@@ -62,6 +64,7 @@ async function renderRoute(context = parseCurrentRoute()) {
     await page.bind?.(context);
     document.querySelector('#page-content')?.focus({ preventScroll: true });
   } catch (error) {
+    if (currentSequence !== renderSequence) return;
     console.error(error);
     showToast(error.message || 'Stránku se nepodařilo načíst.', 'error');
     app.innerHTML = renderLayout({
@@ -72,7 +75,13 @@ async function renderRoute(context = parseCurrentRoute()) {
     });
     bindLayoutEvents();
   } finally {
-    app.removeAttribute('aria-busy');
+    // A stale asynchronous render must never mark a newer render as finished.
+    if (currentSequence === renderSequence) {
+      app.dataset.renderedRoute = routeKey;
+      app.dataset.renderSequence = String(currentSequence);
+      delete app.dataset.pendingRoute;
+      app.removeAttribute('aria-busy');
+    }
   }
 }
 

@@ -87,7 +87,7 @@ async def set_document(page, url):
 
 
 async def wait_for_app_idle(page, timeout=10000):
-    await page.wait_for_timeout(100)
+    await page.wait_for_timeout(75)
     if not await page.locator('#app').count():
         return
     await page.wait_for_function(
@@ -95,7 +95,12 @@ async def wait_for_app_idle(page, timeout=10000):
           const app = document.querySelector('#app');
           const content = document.querySelector('#page-content');
           const bodyVisible = getComputedStyle(document.body).visibility !== 'hidden';
-          return Boolean(app && content && bodyVisible && !app.hasAttribute('aria-busy'));
+          const expectedRoute = location.hash.replace(/^#\/?/, '') || 'overview';
+          return Boolean(
+            app && content && bodyVisible &&
+            !app.hasAttribute('aria-busy') &&
+            app.dataset.renderedRoute === expectedRoute
+          );
         }""",
         timeout=timeout,
     )

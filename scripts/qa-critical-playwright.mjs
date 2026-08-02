@@ -65,16 +65,24 @@ async function waitForAppReady(page, timeout = 12000) {
     const app = document.querySelector('#app');
     const content = document.querySelector('#page-content');
     const bodyVisible = getComputedStyle(document.body).visibility !== 'hidden';
-    return Boolean(app && content && bodyVisible && !app.hasAttribute('aria-busy'));
+    const expectedRoute = location.hash.replace(/^#\/?/, '') || 'overview';
+    return Boolean(
+      app && content && bodyVisible &&
+      !app.hasAttribute('aria-busy') &&
+      app.dataset.renderedRoute === expectedRoute
+    );
   }, null, { timeout });
 }
 
 async function settleAppAfterAction(page, timeout = 10000) {
-  // Give async event handlers time to mark the app busy before testing the idle state.
-  await page.waitForTimeout(100);
+  // Hash changes are synchronous, rendering is not. Wait for the render that belongs
+  // to the current hash instead of trusting an idle flag left by an older render.
+  await page.waitForTimeout(75);
   await page.waitForFunction(() => {
     const app = document.querySelector('#app');
-    return !app || !app.hasAttribute('aria-busy');
+    if (!app) return true;
+    const expectedRoute = location.hash.replace(/^#\/?/, '') || 'overview';
+    return !app.hasAttribute('aria-busy') && app.dataset.renderedRoute === expectedRoute;
   }, null, { timeout });
 }
 
