@@ -1,0 +1,41 @@
+{
+  "name": "lesson-hub",
+  "version": "1.1.2",
+  "private": true,
+  "type": "module",
+  "description": "Lesson Hub – local-first učitelská paměť pro AI Studio GHRAB.",
+  "scripts": {
+    "start": "npm run build && node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check-project.mjs && node scripts/check-versions.mjs",
+    "test": "npm run check && npm run test:core && npm run test:server && npm run test:wave10 && npm run test:wave11 && npm run test:integration && npm run test:audit-server && npm run test:audit-client && npm run build",
+    "test:headless": "node tools/headless-check.mjs",
+    "qa:technical": "node scripts/qa-technical.mjs",
+    "qa:security": "node scripts/qa-security.mjs",
+    "qa:pwa": "node scripts/qa-pwa.mjs",
+    "qa:combinatorial": "node scripts/qa-combinatorial.mjs",
+    "qa:visual": "node scripts/qa-visual.mjs",
+    "qa:critical": "node scripts/qa-critical.mjs",
+    "qa:report": "node scripts/qa-report.mjs",
+    "qa:approve": "node scripts/qa-approve.mjs",
+    "qa:release": "node scripts/qa-release.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test:core": "node scripts/test-core.mjs",
+    "server:start": "node server/index.mjs",
+    "server:init": "node server/bootstrap-admin.mjs",
+    "test:server": "node server/test-server.mjs",
+    "test:integration": "node server/test-client-integration.mjs",
+    "test:wave10": "node server/test-mail-substitution.mjs",
+    "test:wave11": "node server/test-operations.mjs",
+    "test:audit-server": "node server/test-audit-regressions.mjs",
+    "test:audit-client": "node scripts/test-audit-client.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1",
+    "pngjs": "^7.0.0"
+  },
+  "license": "UNLICENSED"
+}

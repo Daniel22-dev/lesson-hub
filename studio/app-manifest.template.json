@@ -1,0 +1,48 @@
+{
+  "schema": "ai-studio-app-manifest-v1",
+  "id": "lesson-hub",
+  "name": {
+    "cs": "Lesson Hub",
+    "en": "Lesson Hub"
+  },
+  "version": "__APP_VERSION__",
+  "status": {
+    "cs": "Řízený vývoj – akademické jádro",
+    "en": "Controlled development – academic core"
+  },
+  "description": {
+    "cs": "Prémiová osobní paměť učitele pro plánování, evidenci, materiály, připomínky a kontinuitu výuky.",
+    "en": "A premium personal teacher memory for planning, lesson records, materials, reminders and continuity."
+  },
+  "launchUrl": "https://daniel22-dev.github.io/lesson-hub/",
+  "manualUrl": "https://daniel22-dev.github.io/lesson-hub/manual/",
+  "repository": "daniel22-dev/lesson-hub",
+  "icon": "icons/icon-512.png",
+  "accent": "#167f79",
+  "tags": [
+    {
+      "cs": "Plánování výuky",
+      "en": "Lesson planning"
+    },
+    {
+      "cs": "Paměť učitele",
+      "en": "Teacher memory"
+    }
+  ],
+  "capabilities": [
+    "academic-years",
+    "subjects",
+    "group-continuity",
+    "group-promotion",
+    "planning",
+    "materials",
+    "reminders",
+    "local-first"
+  ],
+  "compatibility": {
+    "studioMinVersion": "0.18.11",
+    "materialSchema": "ghrab-material-v1",
+    "studioBridge": "1.1"
+  },
+  "publishedAt": "__BUILD_TIME__"
+}
