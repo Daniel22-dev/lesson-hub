@@ -316,6 +316,17 @@ const screenshotAttempts = Math.max(
   Number(process.env.GHRAB_VISUAL_SCREENSHOT_ATTEMPTS || 3),
 );
 
+async function executeEvaluateStep(page, source) {
+  const script = String(source || "").trim();
+  if (!script) return undefined;
+  return page.evaluate(async (trustedSource) => {
+    // Visual scenarios are repository-owned test code. Invoke function expressions
+    // instead of merely returning the function object from page.evaluate().
+    const candidate = (0, eval)(`(${trustedSource})`);
+    return typeof candidate === "function" ? await candidate() : candidate;
+  }, script);
+}
+
 async function captureScreenshotWithRetry(page, targetPath) {
   let lastError;
   for (let attempt = 1; attempt <= screenshotAttempts; attempt += 1) {
@@ -433,7 +444,7 @@ async function runVisualCase(scenario, viewport) {
           await page.locator(step.selector).first().selectOption(step.value);
         }
         if (step.action === "press") await page.keyboard.press(step.key);
-        if (step.action === "evaluate") await page.evaluate(step.script);
+        if (step.action === "evaluate") await executeEvaluateStep(page, step.script);
       }
       await page.waitForTimeout(scenario.settleMs || 700);
       await waitForImages(page);

@@ -1,4 +1,4 @@
-# Lesson Hub 1.1.5
+# Lesson Hub 1.1.6
 
 Lesson Hub je local-first osobní paměť učitele v ekosystému AI Studio GHRAB. Pro běžné pilotní používání **nepotřebuje server**: data ukládá do IndexedDB v prohlížeči a nabízí export, import i lokální body obnovy.
 
@@ -24,9 +24,14 @@ Aplikace se otevře na `http://localhost:4173`. Produkční GitHub Pages build v
 
 Workflow nasazení nevydá aplikaci, pokud selže čistá instalace, bezpečnostní audit nebo některá povinná QA brána.
 
-## Oprava GitHub QA 1.1.5
+## Oprava GitHub QA 1.1.6
 
-Verze 1.1.5 navazuje na opravy hashových cest a vizuálního reportéru z předchozích vydání. Odstraňuje závodní podmínku asynchronního vykreslování: starší render už nemůže předčasně označit novější trasu za hotovou. Kritická QA čeká na dokončení přesně aktuální hash trasy. Lockfile současně připíná `brace-expansion` na bezpečnou verzi 5.0.8.
+Verze 1.1.6 opravuje poslední dvě vady z reálných běhů GitHub Actions:
+
+- funkční kroky `evaluate` se nyní v Node Playwrightu i Python fallbacku skutečně vykonají; dříve se pouze vytvořil objekt funkce, takže se hash trasa nezměnila,
+- headless smoke test používá explicitní lokální QA přístup a čeká na dokončený render požadované trasy.
+
+Zachovány zůstávají předchozí opravy hashových cest, dynamického dnešního data, vizuálního reportéru, čekání na asynchronní render a bezpečnostní override `brace-expansion` 5.0.8. Kritická brána navíc při selhání vypíše konkrétní nález přímo do logu GitHub Actions.
 
 ## Bezpečné používání lokální verze
 
@@ -47,7 +52,7 @@ npm run server:init -- --name="Správce"
 npm run server:start
 ```
 
-Heslo se nepředává v argumentu příkazu. Podrobnosti jsou v `server/README.md` a `docs/SERVEROVE-NASAZENI-1.1.5.md`.
+Heslo se nepředává v argumentu příkazu. Podrobnosti jsou v `server/README.md` a `docs/SERVEROVE-NASAZENI-1.1.6.md`.
 
 Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při startu i v provozním centru zobrazí výrazné varování, dokud není nastaveno `LESSON_HUB_BACKUP_ENABLED=true`.
 

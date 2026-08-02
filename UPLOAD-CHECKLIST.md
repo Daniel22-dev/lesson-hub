@@ -1,4 +1,4 @@
-# Nahrání Lesson Hubu 1.1.5 na GitHub
+# Nahrání Lesson Hubu 1.1.6 na GitHub
 
 Nahrajte obsah této složky přímo do kořene repozitáře `lesson-hub`.
 
@@ -11,4 +11,4 @@ Před potvrzením commitu zkontrolujte, že výběr obsahuje také:
 
 Bez `.github/workflows/deploy.yml` se certifikace a GitHub Pages nespustí.
 
-Po nahrání otevřete **Actions → Certifikace a nasazení Lesson Hubu**. Opravená verze má v `package.json` číslo `1.1.5`.
+Po nahrání otevřete **Actions → Certifikace a nasazení Lesson Hubu**. Verze musí být v `package.json` uvedena jako `1.1.6`.

@@ -17,6 +17,38 @@ async function run(command, args, env = {}) {
   });
 }
 
+function qaRoute(route) {
+  if (!route.startsWith("/index.html")) return route;
+  const hashIndex = route.indexOf("#");
+  const beforeHash = hashIndex >= 0 ? route.slice(0, hashIndex) : route;
+  const hash = hashIndex >= 0 ? route.slice(hashIndex) : "";
+  return `${beforeHash}${beforeHash.includes("?") ? "&" : "?"}qa=1${hash}`;
+}
+
+function expectedHashRoute(route) {
+  const hashIndex = route.indexOf("#");
+  if (hashIndex < 0) return "";
+  return route.slice(hashIndex + 1).replace(/^\/?/, "") || "overview";
+}
+
+async function waitForMainApp(page, route, timeout = 20000) {
+  const expectedRoute = expectedHashRoute(route);
+  await page.waitForFunction(
+    (routeKey) => {
+      const app = document.querySelector("#app");
+      return Boolean(
+        document.documentElement.dataset.ghrabAccess === "granted" &&
+        app &&
+        !app.hasAttribute("aria-busy") &&
+        app.dataset.renderedRoute === routeKey &&
+        getComputedStyle(document.body).visibility !== "hidden"
+      );
+    },
+    expectedRoute,
+    { timeout },
+  );
+}
+
 try {
   try {
     const { chromium } = await import('playwright');
@@ -34,13 +66,21 @@ try {
       const errors = [];
       page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
       page.on('pageerror', (error) => errors.push(error.message));
-      const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle', timeout: 20000 });
+      const targetRoute = qaRoute(route);
+      const response = await page.goto(`${baseUrl}${targetRoute}`, { waitUntil: 'networkidle', timeout: 20000 });
+      if (route.startsWith('/index.html')) await waitForMainApp(page, route);
+      else await page.getByText(expected, { exact: false }).first().waitFor({ state: 'visible', timeout: 20000 });
       const body = await page.textContent('body');
-      const access = await page.evaluate(() => document.documentElement.dataset.ghrabAccess || '');
+      const access = route.startsWith('/index.html')
+        ? await page.evaluate(() => document.documentElement.dataset.ghrabAccess || '')
+        : 'granted';
       const localErrors = errors.filter((message) => /404|Failed to load resource/.test(message));
       const ok = response?.ok() && body?.includes(expected) && access === 'granted' && !localErrors.length;
       console.log(`${ok ? 'PASS' : 'FAIL'} ${route}`);
-      if (!ok) failed = true;
+      if (!ok) {
+        failed = true;
+        console.error(JSON.stringify({ route, expectedPresent: Boolean(body?.includes(expected)), access, localErrors, errors }, null, 2));
+      }
       await page.close();
     }
     await browser.close();

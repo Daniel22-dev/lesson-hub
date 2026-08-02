@@ -116,6 +116,21 @@ async def resolve_step_value(page, value):
     }""")
 
 
+async def execute_evaluate_step(page, source):
+    script = str(source or '').strip()
+    if not script:
+        return None
+    return await page.evaluate(
+        """async (trustedSource) => {
+          // Test definitions are repository-owned. Invoke function expressions rather
+          // than returning the function object unchanged.
+          const candidate = (0, eval)(`(${trustedSource})`);
+          return typeof candidate === 'function' ? await candidate() : candidate;
+        }""",
+        arg=script,
+    )
+
+
 async def run_steps(page, steps):
     for step in steps or []:
         action = step.get('action')
@@ -134,7 +149,7 @@ async def run_steps(page, steps):
         elif action == 'press':
             await page.keyboard.press(step.get('key', 'Enter'))
         elif action == 'evaluate':
-            await page.evaluate(step.get('script', ''))
+            await execute_evaluate_step(page, step.get('script', ''))
         if action in {'click', 'clickIfVisible', 'select', 'press', 'evaluate'}:
             await wait_for_app_idle(page, timeout=int(step.get('timeout', 10000)))
         if action == 'assertText':

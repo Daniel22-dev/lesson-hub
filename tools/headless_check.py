@@ -30,14 +30,32 @@ async def serve_route(request_route):
     else:
         await request_route.abort()
 
+async def wait_for_main_ready(page, hash_route, timeout=20000):
+    expected_route = str(hash_route or '#/overview').replace('#/', '', 1).replace('#', '', 1) or 'overview'
+    await page.wait_for_function(
+        """expectedRoute => {
+          const app = document.querySelector('#app');
+          return Boolean(
+            document.documentElement.dataset.ghrabAccess === 'granted' &&
+            app &&
+            !app.hasAttribute('aria-busy') &&
+            app.dataset.renderedRoute === expectedRoute &&
+            getComputedStyle(document.body).visibility !== 'hidden'
+          );
+        }""",
+        arg=expected_route,
+        timeout=timeout,
+    )
+
+
 async def render_main(page, hash_route):
     html = (ROOT / 'index.html').read_text(encoding='utf-8')
     html = html.replace('<head>', '<head><base href="https://lesson-hub.test/">', 1)
     await page.set_content(html, wait_until='load', timeout=20000)
-    await page.wait_for_timeout(700)
-    if hash_route:
-        await page.evaluate(f"location.hash={hash_route!r}")
-        await page.wait_for_timeout(500)
+    await page.wait_for_timeout(100)
+    if hash_route and await page.evaluate("location.hash") != hash_route:
+        await page.evaluate("hashRoute => { location.hash = hashRoute; }", arg=hash_route)
+    await wait_for_main_ready(page, hash_route)
 
 async def render_manual(page):
     html = (ROOT / 'manual' / 'index.html').read_text(encoding='utf-8')

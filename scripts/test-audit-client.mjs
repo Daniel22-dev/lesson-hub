@@ -28,14 +28,25 @@ assert.equal(visualReporterSource.includes('item.message || item.summary || "Ná
 assert.equal(visualReporterSource.includes(': ${item.summary}`'), false, 'Vizuální reportér nesmí používat samotné neexistující pole summary.');
 assert.equal(visualReporterSource.includes('rect.top < vh'), false, 'Povinný prvek níže pod prvním svislým viewportem nesmí být označen jako skrytý.');
 assert.equal(visualReporterSource.includes('rect.left < vw'), true, 'Vizuální brána musí nadále hlídat vodorovné umístění povinných prvků.');
+assert.equal(visualReporterSource.includes('async function executeEvaluateStep'), true, 'Vizuální brána musí funkční evaluate kroky skutečně vykonat.');
+assert.equal(visualReporterSource.includes('await page.evaluate(step.script)'), false, 'Vizuální brána nesmí pouze vrátit funkční výraz bez zavolání.');
+const headlessRunnerSource = await readFile(new URL('../tools/headless-check.mjs', import.meta.url), 'utf8');
+assert.equal(headlessRunnerSource.includes('async function waitForMainApp'), true, 'Headless smoke test musí počkat na dokončený render trasy.');
+assert.equal(headlessRunnerSource.includes('qa=1'), true, 'Headless smoke test musí lokální QA přístup zapnout explicitním parametrem.');
+assert.equal(headlessRunnerSource.includes('app.dataset.renderedRoute === routeKey'), true, 'Headless smoke test musí ověřovat správně dokončenou hash trasu.');
 const criticalRunnerSource = await readFile(new URL('./qa-critical-playwright.mjs', import.meta.url), 'utf8');
 const criticalFlowsSource = await readFile(new URL('../qa/critical-flows.json', import.meta.url), 'utf8');
 assert.equal(criticalRunnerSource.includes('async function waitForAppReady'), true, 'Kritická brána musí čekat na dokončení asynchronního vykreslení aplikace.');
+assert.equal(criticalRunnerSource.includes('async function executeEvaluateStep'), true, 'Kritická brána musí mít explicitní vykonání důvěryhodných evaluate kroků.');
+assert.equal(criticalRunnerSource.includes('typeof candidate === "function" ? await candidate() : candidate'), true, 'Funkční evaluate krok se musí skutečně zavolat, ne pouze vrátit jako objekt.');
+assert.equal(criticalRunnerSource.includes('await page.evaluate(step.script)'), false, 'Kritická brána nesmí znovu pouze vyhodnotit funkční výraz bez zavolání.');
 assert.equal(criticalRunnerSource.includes("value !== '__TODAY__'"), true, 'Kritická brána musí podporovat dynamické dnešní datum.');
 assert.equal(criticalFlowsSource.includes('2026-07-30'), false, 'Kritické scénáře nesmí používat prošlé pevné datum dnešní výuky.');
 assert.equal((criticalFlowsSource.match(/__TODAY__/g) || []).length, 3, 'Tři scénáře výuky musí používat dynamické dnešní datum.');
 const pythonBrowserCommonSource = await readFile(new URL('../tools/qa_browser_common.py', import.meta.url), 'utf8');
 assert.equal(pythonBrowserCommonSource.includes('async def wait_for_app_idle'), true, 'Python fallback musí stejně jako Node runner čekat na vykreslení aplikace.');
+assert.equal(pythonBrowserCommonSource.includes('async def execute_evaluate_step'), true, 'Python fallback musí funkční evaluate kroky skutečně vykonat.');
+assert.equal(pythonBrowserCommonSource.includes("typeof candidate === 'function' ? await candidate() : candidate"), true, 'Python fallback nesmí vracet funkční výraz bez zavolání.');
 assert.equal(pythonBrowserCommonSource.includes("value != '__TODAY__'"), true, 'Python fallback musí podporovat dynamické dnešní datum.');
 
 if (!globalThis.localStorage) {
@@ -133,4 +144,4 @@ assert.equal(packageJson.overrides?.['brace-expansion'], '5.0.8', 'Bezpečnostn�
 const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
 assert.equal(packageLock.packages?.['node_modules/brace-expansion']?.version, '5.0.8', 'Lockfile nesmí obsahovat zranitelný brace-expansion.');
 
-console.log('Auditní klientské regrese prošly: hashové QA cesty, čitelný vizuální reportér, trasově stabilní čekání kritických workflow a render race pojistku, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');
+console.log('Auditní klientské regrese prošly: hashové QA cesty, vykonání evaluate kroků, headless připravenost, čitelný vizuální reportér, trasově stabilní čekání kritických workflow a render race pojistku, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

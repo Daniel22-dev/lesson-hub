@@ -86,6 +86,18 @@ async function settleAppAfterAction(page, timeout = 10000) {
   }, null, { timeout });
 }
 
+
+async function executeEvaluateStep(page, source) {
+  const script = String(source || "").trim();
+  if (!script) return undefined;
+  return page.evaluate(async (trustedSource) => {
+    // Critical-flow definitions are repository-owned test code. Function expressions
+    // must be invoked; page.evaluate("() => {...}") otherwise only returns a function.
+    const candidate = (0, eval)(`(${trustedSource})`);
+    return typeof candidate === "function" ? await candidate() : candidate;
+  }, script);
+}
+
 async function resolveStepValue(page, value) {
   if (value !== '__TODAY__') return value ?? '';
   return page.evaluate(() => {
@@ -163,7 +175,7 @@ try {
           if (step.action === "select")
             await page.locator(step.selector).first().selectOption(step.value);
           if (step.action === "press") await page.keyboard.press(step.key);
-          if (step.action === "evaluate") await page.evaluate(step.script);
+          if (step.action === "evaluate") await executeEvaluateStep(page, step.script);
           if (["click", "clickIfVisible", "select", "press", "evaluate"].includes(step.action)) {
             await settleAppAfterAction(page, step.timeout || 10000);
           }
@@ -231,4 +243,8 @@ await writeFile(
 console.log(
   `CRITICAL ${result.status}: ${findings.length} nálezů, ${matrix.length} workflow`,
 );
+for (const item of findings) {
+  console.log(`CRITICAL FINDING [${item.code}]: ${item.message || "Nález bez popisu"}`);
+  if (item.evidence) console.log(`CRITICAL EVIDENCE: ${item.evidence}`);
+}
 if (result.status === "FAIL") process.exitCode = 1;
