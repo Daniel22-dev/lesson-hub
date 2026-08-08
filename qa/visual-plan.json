@@ -722,7 +722,7 @@
       "id": "lesson-hub-server",
       "name": "Serverové centrum bez aktivní relace",
       "url": "/index.html#/server",
-      "expectedText": "Serverové připojení",
+      "expectedText": "Server a synchronizace",
       "mustVisible": [
         ".server-summary",
         ".server-connection-card",

@@ -89,24 +89,30 @@ async function settleAppAfterAction(page, timeout = 10000) {
 
 
 async function clickForQa(page, selector, timeout = 7000) {
-  let firstError;
-  try {
-    await page.locator(selector).first().click({ timeout, noWaitAfter: true });
-    return;
-  } catch (error) {
-    firstError = error;
-    if (!/detached|timeout/i.test(String(error?.message || error))) throw error;
-  }
-  // The application intentionally replaces some dialog/form nodes during the
-  // action itself. Re-query the current DOM and dispatch the trusted repository
-  // test click instead of failing only because Playwright held a stale handle.
+  await page.waitForFunction((sel) => {
+    const element = document.querySelector(sel);
+    if (!(element instanceof HTMLElement) || element.hidden) return false;
+    if (element instanceof HTMLButtonElement && element.disabled) return false;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.visibility !== "hidden" && style.display !== "none" && rect.width > 0 && rect.height > 0;
+  }, selector, { timeout });
+
   const clicked = await page.evaluate((sel) => {
     const element = document.querySelector(sel);
     if (!(element instanceof HTMLElement) || element.hidden) return false;
-    element.click();
+    if (element instanceof HTMLButtonElement && element.disabled) return false;
+    // Lesson Hub intentionally re-renders parts of the page during async actions.
+    // Dispatch from the current DOM node instead of letting Playwright retain a
+    // handle that can become detached while the click is being actionability-checked.
+    if (element instanceof HTMLButtonElement && element.type === "submit" && element.form) {
+      element.form.requestSubmit(element);
+    } else {
+      element.click();
+    }
     return true;
   }, selector);
-  if (!clicked) throw firstError;
+  if (!clicked) throw new Error(`QA click target není dostupný: ${selector}`);
 }
 
 async function executeEvaluateStep(page, source) {

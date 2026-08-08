@@ -319,6 +319,44 @@ const screenshotAttempts = Math.max(
   Number(process.env.GHRAB_VISUAL_SCREENSHOT_ATTEMPTS || 3),
 );
 
+async function waitForAppReady(page, timeout = 12000) {
+  await page.waitForSelector("#app", { state: "attached", timeout });
+  await page.waitForFunction(() => {
+    const app = document.querySelector("#app");
+    const content = document.querySelector("#page-content");
+    const expectedRoute = location.hash.replace(/^#\/?/, "") || "overview";
+    return Boolean(
+      app && content &&
+      getComputedStyle(document.body).visibility !== "hidden" &&
+      !app.hasAttribute("aria-busy") &&
+      app.dataset.renderedRoute === expectedRoute
+    );
+  }, null, { timeout });
+}
+
+async function clickForQa(page, selector, timeout = 5000) {
+  await page.waitForFunction((sel) => {
+    const element = document.querySelector(sel);
+    if (!(element instanceof HTMLElement) || element.hidden) return false;
+    if (element instanceof HTMLButtonElement && element.disabled) return false;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.visibility !== "hidden" && style.display !== "none" && rect.width > 0 && rect.height > 0;
+  }, selector, { timeout });
+  const clicked = await page.evaluate((sel) => {
+    const element = document.querySelector(sel);
+    if (!(element instanceof HTMLElement) || element.hidden) return false;
+    if (element instanceof HTMLButtonElement && element.disabled) return false;
+    if (element instanceof HTMLButtonElement && element.type === "submit" && element.form) {
+      element.form.requestSubmit(element);
+    } else {
+      element.click();
+    }
+    return true;
+  }, selector);
+  if (!clicked) throw new Error(`QA click target není dostupný: ${selector}`);
+}
+
 async function executeEvaluateStep(page, source) {
   const script = String(source || "").trim();
   if (!script) return undefined;
@@ -436,15 +474,16 @@ async function runVisualCase(scenario, viewport) {
         );
       }
       await setLocalDocument(page, serveRoot, scenario.url, baseUrl);
+      await waitForAppReady(page);
       for (const step of scenario.steps || []) {
         if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
         if (step.action === "click") {
-          await page.locator(step.selector).first().click({ timeout: 5000 });
+          await clickForQa(page, step.selector, step.timeout || 5000);
         }
         if (step.action === "clickIfVisible") {
           const target = page.locator(step.selector).first();
           if ((await target.count()) && (await target.isVisible())) {
-            await target.click({ timeout: step.timeout || 5000 });
+            await clickForQa(page, step.selector, step.timeout || 5000);
           }
         }
         if (step.action === "fill") {

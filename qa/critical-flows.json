@@ -1695,7 +1695,7 @@
       "type": "browser",
       "isolated": true,
       "url": "/index.html#/server",
-      "expectedText": "Serverové připojení",
+      "expectedText": "Server a synchronizace",
       "steps": [
         {
           "action": "assertVisible",
