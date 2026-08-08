@@ -23,6 +23,9 @@ await rm(DIST, { recursive: true, force: true });
 await mkdir(DIST, { recursive: true });
 await cp(path.join(ROOT, 'src'), path.join(DIST, 'src'), { recursive: true });
 await cp(path.join(ROOT, 'public'), DIST, { recursive: true });
+await mkdir(path.join(DIST, 'config'), { recursive: true });
+await cp(path.join(ROOT, 'src', 'config', 'data-manifest.json'), path.join(DIST, 'config', 'data-manifest.json'));
+
 const manualPath = path.join(DIST, 'manual', 'manual.js');
 const manualSource = await readFile(manualPath, 'utf8');
 if (!manualSource.includes('__APP_VERSION__')) throw new Error('Interaktivní manuál neobsahuje řízenou značku verze.');
@@ -40,7 +43,7 @@ if (/produk|production/.test(status)) throw new Error('Neodsouhlasená verze nes
 await writeFile(path.join(DIST, 'studio-manifest.json'), `${JSON.stringify(parsed, null, 2)}\n`);
 await writeFile(path.join(DIST, 'build-info.json'), `${JSON.stringify({ appId: 'lesson-hub', version, buildTime, source: 'src' }, null, 2)}\n`);
 
-const assetFiles = (await walkFiles(DIST)).filter((file) => file !== 'sw.js').sort();
+const assetFiles = (await walkFiles(DIST)).filter((file) => file !== 'sw.js' && !file.startsWith('platform/')).sort();
 const assets = ['./', ...assetFiles.map((file) => `./${file}`)];
 const swPath = path.join(DIST, 'sw.js');
 let serviceWorker = await readFile(swPath, 'utf8');
@@ -50,3 +53,6 @@ serviceWorker = serviceWorker.replace(marker, `${JSON.stringify(assets, null, 2)
 await writeFile(swPath, serviceWorker);
 
 console.log(`Build Lesson Hub ${version} dokončen: ${path.relative(ROOT, DIST)}/ · ${assets.length} offline souborů`);
+
+// P2: canonical cross-application platform post-processing.
+await import("./apply-ghrab-platform.mjs");

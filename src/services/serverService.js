@@ -11,6 +11,46 @@ const DEFAULT_CONFIG = Object.freeze({
 function storage(kind) {
   try { return kind === 'local' ? globalThis.localStorage : globalThis.sessionStorage; } catch { return null; }
 }
+function isSchoolProfile() {
+  try { return globalThis.GHRAB_PLATFORM?.isSchoolProfile?.() === true; } catch { return false; }
+}
+function schoolServerBaseUrl() {
+  try {
+    const resolved = globalThis.GHRAB_PLATFORM?.apiUrl?.('lesson-hub');
+    if (resolved) return String(resolved).replace(/\/$/, '');
+    const deployment = globalThis.GHRAB_PLATFORM?.getDeployment?.() || {};
+    return String(deployment.services?.lessonHubApiBaseUrl || '/api/v1/lesson-hub').replace(/\/$/, '');
+  } catch { return '/api/v1/lesson-hub'; }
+}
+
+function centralSession() {
+  try { return globalThis.GHRAB_PLATFORM?.getSession?.() || globalThis.GHRABServerAuth?.getSession?.() || null; } catch { return null; }
+}
+
+function mapCentralProfile(session) {
+  const user = session?.user || {};
+  const roles = Array.isArray(user.roles) ? user.roles : user.role ? [user.role] : [];
+  return {
+    id: user.sub || user.id || user.idHash || '',
+    displayName: user.displayName || user.name || 'Přihlášený uživatel',
+    email: user.email || '',
+    role: user.role || (roles.includes('admin') ? 'admin' : roles[0]) || 'teacher',
+    roles,
+  };
+}
+
+function schoolSessionFromPlatform() {
+  const current = centralSession();
+  const token = current?.requestToken || current?.csrfToken || '';
+  if (!current?.authenticated || !token) return null;
+  return {
+    token,
+    csrfToken: token,
+    expiresAt: current.expiresAt || null,
+    user: mapCentralProfile(current),
+    storage: 'memory-only',
+  };
+}
 
 function randomClientId() {
   if (globalThis.crypto?.randomUUID) return `client_${globalThis.crypto.randomUUID()}`;
@@ -53,9 +93,16 @@ export class ServerApiError extends Error {
 export class ServerService {
   constructor({ fetchImpl = globalThis.fetch } = {}) {
     this.fetchImpl = fetchImpl;
+    this.schoolProfile = isSchoolProfile();
+    this.memorySession = null;
     const local = storage('local');
     this.config = readJsonStore(local, CONFIG_KEY, DEFAULT_CONFIG);
     if (!this.config.clientId) this.config.clientId = randomClientId();
+    if (this.schoolProfile) {
+      storage('local')?.removeItem(SESSION_KEY);
+      storage('session')?.removeItem(SESSION_KEY);
+      this.config = { ...this.config, baseUrl: schoolServerBaseUrl(), rememberSession: false };
+    }
     this.session = this.#loadSession();
     this.profile = this.session?.user || null;
     this.healthState = null;
@@ -63,6 +110,7 @@ export class ServerService {
   }
 
   #loadSession() {
+    if (this.schoolProfile) { this.memorySession = schoolSessionFromPlatform(); return this.memorySession; }
     const local = readJsonStore(storage('local'), SESSION_KEY, {});
     const temporary = readJsonStore(storage('session'), SESSION_KEY, {});
     const candidate = temporary.token ? temporary : local.token ? local : null;
@@ -82,8 +130,8 @@ export class ServerService {
 
   configure(input = {}) {
     return this.saveConfig({
-      baseUrl: normalizeBaseUrl(input.baseUrl ?? this.config.baseUrl),
-      rememberSession: input.rememberSession ?? this.config.rememberSession,
+      baseUrl: this.schoolProfile ? schoolServerBaseUrl() : normalizeBaseUrl(input.baseUrl ?? this.config.baseUrl),
+      rememberSession: this.schoolProfile ? false : (input.rememberSession ?? this.config.rememberSession),
       syncEnabled: input.syncEnabled ?? this.config.syncEnabled,
     });
   }
@@ -94,8 +142,11 @@ export class ServerService {
 
   saveSession(session, remember = this.config.rememberSession) {
     this.clearSession();
-    const target = storage(remember ? 'local' : 'session');
-    target?.setItem(SESSION_KEY, JSON.stringify(session));
+    if (this.schoolProfile) this.memorySession = session;
+    else {
+      const target = storage(remember ? 'local' : 'session');
+      target?.setItem(SESSION_KEY, JSON.stringify(session));
+    }
     this.session = session;
     this.profile = session.user || null;
   }
@@ -103,13 +154,14 @@ export class ServerService {
   clearSession() {
     storage('local')?.removeItem(SESSION_KEY);
     storage('session')?.removeItem(SESSION_KEY);
+    this.memorySession = null;
     this.session = null;
     this.profile = null;
   }
 
   get isAuthenticated() { return Boolean(this.session?.token && this.profile); }
   get role() { return this.profile?.role || ''; }
-  get canManageUsers() { return ['owner', 'admin'].includes(this.role); }
+  get canManageUsers() { return !this.schoolProfile && ['owner', 'admin'].includes(this.role); }
   get canReadAudit() { return ['owner', 'admin'].includes(this.role); }
   get canManageOperations() { return ['owner', 'admin'].includes(this.role); }
   get canRestoreServerBackup() { return this.role === 'owner'; }
@@ -122,10 +174,11 @@ export class ServerService {
       const response = await this.fetchImpl(`${normalizeBaseUrl(this.config.baseUrl)}${path}`, {
         method,
         signal: controller.signal,
+        credentials: this.schoolProfile ? 'include' : 'same-origin',
         headers: {
           'content-type': 'application/json',
           'x-lesson-hub-client': this.config.clientId,
-          ...(auth && this.session?.token ? { authorization: `Bearer ${this.session.token}` } : {}),
+          ...(auth && this.session?.token ? { authorization: `Bearer ${this.session.token}`, ...(this.schoolProfile ? { 'x-ghrab-csrf': this.session.csrfToken || this.session.token } : {}) } : {}),
         },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
@@ -152,9 +205,10 @@ export class ServerService {
     try {
       const response = await this.fetchImpl(`${normalizeBaseUrl(this.config.baseUrl)}${path}`, {
         signal: controller.signal,
+        credentials: this.schoolProfile ? 'include' : 'same-origin',
         headers: {
           'x-lesson-hub-client': this.config.clientId,
-          ...(this.session?.token ? { authorization: `Bearer ${this.session.token}` } : {}),
+          ...(this.session?.token ? { authorization: `Bearer ${this.session.token}`, ...(this.schoolProfile ? { 'x-ghrab-csrf': this.session.csrfToken || this.session.token } : {}) } : {}),
         },
       });
       if (!response.ok) {
@@ -170,11 +224,16 @@ export class ServerService {
   }
 
   async health() {
-    this.healthState = await this.#request('/health', { auth: false, timeout: 3500 });
+    this.healthState = await this.#request('/health', { auth: this.schoolProfile, timeout: 3500 });
     return this.healthState;
   }
 
-  async login({ email, password, rememberSession = false }) {
+  async login({ email, password, rememberSession = false } = {}) {
+    if (this.schoolProfile) {
+      const profile = await this.restoreSession();
+      if (!profile) throw new ServerApiError('Centrální školní relace není dostupná. Vraťte se do AI Studia a přihlaste se znovu.', { status: 401, code: 'central_session_required' });
+      return profile;
+    }
     const payload = await this.#request('/v1/auth/login', { method: 'POST', auth: false, body: { email, password } });
     this.configure({ rememberSession });
     this.saveSession({ token: payload.token, expiresAt: payload.expiresAt, user: payload.user }, rememberSession);
@@ -182,6 +241,12 @@ export class ServerService {
   }
 
   async restoreSession() {
+    if (this.schoolProfile) {
+      const session = schoolSessionFromPlatform();
+      if (!session) { this.clearSession(); return null; }
+      this.saveSession(session, false);
+      return session.user;
+    }
     if (!this.session?.token) return null;
     try {
       const payload = await this.#request('/v1/auth/me', { timeout: 3500 });
@@ -195,7 +260,10 @@ export class ServerService {
   }
 
   async logout() {
-    try { if (this.session?.token) await this.#request('/v1/auth/logout', { method: 'POST' }); } finally { this.clearSession(); }
+    try {
+      if (this.schoolProfile) await globalThis.GHRABServerAuth?.logout?.();
+      else if (this.session?.token) await this.#request('/v1/auth/logout', { method: 'POST' });
+    } finally { this.clearSession(); }
   }
 
   async serverInfo() { return this.#request('/v1/server/info'); }

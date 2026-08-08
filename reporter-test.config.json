@@ -1,0 +1,36 @@
+{
+  "distEntry": "dist/index.html",
+  "appId": "lesson-hub",
+  "appName": "Lesson Hub",
+  "version": "1.2.8",
+  "reporterPath": "src/access/error-reporter.js",
+  "stylePath": "src/access/error-reporter.css",
+  "adapterPath": "src/access/error-reporter-adapter.js",
+  "bootstrapPaths": [
+    "src/bootstrap.js"
+  ],
+  "manualPath": "public/manual/manual.js",
+  "manualContentPath": "public/manual/manual.js",
+  "manualGuardPath": "public/manual/bootstrap.js",
+  "serviceWorkerPaths": [
+    "public/sw.js"
+  ],
+  "versionPaths": [
+    "src/core/release.js",
+    "public/manifest.webmanifest",
+    "public/sw.js",
+    "README.md",
+    "docs/RELEASE-1.2.8-ERROR-REPORTER.md"
+  ],
+  "distCachePaths": [
+    "dist/src/access/error-reporter.js",
+    "dist/src/access/error-reporter.css",
+    "dist/src/access/error-reporter-adapter.js",
+    "dist/sw.js"
+  ],
+  "theme": {
+    "initial": "document.documentElement.dataset.theme='light';",
+    "light": "document.documentElement.dataset.theme='light';",
+    "dark": "document.documentElement.dataset.theme='dark';"
+  }
+}

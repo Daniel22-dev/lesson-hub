@@ -122,7 +122,7 @@ for (const check of m.versionChecks || []) {
     );
 }
 const files = await walk(ROOT, {
-  skip: ["node_modules", "dist", "qa-results", ".git"],
+  skip: ["node_modules", "dist", "dist-school-server", "qa-results", ".git"],
 });
 for (const p of files) {
   const rel = path.relative(ROOT, p).split(path.sep).join("/");
@@ -163,20 +163,33 @@ for (const p of files.filter(
     );
   }
   const text = await readFile(p, "utf8");
-  for (const match of text.matchAll(
+  const generatedBrowserHarness = new Set([
+    "scripts/qa-p5-axe-runtime.mjs",
+    "scripts/qa-p5-runtime.mjs",
+  ]).has(rel);
+  for (const match of (generatedBrowserHarness ? [] : text.matchAll(
     /(?:import\s+(?:[^"']+?\s+from\s+)?|import\()(["'])(\.\.?\/[^"']+)\1/g,
-  )) {
+  ))) {
     if (rel.startsWith("tests/") || rel.startsWith("test/")) continue;
     let target = path.resolve(path.dirname(p), match[2]);
     if (!path.extname(target)) target += ".js";
     let generatedTarget = "";
     const srcRoot = path.join(ROOT, "src") + path.sep;
+    const publicRoot = path.join(ROOT, "public") + path.sep;
     if (target.startsWith(srcRoot)) {
       generatedTarget = path.join(
         ROOT,
         "dist",
         path.relative(path.join(ROOT, "src"), target),
       );
+    } else if (p.startsWith(publicRoot)) {
+      const generatedSource = path.join(
+        ROOT,
+        "dist",
+        path.relative(path.join(ROOT, "public"), p),
+      );
+      generatedTarget = path.resolve(path.dirname(generatedSource), match[2]);
+      if (!path.extname(generatedTarget)) generatedTarget += ".js";
     }
     if (
       !(await exists(target)) &&

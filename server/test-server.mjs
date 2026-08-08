@@ -10,7 +10,7 @@ const dir = await mkdtemp(path.join(os.tmpdir(), 'lesson-hub-server-'));
 const dataFile = path.join(dir, 'server.json');
 const config = {
   host: '127.0.0.1', port: 0, dataFile, allowedOrigins: ['http://localhost:4173'],
-  sessionHours: 1, bodyLimitBytes: 12 * 1024 * 1024, attachmentLimitBytes: 8 * 1024 * 1024, attachmentsDir: path.join(dir, 'attachments'), loginWindowMs: 60_000, loginAttempts: 5,
+  upstreamAuthSecret: 'trusted-ghrab-upstream-secret', sessionHours: 1, bodyLimitBytes: 12 * 1024 * 1024, attachmentLimitBytes: 8 * 1024 * 1024, attachmentsDir: path.join(dir, 'attachments'), loginWindowMs: 60_000, loginAttempts: 5,
 };
 const { server, store } = await createLessonHubServer({ config });
 const now = new Date().toISOString();
@@ -32,7 +32,7 @@ async function request(route, options = {}) {
 try {
   const health = await request('/health');
   assert.equal(health.response.status, 200);
-  assert.equal(health.payload.version, '1.2.0');
+  assert.equal(health.payload.version, '1.2.8');
 
   const login = await request('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: ['owner', 'example.test'].join('@'), password: 'ServerTest1234' }) });
   assert.equal(login.response.status, 200);
@@ -40,6 +40,25 @@ try {
 
   const me = await request('/v1/auth/me', { headers: auth });
   assert.equal(me.payload.user.role, 'owner');
+  const trustedHeaders = {
+    'x-ghrab-upstream-secret': 'trusted-ghrab-upstream-secret',
+    'x-ghrab-user-id': encodeURIComponent('teacher-central-id'),
+    'x-ghrab-user-name': encodeURIComponent('Centrální učitel'),
+    'x-ghrab-user-roles': 'teacher',
+    'x-ghrab-session-expires-at': new Date(Date.now() + 600000).toISOString(),
+  };
+  const trustedMe = await request('/v1/auth/me', { headers: trustedHeaders });
+  assert.equal(trustedMe.response.status, 200);
+  assert.equal(trustedMe.payload.user.displayName, 'Centrální učitel');
+  assert.equal(store.data.sessions.some((item) => item.userId === trustedMe.payload.user.id), false);
+  const trustedCreate = await request('/v1/quickNotes', { method: 'POST', headers: trustedHeaders, body: JSON.stringify({ id: 'trusted_note', title: 'Dočasná poznámka', updatedAt: now }) });
+  assert.equal(trustedCreate.response.status, 201);
+  assert.equal(store.resource('quickNotes').trusted_note.ownerId, trustedMe.payload.user.id);
+  const trustedDelete = await request('/v1/privacy/delete-my-data', { method: 'DELETE', headers: trustedHeaders });
+  assert.equal(trustedDelete.response.status, 200);
+  assert.equal(trustedDelete.payload.ok, true);
+  assert.equal(Boolean(store.resource('quickNotes').trusted_note), false);
+  assert.equal(store.data.users.some((item) => item.id === trustedMe.payload.user.id), false);
 
   const createUser = await request('/v1/users', { method: 'POST', headers: auth, body: JSON.stringify({ email: ['teacher', 'example.test'].join('@'), displayName: 'Teacher', role: 'teacher', password: 'TeacherTest1234' }) });
   assert.equal(createUser.response.status, 201);

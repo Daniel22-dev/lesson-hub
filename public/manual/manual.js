@@ -1,4 +1,7 @@
 const app = document.querySelector('#manual-app');
+const deployment = globalThis.__GHRAB_DEPLOYMENT_CONFIG__ || {};
+const manualStudioUrl = deployment.studioBaseUrl || '/AI-Studio-GHRAB/';
+const manualReportGuideUrl = deployment.access?.guideUrl || new URL('manualy/error-report.html', manualStudioUrl).href;
 
 const sections = [
   ['start', 'Jak začít'],
@@ -30,12 +33,12 @@ const sections = [
 app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list */ `
   <header class="manual-topbar">
     <div class="manual-brand">
-      <img src="../../src/assets/brand/school-logo.jpg" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
+      <img src="../../src/assets/brand/school-logo.png" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
       <div><strong>Lesson Hub</strong><span>Interaktivní manuál · v__APP_VERSION__</span></div>
     </div>
     <div class="manual-actions">
       <button id="manual-theme" type="button" aria-label="Přepnout vzhled">◐</button>
-      <a href="https://daniel22-dev.github.io/AI-Studio-GHRAB/">AI Studio</a>
+      <a href="${manualStudioUrl}">AI Studio</a>
       <a href="../">Zpět do aplikace</a>
     </div>
   </header>
@@ -255,6 +258,12 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       <section id="limits" data-search="omezení není hotové vlna 3 hodiny plán připomínky materiály">
         <h2>Co zatím není hotové</h2>
         <p>Verze __APP_VERSION__ obsahuje účty, ruční synchronizaci, serverové přílohy, komunikaci, SMTP nebo souborové odesílání, plánovač, doručenky, audit, retenční pravidla, zastupování, provozní monitoring a serverové snapshoty s kontrolovanou obnovou. Zatím chybí automatická synchronizace na pozadí, napojení na konkrétní školní SMTP službu v distribuovaném balíčku a externě spravované hostování s dohledem infrastruktury.</p>
+      </section>
+      <section id="error-report" data-search="nahlásit chybu screenshot koncept zip gmail soukromí">
+        <h2>Nahlášení technické chyby</h2>
+        <p>Reportér je dostupný pouze v samotné aplikaci v pravém dolním rohu. Umožňuje až pět snímků, ponechání nebo smazání konceptu, stažení ZIPu a otevření předvyplněného Gmailu.</p>
+        <p><a href="${manualReportGuideUrl}" target="_blank" rel="noopener"><b>Jak poslat správci srozumitelné hlášení bez focení monitoru</b></a></p>
+        <div class="manual-warning">ZIP je nutné k e-mailu přiložit ručně. Do screenshotů ani popisu nevkládejte jména, e-maily ani data žáků, pokud nejsou pro opravu nezbytná.</div>
       </section>
       <footer>
         <span>Vlastník aplikace: Daniel Baláž · Gymnázium, Ostrava-Hrabůvka</span>

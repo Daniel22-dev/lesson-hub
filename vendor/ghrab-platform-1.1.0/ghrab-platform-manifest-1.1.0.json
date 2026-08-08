@@ -1,0 +1,34 @@
+{
+  "schema": "ghrab-platform-release-v1",
+  "platformVersion": "1.1.0",
+  "contract": "ghrab-platform-v1",
+  "brandVersion": "1.0.0",
+  "qualityContracts": {
+    "accessibility": "ghrab-a11y-v1",
+    "performance": "ghrab-performance-v1",
+    "modules": "ghrab-lazy-modules-v1"
+  },
+  "createdAt": "2026-08-04T17:30:00.000Z",
+  "artifacts": {
+    "ghrab-platform.js": {
+      "sha256": "37fd57bf35e1bcb46cdcfe84267275ee9beaea7ea6a34d9a03af0923c9d6e251",
+      "bytes": 55222
+    },
+    "ghrab-platform.css": {
+      "sha256": "ccef738c8e6b954c206c9d64214c85a9ee507f3916e279becccb9c674b0ab4dc",
+      "bytes": 5180
+    },
+    "ghrab-artifact-envelope-v1.schema.json": {
+      "sha256": "8edeaaadd72c7bf60285440dd59eb31d0e7139755e1e4642d5ab457816e46d58",
+      "bytes": 1250
+    },
+    "ghrab-app-registry-v2.schema.json": {
+      "sha256": "47c797999eb93fbd918b968b90a8f8545f938db486fe635b19efcc7936b5672f",
+      "bytes": 2666
+    },
+    "school-logo.png": {
+      "sha256": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770",
+      "bytes": 57922
+    }
+  }
+}

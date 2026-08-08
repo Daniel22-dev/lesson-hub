@@ -23,7 +23,9 @@ const plan = await readJson(path.join(QA_DIR, "visual-plan.json"));
 const findings = [];
 const matrix = [];
 const serveRoot = path.join(ROOT, manifest.serveRoot || "dist");
-const { server, baseUrl } = await startStaticServer(serveRoot);
+const { server, baseUrl } = await startStaticServer(serveRoot, {
+  deploymentBasePath: manifest.deploymentBasePath || "",
+});
 const guardJs = `export async function protectApp(appId){document.documentElement.dataset.ghrabAccess='granted';document.dispatchEvent(new CustomEvent('ghrab:app-access-granted',{detail:{permit:{appId,qa:true}}}));return true}`;
 
 function blankStats(buffer) {
@@ -410,6 +412,16 @@ async function runVisualCase(scenario, viewport) {
       );
       await page.route("**/AI-Studio-GHRAB/access/access-gate.css", (route) =>
         route.fulfill({ status: 200, contentType: "text/css", body: "" }),
+      );
+      await page.route("**/AI-Studio-GHRAB/config/support.json", (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ administratorEmail: "balaz@ghrabuvka.cz" }),
+        }),
+      );
+      await page.route("**/AI-Studio-GHRAB/config/apps.generated.json", (route) =>
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
       );
 
       if (scenario.id === "studio-home") {

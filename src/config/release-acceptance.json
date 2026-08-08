@@ -1,0 +1,54 @@
+{
+  "schema": "ghrab-release-acceptance-v1",
+  "stage": "P5",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.8",
+  "releaseStatus": "pre-production-accepted",
+  "primaryRuntime": {
+    "mode": "standalone-github-pages",
+    "serverRequired": false,
+    "offlineCapable": true,
+    "currentUseApproved": true
+  },
+  "github": {
+    "status": "not-yet-uploaded",
+    "uploadDeferredUntilEcosystemComplete": true,
+    "postUploadValidationRequired": true,
+    "requiredChecks": [
+      "project-tests",
+      "p5-release-gate",
+      "live-pages-smoke",
+      "pwa-update-from-previous-release"
+    ]
+  },
+  "schoolServer": {
+    "status": "prepared-not-connected",
+    "requiredForP5": false,
+    "runtimeBuildIncluded": true,
+    "liveValidationPending": true
+  },
+  "accessibility": {
+    "automatedOpenFindingsAllowed": 0,
+    "keyboardSmokeRequired": true,
+    "screenReaderPilot": "manual-post-upload-checklist"
+  },
+  "handoff": {
+    "runtimeOnlyPackageIncluded": true,
+    "sourceRepositoriesExcludedFromSchoolOperationalPackage": true,
+    "legalTermsRequireSeparateAgreement": true
+  },
+  "localPilot": {
+    "enabled": true,
+    "deviceScope": "single-device",
+    "primaryStorage": "IndexedDB",
+    "serverFeaturesOptional": true,
+    "syncDisabledUntilConfigured": true,
+    "backupRequired": true
+  },
+  "revision": "P5-R2",
+  "runtimeAudit": {
+    "required": true,
+    "scriptsExecuted": true,
+    "transport": "local-http"
+  }
+}

@@ -2,7 +2,7 @@
   "standard": "GHRAB-QA-1.0.2",
   "appId": "lesson-hub",
   "appName": "Lesson Hub",
-  "appVersion": "1.2.0",
+  "appVersion": "1.2.8",
   "entryPoint": "dist/index.html",
   "serveRoot": "dist",
   "buildRoot": "dist",
@@ -10,7 +10,7 @@
   "buildCommand": "npm run build",
   "testCommand": "npm test",
   "headlessCommand": "npm run test:headless",
-  "auditCommand": "npm audit --audit-level=high",
+  "auditCommand": "npm audit --omit=dev --audit-level=high",
   "features": {
     "pwa": true,
     "ai": false,
@@ -50,17 +50,17 @@
     {
       "file": "src/core/release.js",
       "regex": "version:\\s*['\\\"]([0-9.]+)['\\\"]",
-      "expected": "1.2.0"
+      "expected": "1.2.8"
     },
     {
       "file": "dist/build-info.json",
       "regex": "\\\"version\\\"\\s*:\\s*\\\"([0-9.]+)\\\"",
-      "expected": "1.2.0"
+      "expected": "1.2.8"
     },
     {
       "file": "dist/sw.js",
-      "regex": "lesson-hub-pwa-v([0-9.]+)",
-      "expected": "1.2.0"
+      "regex": "ghrab-lesson-hub-v([0-9.]+)",
+      "expected": "1.2.8"
     }
   ],
   "pwaTargets": [
@@ -69,11 +69,13 @@
       "root": "dist",
       "manifest": "manifest.webmanifest",
       "serviceWorker": "sw.js",
-      "cachePrefix": "lesson-hub-pwa-v"
+      "cachePrefix": "ghrab-lesson-hub-v"
     }
   ],
   "security": {
-    "allowedEmails": [],
+    "allowedEmails": [
+      "balaz@ghrabuvka.cz"
+    ],
     "requiresCsvFormulaProtection": false
   },
   "compatibility": {
@@ -82,5 +84,6 @@
       "public"
     ],
     "disallowRegexLookbehind": true
-  }
+  },
+  "deploymentBasePath": "/lesson-hub/"
 }

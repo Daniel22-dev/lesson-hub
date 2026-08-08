@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 from playwright.async_api import async_playwright
 
 ROOT = Path(__file__).resolve().parents[1] / 'dist'
+BASE_URL = os.environ.get('LESSON_HUB_BASE_URL', '').rstrip('/')
 
 async def serve_route(request_route):
     url = urlparse(request_route.request.url)
@@ -30,6 +31,18 @@ async def serve_route(request_route):
     else:
         await request_route.abort()
 
+
+async def serve_central_route(route):
+    path = urlparse(route.request.url).path
+    if path.endswith('/AI-Studio-GHRAB/access/access-gate.css'):
+        await route.fulfill(status=200, body='', content_type='text/css')
+    elif path.endswith('/AI-Studio-GHRAB/config/support.json'):
+        await route.fulfill(status=200, body='{"supportEmail":"balaz@ghrabuvka.cz"}', content_type='application/json')
+    elif path.endswith('/AI-Studio-GHRAB/config/apps.generated.json'):
+        await route.fulfill(status=200, body='[{"id":"lesson-hub","version":"1.2.2","name":{"cs":"Lesson Hub","en":"Lesson Hub"}}]', content_type='application/json')
+    else:
+        await route.continue_()
+
 async def wait_for_main_ready(page, hash_route, timeout=20000):
     expected_route = str(hash_route or '#/overview').replace('#/', '', 1).replace('#', '', 1) or 'overview'
     await page.wait_for_function(
@@ -49,18 +62,25 @@ async def wait_for_main_ready(page, hash_route, timeout=20000):
 
 
 async def render_main(page, hash_route):
-    html = (ROOT / 'index.html').read_text(encoding='utf-8')
-    html = html.replace('<head>', '<head><base href="https://lesson-hub.test/">', 1)
-    await page.set_content(html, wait_until='load', timeout=20000)
-    await page.wait_for_timeout(100)
-    if hash_route and await page.evaluate("location.hash") != hash_route:
-        await page.evaluate("hashRoute => { location.hash = hashRoute; }", arg=hash_route)
+    if BASE_URL:
+        target = f"{BASE_URL}/index.html?qa=1{hash_route or '#/overview'}"
+        await page.goto(target, wait_until='networkidle', timeout=20000)
+    else:
+        html = (ROOT / 'index.html').read_text(encoding='utf-8')
+        html = html.replace('<head>', '<head><base href="https://lesson-hub.test/">', 1)
+        await page.set_content(html, wait_until='load', timeout=20000)
+        await page.wait_for_timeout(100)
+        if hash_route and await page.evaluate("location.hash") != hash_route:
+            await page.evaluate("hashRoute => { location.hash = hashRoute; }", arg=hash_route)
     await wait_for_main_ready(page, hash_route)
 
 async def render_manual(page):
-    html = (ROOT / 'manual' / 'index.html').read_text(encoding='utf-8')
-    html = html.replace('<head>', '<head><base href="https://lesson-hub.test/manual/">', 1)
-    await page.set_content(html, wait_until='load', timeout=20000)
+    if BASE_URL:
+        await page.goto(f"{BASE_URL}/manual/index.html", wait_until='networkidle', timeout=20000)
+    else:
+        html = (ROOT / 'manual' / 'index.html').read_text(encoding='utf-8')
+        html = html.replace('<head>', '<head><base href="https://lesson-hub.test/manual/">', 1)
+        await page.set_content(html, wait_until='load', timeout=20000)
     await page.wait_for_timeout(700)
 
 async def main():
@@ -80,11 +100,16 @@ async def main():
             args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--no-proxy-server'],
         )
         for name, expected, hash_route in scenarios:
-            page = await browser.new_page(viewport={'width': 1366, 'height': 768})
+            context = await browser.new_context(viewport={'width': 1366, 'height': 768}, service_workers='block')
+            page = await context.new_page()
             errors = []
             page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
             page.on('pageerror', lambda err: errors.append(str(err)))
-            await page.route('**/*', serve_route)
+            page.on('response', lambda response: errors.append(f'HTTP {response.status} {response.url}') if response.status >= 400 else None)
+            if BASE_URL:
+                await page.route('**/*', serve_central_route)
+            else:
+                await page.route('**/*', serve_route)
             if name == 'manual':
                 await render_manual(page)
             else:
@@ -98,7 +123,7 @@ async def main():
             else:
                 failed = True
                 print(f'FAIL {name}: expected={expected in body} access={access} errors={errors}', file=sys.stderr)
-            await page.close()
+            await context.close()
         await browser.close()
     return 1 if failed else 0
 

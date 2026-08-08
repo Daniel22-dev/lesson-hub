@@ -1,0 +1,42 @@
+{
+  "schema": "lesson-hub-capacity-report-v1",
+  "appVersion": "1.2.8",
+  "storageContract": "lesson-hub-store-adapter-v1",
+  "startedAt": "2026-08-07T18:20:37.446Z",
+  "completedAt": "2026-08-07T18:20:42.569Z",
+  "profile": {
+    "node": "v22.16.0",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "dataset": {
+    "lessons": 6000,
+    "students": 2000,
+    "materials": 1000,
+    "concurrentNotes": 120,
+    "totalSeedRecords": 9000
+  },
+  "measurements": {
+    "initialOpenMs": 3.902626999999999,
+    "seedSaveMs": 25.083726999999996,
+    "concurrentMs": 5007.659156,
+    "reopenMs": 18.90202500000032,
+    "fileBytes": 3349241
+  },
+  "thresholds": {
+    "seedRecords": 9000,
+    "concurrentSaves": 120,
+    "maxFileBytes": 18874368,
+    "maxSeedSaveMs": 20000,
+    "maxConcurrentMs": 30000,
+    "maxReopenMs": 8000
+  },
+  "assertions": {
+    "jsonValid": true,
+    "queuedAtomicWrites": true,
+    "allConcurrentMutationsPersisted": true,
+    "freezeFailClosed": true,
+    "reopenValid": true
+  },
+  "status": "passed"
+}

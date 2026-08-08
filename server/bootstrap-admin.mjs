@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { loadServerConfig } from './lib/config.mjs';
-import { JsonStore } from './lib/store.mjs';
+import { createStore } from './lib/storeFactory.mjs';
 import { hashPassword, normalizeEmail } from './lib/security.mjs';
 import { randomUUID } from 'node:crypto';
 
@@ -15,7 +15,7 @@ if (!email || !password) {
   process.exit(1);
 }
 const config = loadServerConfig();
-const store = await new JsonStore(config.dataFile).open();
+const store = await createStore(config).open();
 if (store.data.users.some((user) => user.email === email)) {
   console.error('Účet s tímto e-mailem již existuje.');
   process.exit(1);

@@ -43,7 +43,7 @@ async def run_critical(browser):
                 )
         matrix.append({'id': flow['id'], 'status': 'PASS' if passed else 'FAIL', 'evidence': '; '.join(evidence)})
 
-    context = await browser.new_context(viewport={'width': 1366, 'height': 768}, reduced_motion='reduce')
+    context = await browser.new_context(viewport={'width': 1366, 'height': 768}, reduced_motion='reduce', service_workers='block')
     page = await context.new_page()
     errors = []
     page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)
@@ -98,6 +98,7 @@ async def run_visual(browser):
         context = await browser.new_context(
             viewport={'width': first['width'], 'height': first['height']},
             reduced_motion='reduce',
+            service_workers='block',
         )
         page = await context.new_page()
         errors = []

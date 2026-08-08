@@ -4,6 +4,17 @@ import path from 'node:path';
 const SERVER_SCHEMA = 'lesson-hub-server-store-v3';
 const LEGACY_SCHEMAS = new Set(['lesson-hub-server-store-v1', 'lesson-hub-server-store-v2']);
 
+async function syncDirectory(directory) {
+  const handle = await open(directory, 'r');
+  try {
+    await handle.sync();
+  } catch (error) {
+    if (!['EINVAL', 'ENOTSUP', 'EISDIR'].includes(error?.code)) throw error;
+  } finally {
+    await handle.close();
+  }
+}
+
 function emptyStore() {
   return {
     schema: SERVER_SCHEMA,
@@ -26,6 +37,7 @@ export class JsonStore {
     this.filePath = filePath;
     this.data = emptyStore();
     this.writeQueue = Promise.resolve();
+    this.mutationQueue = Promise.resolve();
     this.frozen = false;
     this.consecutiveWriteFailures = 0;
     this.onWriteFailure = null;
@@ -69,6 +81,47 @@ export class JsonStore {
     this.data.sessions = this.data.sessions.filter((session) => new Date(session.expiresAt).getTime() > now);
   }
 
+
+  snapshot() {
+    return structuredClone(this.data);
+  }
+
+  stats() {
+    const resources = Object.values(this.data.resources || {}).reduce((sum, bucket) => sum + Object.keys(bucket || {}).length, 0);
+    return Object.freeze({
+      schema: this.data.schema,
+      users: this.data.users.length,
+      sessions: this.data.sessions.length,
+      resources,
+      attachments: Object.keys(this.data.attachments || {}).length,
+      changes: this.data.changes.length,
+      audit: this.data.audit.length,
+    });
+  }
+
+  async transact(mutator, { persist = true } = {}) {
+    if (typeof mutator !== 'function') throw new TypeError('JsonStore.transact requires a mutator function.');
+    const run = this.mutationQueue.catch(() => {}).then(async () => {
+      if (this.frozen) {
+        const error = new Error('Datove uloziste je docasne uzamceno kvuli obnove.');
+        error.status = 503;
+        error.code = 'store_frozen';
+        throw error;
+      }
+      const before = structuredClone(this.data);
+      try {
+        const result = await mutator(this.data, this);
+        if (persist) await this.save();
+        return result;
+      } catch (error) {
+        this.data = before;
+        throw error;
+      }
+    });
+    this.mutationQueue = run.catch(() => {});
+    return run;
+  }
+
   freeze() { this.frozen = true; }
   unfreeze() { this.frozen = false; }
 
@@ -91,6 +144,7 @@ export class JsonStore {
         await handle.close();
       }
       await rename(temporary, this.filePath);
+      await syncDirectory(path.dirname(this.filePath));
     });
     this.writeQueue = run.catch(() => {});
     try {

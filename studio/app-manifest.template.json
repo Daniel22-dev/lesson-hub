@@ -17,7 +17,7 @@
   "launchUrl": "https://daniel22-dev.github.io/lesson-hub/",
   "manualUrl": "https://daniel22-dev.github.io/lesson-hub/manual/",
   "repository": "daniel22-dev/lesson-hub",
-  "icon": "icons/icon-512.png",
+  "icon": "assets/apps/lesson-hub.png",
   "accent": "#167F79",
   "tags": [
     {
@@ -68,13 +68,46 @@
     "smtp-adapter",
     "operations-snapshots",
     "internal-self-tests",
-    "ghrab-qa-1.0.2"
+    "ghrab-qa-1.0.2",
+    "teacher-memory",
+    "server-sync",
+    "attachments",
+    "ghrab-platform-v1",
+    "canonical-branding",
+    "storage-namespace-v1",
+    "artifact-envelope-v1"
   ],
   "compatibility": {
     "studioMinVersion": "0.19.0",
     "materialSchema": "ghrab-material-v1",
-    "studioBridge": "1.1",
-    "accessGuard": "signed-serverless-permit"
+    "studioBridge": "2.0",
+    "accessGuard": "signed-serverless-permit",
+    "platformContract": "ghrab-platform-v1",
+    "platformRange": ">=1.0.0 <2.0.0"
   },
-  "publishedAt": "__BUILD_TIME__"
+  "publishedAt": "__BUILD_TIME__",
+  "aiCore": {
+    "schema": "ghrab-ai-app-integration-v1",
+    "status": "not-applicable",
+    "reason": "Aplikace nevola generativni AI."
+  },
+  "slug": "lesson-hub",
+  "paths": {
+    "app": "https://daniel22-dev.github.io/lesson-hub/",
+    "manual": "https://daniel22-dev.github.io/lesson-hub/manual/",
+    "manifest": "https://daniel22-dev.github.io/lesson-hub/studio-manifest.json"
+  },
+  "platform": {
+    "schema": "ghrab-platform-app-integration-v1",
+    "contract": "ghrab-platform-v1",
+    "requiredPlatformRange": ">=1.0.0 <2.0.0",
+    "platformVersion": "1.0.0",
+    "brandVersion": "1.0.0",
+    "themeContract": 1,
+    "swContract": 1,
+    "studioBridge": 2,
+    "artifactEnvelope": 1,
+    "storagePrefix": "ghrab.lesson-hub.",
+    "cacheName": "ghrab-lesson-hub-v1.2.8"
+  }
 }

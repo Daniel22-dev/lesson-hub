@@ -20,7 +20,7 @@ async def execute_flow(flow):
         executable_path=EXECUTABLE if Path(EXECUTABLE).exists() else None,
         args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--no-proxy-server'],
     )
-    context = await browser.new_context(viewport=flow.get('viewport') or {'width': 1366, 'height': 768})
+    context = await browser.new_context(viewport=flow.get('viewport') or {'width': 1366, 'height': 768}, service_workers='block')
     page = await context.new_page()
     errors = []
     page.on('console', lambda msg: errors.append(msg.text) if msg.type == 'error' else None)

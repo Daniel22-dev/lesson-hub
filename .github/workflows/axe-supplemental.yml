@@ -1,0 +1,41 @@
+name: Blocking axe-core audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  axe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Verify exact axe-core version
+        run: node -e "const p=require('./node_modules/axe-core/package.json'); if(p.version!=='4.12.1') process.exit(1)"
+      - name: Install pinned Playwright Chromium
+        shell: bash
+        run: |
+          npx playwright install --with-deps chromium
+          node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
+      - name: Build application
+        run: npm run build
+      - name: Run blocking axe audit on executed UI
+        run: npm run qa:axe
+      - name: Upload axe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-p5-r2-${{ github.sha }}
+          path: dist/qa-p5-axe-runtime-report.json

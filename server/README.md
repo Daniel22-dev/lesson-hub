@@ -1,4 +1,4 @@
-# Lesson Hub Server 1.2.0
+# Lesson Hub Server 1.2.3
 
 Server používá pouze standardní knihovny Node.js 22. Poskytuje účty, role, relace, auditní historii, obecné REST zdroje, obousměrnou synchronizaci, binární přílohy, skutečné zpracování naplánovaných zpráv a režim zastupování.
 
@@ -143,3 +143,10 @@ Snapshot obsahuje serverový JSON datový soubor, přílohy, manifest a SHA-256 
 Snapshot ve stejném serveru není úplná disaster-recovery strategie. Zálohovací adresář pravidelně replikujte na jiné úložiště a alespoň čtvrtletně provádějte test obnovy v odděleném prostředí.
 
 > Automatické snapshoty jsou ve výchozím stavu vypnuté. Pro ostrý provoz nastavte `LESSON_HUB_BACKUP_ENABLED=true`; jinak server vypíše varování. SMTP přihlášení je ve výchozím stavu povoleno pouze přes aktivní TLS.
+
+
+## P5 R2: cílová proxy architektura
+
+Ve školním profilu není Lesson Hub Server vystaven přímo v nginx. Prohlížeč volá `/api/v1/lesson-hub/*`; nginx předá požadavek School Gateway na `127.0.0.1:8787` a Gateway jej po serverové autorizaci předá Lesson Hub Serveru vázanému pouze na loopback. Přímý veřejný proxy blok pro Lesson Hub by obcházel centrální relaci a není zamýšlen.
+
+Hesla v request cestách používají asynchronní `scrypt`; synchronní helper zůstává jen pro bootstrap a testovací fixture.

@@ -140,7 +140,7 @@ async function exportDatabase(button) {
   button.textContent = 'Připravuji export…';
   try {
     const backupPackage = await appState.backupService.exportPackage({ label: 'Úplný export Lesson Hubu', reason: 'manual' });
-    const filename = appState.backupService.createDownload(backupPackage);
+    const filename = await appState.backupService.createDownload(backupPackage);
     showToast(`Záloha ${filename} byla připravena ke stažení.`, 'success');
   } catch (error) {
     showToast(error.message, 'error');

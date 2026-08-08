@@ -1,0 +1,34 @@
+{
+  "schema": "lesson-hub-capacity-report-v1",
+  "measuredAt": "2026-08-05T09:41:01.277Z",
+  "referenceProfile": {
+    "cpu": "CI/container",
+    "storage": "local atomic JSON",
+    "node": "v22.16.0"
+  },
+  "dataset": {
+    "users": 300,
+    "resources": 5000,
+    "concurrentMutations": 120
+  },
+  "metrics": {
+    "fileBytes": 1251897,
+    "totalMs": 2308.87,
+    "mutationPhaseMs": 2253.63,
+    "mutationsPerSecond": 53.25,
+    "transactionLatencyP50Ms": 1151.08,
+    "transactionLatencyP95Ms": 2130.27,
+    "transactionLatencyMaxMs": 2253.42,
+    "migrationArtifacts": 7
+  },
+  "thresholds": {
+    "maxFileBytes": 26214400,
+    "maxTotalMs": 60000,
+    "noLostMutations": true
+  },
+  "status": "passed",
+  "guidance": {
+    "jsonPilotCeiling": "300 users / 5000 lesson resources / one Node process",
+    "databaseMigrationTrigger": "Migrate before multi-process deployment, sustained file size above 25 MiB, more than 10000 active resources, or p95 write latency above 1000 ms in production telemetry."
+  }
+}

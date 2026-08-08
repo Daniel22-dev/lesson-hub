@@ -1,6 +1,5 @@
 const APP_ID = 'lesson-hub';
-const STUDIO_URL = 'https://daniel22-dev.github.io/AI-Studio-GHRAB/';
-const GUARD_URL = `${STUDIO_URL}access/app-guard.js`;
+let studioUrl = '/AI-Studio-GHRAB/';
 
 function isLocalDevelopment() {
   return ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) || (navigator.webdriver === true && (new URLSearchParams(location.search).get('qa') === '1' || location.protocol === 'about:'));
@@ -27,24 +26,34 @@ function fail(error) {
   document.documentElement.dataset.ghrabAccess = 'denied';
   document.body.style.visibility = 'visible';
   document.body.className = 'ghrab-access-gate-body';
-  document.body.innerHTML = /* qa-safe-html: trusted constant URLs and static copy */ `<main class="ghrab-access-gate" role="alert">
+  document.body.innerHTML = /* qa-safe-html: static copy, URL assigned below */ `<main class="ghrab-access-gate" role="alert">
     <div class="ghrab-access-gate-mark">🔒</div>
     <p class="ghrab-access-gate-eyebrow">AI STUDIO GHRAB</p>
     <h1>Manuál zůstal uzamčen</h1>
     <p>Otevřete Lesson Hub z AI Studia a ověřte centrální přístup.</p>
-    <div class="ghrab-access-gate-actions"><a class="ghrab-access-gate-primary" href="${STUDIO_URL}">Zpět do AI Studia</a></div>
+    <div class="ghrab-access-gate-actions"><a class="ghrab-access-gate-primary" data-ghrab-studio-link>Zpět do AI Studia</a></div>
   </main>`;
+  document.querySelector('[data-ghrab-studio-link]').href = studioUrl;
 }
 
-try {
-  if (isLocalDevelopment()) {
-    localPermit();
+async function start() {
+  try {
+    const deploymentModule = await import('../src/access/deployment-config.js');
+    const deployment = await deploymentModule.loadDeploymentConfig({ appId: APP_ID });
+    const urls = deploymentModule.deploymentUrls(deployment);
+    studioUrl = urls.studioUrl;
+    if (isLocalDevelopment()) {
+      localPermit();
+      await import('./manual.js');
+      return;
+    }
+    const { protectApp } = await import(urls.guardUrl);
+    const allowed = await protectApp(APP_ID, { studioUrl, telemetry: false, errorReporter: false });
+    if (!allowed) return;
     await import('./manual.js');
-  } else {
-    const { protectApp } = await import(GUARD_URL);
-    const allowed = await protectApp(APP_ID, { studioUrl: STUDIO_URL, telemetry: false, errorReporter: false });
-    if (allowed) await import('./manual.js');
+  } catch (error) {
+    fail(error);
   }
-} catch (error) {
-  fail(error);
 }
+
+void start();

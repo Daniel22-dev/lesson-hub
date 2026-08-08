@@ -40,8 +40,8 @@ async function loadModel() {
 function summaryCards(model) {
   const { server, sync, health, info } = model;
   return `<section class="server-summary">
-    <div><span>Server</span><strong>${health?.status === 'ok' ? 'Dostupný' : 'Neověřený'}</strong><small>${escapeHtml(server.config.baseUrl)}</small></div>
-    <div><span>Relace</span><strong>${server.isAuthenticated ? escapeHtml(server.profile.displayName) : 'Odpojeno'}</strong><small>${server.isAuthenticated ? roleLabel(server.role) : 'Vyžaduje přihlášení'}</small></div>
+    <div><span>Provozní režim</span><strong>${health?.status === 'ok' ? 'Server připojen' : 'Lokální pilot'}</strong><small>${health?.status === 'ok' ? escapeHtml(server.config.baseUrl) : 'Jedno zařízení · IndexedDB · ruční zálohy'}</small></div>
+    <div><span>Serverová relace</span><strong>${server.isAuthenticated ? escapeHtml(server.profile.displayName) : 'Není potřeba'}</strong><small>${server.isAuthenticated ? roleLabel(server.role) : 'Lokální práce je plně dostupná'}</small></div>
     <div><span>Fronta změn</span><strong>${sync.pending + sync.failed}</strong><small>${sync.failed ? `${sync.failed} se nezdařilo` : 'čeká na synchronizaci'}</small></div>
     <div><span>Konflikty</span><strong>${sync.conflicts}</strong><small>kurzor ${sync.lastCursor || info?.currentCursor || 0}</small></div>
   </section>`;
@@ -49,10 +49,11 @@ function summaryCards(model) {
 
 function connectionCard(model) {
   const { server, health, info, error } = model;
+  const central = server.schoolProfile;
   return `<section class="content-card server-connection-card">
-    <div class="section-heading"><div><h2>Serverové připojení</h2><p>Samostatná serverová relace nenahrazuje centrální vstup přes AI Studio.</p></div>
+    <div class="section-heading"><div><h2>${central ? 'Centrální školní připojení' : 'Server připravený pro budoucí připojení'}</h2><p>${central ? 'Relaci, adresu API a oprávnění spravuje AI Studio. Lesson Hub neukládá přístupový token do prohlížeče.' : 'P5 používá lokální jednozařízení režim. Připojení serveru je volitelné a aktivuje se až později.'}</p></div>
       <div class="section-actions">
-        <button class="button button--secondary" type="button" data-server-config>${icon('settings', 17)} Nastavit</button>
+        ${central ? '' : `<button class="button button--secondary" type="button" data-server-config>${icon('settings', 17)} Nastavit</button>`}
         <button class="button button--secondary" type="button" data-server-test>${icon('diagnostics', 17)} Ověřit</button>
       </div>
     </div>
@@ -61,14 +62,14 @@ function connectionCard(model) {
       <div><dt>Adresa API</dt><dd>${escapeHtml(server.config.baseUrl)}</dd></div>
       <div><dt>Stav služby</dt><dd>${health?.status === 'ok' ? statusPill('Dostupná', 'success', 'check') : statusPill('Neověřená', 'neutral')}</dd></div>
       <div><dt>API kontrakt</dt><dd>${escapeHtml(info?.apiContract || health?.apiContract || 'lesson-hub-api-v1')}</dd></div>
-      <div><dt>Synchronizace</dt><dd>${server.config.syncEnabled ? 'Povolena uživatelem' : 'Ruční režim'}</dd></div>
+      <div><dt>Relace</dt><dd>${central ? 'HttpOnly cookie + token pouze v paměti' : (server.config.rememberSession ? 'Zapamatovaná v tomto prohlížeči' : 'Dočasná')}</dd></div>
     </dl>
     <div class="server-auth-panel">
       ${server.isAuthenticated ? `
-        <div class="server-user-card"><span class="server-user-card__avatar">${escapeHtml(server.profile.displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase())}</span><div><strong>${escapeHtml(server.profile.displayName)}</strong><small>${escapeHtml(server.profile.email)} · ${roleLabel(server.role)}</small></div></div>
-        <button class="button button--ghost" type="button" data-server-logout>Odhlásit serverovou relaci</button>` : `
-        <div><strong>Serverová relace není aktivní</strong><p>Přihlášení je potřeba pouze pro synchronizaci a serverové funkce.</p></div>
-        <button class="button button--primary" type="button" data-server-login>${icon('user', 17)} Přihlásit</button>`}
+        <div class="server-user-card"><span class="server-user-card__avatar">${escapeHtml(server.profile.displayName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase())}</span><div><strong>${escapeHtml(server.profile.displayName)}</strong><small>${escapeHtml(server.profile.email)}${server.profile.email ? ' · ' : ''}${roleLabel(server.role)}</small></div></div>
+        <button class="button button--ghost" type="button" data-server-logout>${central ? 'Odhlásit z AI Studia' : 'Odhlásit serverovou relaci'}</button>` : `
+        <div><strong>${central ? 'Centrální relace není aktivní' : 'Serverová relace není aktivní'}</strong><p>${central ? 'Vraťte se do AI Studia, přihlaste se a Lesson Hub otevřete znovu.' : 'Lokální databáze IndexedDB je primární. Přihlášení bude potřeba až po budoucím zapnutí synchronizace.'}</p></div>
+        ${central ? `<button class="button button--primary" type="button" onclick="location.reload()">${icon('restore', 17)} Znovu ověřit relaci</button>` : `<button class="button button--primary" type="button" data-server-login>${icon('user', 17)} Přihlásit</button>`}`}
     </div>
   </section>`;
 }
@@ -130,13 +131,14 @@ export async function serverPage() {
   return {
     title: 'Server a synchronizace',
     description: 'Účty, role, obousměrná synchronizace, konflikty a serverový audit.',
-    actions: model.server.isAuthenticated ? `<button class="button button--primary" type="button" data-sync-now>${icon('restore', 18)} Synchronizovat</button>` : `<button class="button button--primary" type="button" data-server-login>${icon('user', 18)} Přihlásit k serveru</button>`,
+    actions: model.server.isAuthenticated ? `<button class="button button--primary" type="button" data-sync-now>${icon('restore', 18)} Synchronizovat</button>` : (model.server.schoolProfile ? `<button class="button button--primary" type="button" onclick="location.reload()">${icon('restore', 18)} Znovu ověřit relaci</button>` : `<button class="button button--primary" type="button" data-server-login>${icon('user', 18)} Přihlásit k serveru</button>`),
     content: `${summaryCards(model)}<div class="server-page-grid">${connectionCard(model)}${syncCard(model)}</div>${conflictsCard(model.conflicts)}${usersCard(model)}${operationsCard(model)}${auditCard(model)}`,
   };
 }
 
 function configDialog() {
   const server = appState.serverService;
+  if (server.schoolProfile) { showToast('Adresu školního serveru spravuje centrální konfigurace AI Studia.', 'info'); return; }
   openModal({
     id: 'server-config-modal', eyebrow: 'Lesson Hub Server', title: 'Nastavit serverové připojení',
     body: `<form id="server-config-form" class="form-grid"><label class="form-field form-field--full"><span>Adresa serveru</span><input name="baseUrl" type="url" value="${escapeAttribute(server.config.baseUrl)}" required placeholder="https://lesson-hub.example.cz"></label><label class="check-card form-field--full"><input name="syncEnabled" type="checkbox" ${server.config.syncEnabled ? 'checked' : ''}><span><strong>Povolit automatickou synchronizaci v budoucnu</strong><small>V této verzi zůstává synchronizace ruční; volba pouze uchová váš záměr.</small></span></label><p class="form-error" data-form-error hidden></p></form>`,
@@ -147,6 +149,7 @@ function configDialog() {
 
 function loginDialog() {
   const server = appState.serverService;
+  if (server.schoolProfile) { void server.restoreSession().then((profile) => { if (profile) { appState.setServerSession(profile); eventBus.emit(APP_EVENTS.serverChanged, {}); } else showToast('Centrální relace není dostupná. Přihlaste se znovu v AI Studiu.', 'error'); }); return; }
   openModal({
     id: 'server-login-modal', eyebrow: 'Serverová relace', title: 'Přihlásit k Lesson Hub Serveru',
     body: `<form id="server-login-form" class="form-grid"><label class="form-field form-field--full"><span>Školní e-mail</span><input name="email" type="email" autocomplete="username" required></label><label class="form-field form-field--full"><span>Heslo</span><input name="password" type="password" autocomplete="current-password" required></label><label class="check-card form-field--full"><input name="remember" type="checkbox"><span><strong>Pamatovat relaci v tomto prohlížeči</strong><small>Na sdíleném zařízení ponechte vypnuté.</small></span></label><p class="form-error" data-form-error hidden></p></form>`,

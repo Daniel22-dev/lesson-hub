@@ -147,7 +147,10 @@ for (const t of m.pwaTargets || []) {
         `${t.id}: různé navigační stránky se ukládají pod jediný klíč ./index.html a mohou si přepsat offline obsah.`,
       ),
     );
-  const assets = [...sw.matchAll(/["'`]((?:\.\/|\/)[^"'`?#]+)["'`]/g)]
+  const declaredPrecache =
+    sw.match(/\b(?:const|let|var)\s+(?:CORE_ASSETS|PRECACHE_ASSETS|APP_SHELL|CORE|REQUIRED)\s*=\s*(?:\/\*[^*]*\*\/\s*)?\[([\s\S]*?)\]\s*;/)?.[1] ||
+    sw;
+  const assets = [...declaredPrecache.matchAll(/["'`]((?:\.\/|\/)[^"'`?#]+)["'`]/g)]
     .map((x) => x[1])
     .filter((x) => !x.includes("AI-Studio-GHRAB/access"));
   for (const asset of new Set(assets)) {

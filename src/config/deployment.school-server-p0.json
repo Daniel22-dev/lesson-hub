@@ -1,0 +1,49 @@
+{
+  "schema": "ghrab-deployment-config-v1",
+  "version": 1,
+  "studioBaseUrl": "/ai-studio/",
+  "appBaseUrls": {
+    "ai-studio": "/ai-studio/",
+    "differentiator": "/apps/diferenciator/",
+    "generator": "/apps/generator-testu/",
+    "essay-evaluator": "/apps/hodnotitel-slohu/",
+    "correspondence": "/apps/korespondencni-asistent/",
+    "lesson-hub": "/apps/lesson-hub/",
+    "ludus": "/apps/ludus/",
+    "activity-builder": "/apps/activa/",
+    "sortio": "/apps/sortio/"
+  },
+  "assetBaseUrl": "/",
+  "apiBaseUrl": "/api/v1/",
+  "allowedOrigins": [
+    "self"
+  ],
+  "sharedAccessVersion": "access-p0-2026-08-04",
+  "environmentId": "school-server-p0-compatibility",
+  "profile": "school-server-p0",
+  "authMode": "signed-permit",
+  "targetAuthMode": "server-session",
+  "aiTransport": "direct-provider",
+  "targetAiTransport": "school-gateway",
+  "telemetryMode": "local",
+  "targetTelemetryMode": "server",
+  "requiresPhase": "P1",
+  "features": {
+    "schoolServerReady": true,
+    "allowLocalProviderKeys": true,
+    "serverSessionReady": false,
+    "schoolGatewayReady": false,
+    "schoolServerConnected": false,
+    "liveServerValidationRequired": false
+  },
+  "appId": "lesson-hub",
+  "appBaseUrl": "/apps/lesson-hub/",
+  "releaseAcceptance": {
+    "stage": "P5",
+    "primaryMode": "standalone-github-pages",
+    "serverConnection": "prepared-not-connected",
+    "serverRequired": false,
+    "githubUpload": "pending",
+    "postUploadValidationRequired": true
+  }
+}

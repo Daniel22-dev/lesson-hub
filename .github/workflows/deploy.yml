@@ -27,11 +27,17 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install dependencies
         timeout-minutes: 5
-        run: npm ci --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
         env:
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+
+      - name: Install pinned Playwright Chromium
+        shell: bash
+        run: |
+          npx playwright install --with-deps chromium
+          node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
+      - name: Run unified error reporter regression
+        run: npm run test:reporter
       - name: Run GHRAB QA release gate
         run: npm run qa:release
         env:
@@ -44,6 +50,12 @@ jobs:
         with:
           name: ghrab-qa-lesson-hub-${{ github.sha }}
           path: qa-results
+      - name: Verify GHRAB Platform P3 conformance
+        run: npm run qa:platform
+
+      - name: Enforce P5 R2 release gate
+        run: npm run qa:p5:ci
+
       - uses: actions/configure-pages@v5
         if: github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v3

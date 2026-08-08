@@ -4,8 +4,8 @@ import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { URL } from 'node:url';
 import { loadServerConfig } from './lib/config.mjs';
-import { JsonStore } from './lib/store.mjs';
-import { createSessionToken, hashPassword, normalizeEmail, safeUser, tokenDigest, verifyPassword } from './lib/security.mjs';
+import { createStore } from './lib/storeFactory.mjs';
+import { constantTimeTokenEqual, createSessionToken, hashPasswordAsync, normalizeEmail, safeUser, tokenDigest, verifyPasswordAsync } from './lib/security.mjs';
 import { canAccessRecord, normalizeRole, normalizeVisibility, requirePermission } from './lib/permissions.mjs';
 import { binary, json, noContent, readJson, requestIp } from './lib/http.mjs';
 import { SlidingWindowLimiter } from './lib/rateLimit.mjs';
@@ -14,7 +14,7 @@ import { MessageDispatcher } from './lib/messageDispatcher.mjs';
 import { OperationsManager } from './lib/operations.mjs';
 import { canEditPeriod, canViewPeriod, createItem, createPeriod, createPlan, listSubstitutionBundles, publicItem, publicPeriod, publicPlan, updateItemByOwner, updateItemProgress, updatePeriod, updatePlan } from './lib/substitution.mjs';
 
-export const SERVER_VERSION = '1.2.0';
+export const SERVER_VERSION = '1.2.8';
 export const API_CONTRACT = 'lesson-hub-api-v1';
 export const SYNC_CONTRACT = 'lesson-hub-sync-v1';
 export const RESOURCE_NAMES = Object.freeze([
@@ -61,6 +61,31 @@ function canAccessAttachment(user, attachment, { write = false } = {}) {
   if (attachment.ownerId === user.id) return user.role !== 'substitute' || !write;
   if (write) return false;
   return attachment.visibility === 'shared' || attachment.visibility === 'substitution';
+}
+
+function deleteAllUserData(store, user) {
+  const removed = { resources: {}, attachments: 0, sessions: 0, changes: 0, audit: 0, account: 0 };
+  const attachmentIds = new Set(Object.values(store.data.attachments || {}).filter((item) => item.ownerId === user.id).map((item) => item.id));
+  for (const resource of RESOURCE_NAMES) {
+    const records = store.resource(resource);
+    let count = 0;
+    for (const [id, record] of Object.entries(records)) {
+      if (record?.ownerId === user.id || (resource === 'attachmentLinks' && attachmentIds.has(record?.attachmentId || record?.serverId))) { delete records[id]; count += 1; }
+    }
+    if (count) removed.resources[resource] = count;
+  }
+  removed.attachments = attachmentIds.size;
+  removed.sessions = store.data.sessions.filter((item) => item.userId === user.id).length;
+  store.data.sessions = store.data.sessions.filter((item) => item.userId !== user.id);
+  removed.changes = store.data.changes.filter((item) => item.ownerId === user.id || item.actorId === user.id).length;
+  store.data.changes = store.data.changes.filter((item) => item.ownerId !== user.id && item.actorId !== user.id);
+  removed.audit = store.data.audit.filter((item) => item.actorId === user.id).length;
+  store.data.audit = store.data.audit.filter((item) => item.actorId !== user.id);
+  delete store.data.privacyPolicies[user.id];
+  const before = store.data.users.length;
+  store.data.users = store.data.users.filter((item) => item.id !== user.id);
+  removed.account = before - store.data.users.length;
+  return { removed, attachmentIds };
 }
 
 function purgeCandidates(store, user, { scope = 'self', now = Date.now() } = {}) {
@@ -150,7 +175,33 @@ function audit(store, { actorId = null, action, entityType, entityId = null, met
   if (store.data.audit.length > 10_000) store.data.audit.splice(0, store.data.audit.length - 10_000);
 }
 
-function authenticate(request, store) {
+async function authenticate(request, store, config) {
+  const upstreamSecret = String(request.headers['x-ghrab-upstream-secret'] || '');
+  if (config.upstreamAuthSecret && upstreamSecret && constantTimeTokenEqual(upstreamSecret, config.upstreamAuthSecret)) {
+    const decode = (value) => { try { return decodeURIComponent(String(value || '')); } catch { return String(value || ''); } };
+    const externalId = decode(request.headers['x-ghrab-user-id']).trim();
+    if (!externalId) throw httpError(401, 'Centrální identita chybí.', 'ghrab_identity_missing');
+    const roles = String(request.headers['x-ghrab-user-roles'] || 'teacher').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
+    const role = roles.includes('admin') || roles.includes('owner') ? 'admin' : roles.includes('substitute') ? 'substitute' : 'teacher';
+    const id = `ghrab_${tokenDigest(externalId).slice(0, 24)}`;
+    const email = externalId.includes('@') ? normalizeEmail(externalId) : `${id}@ghrab.local`;
+    const displayName = decode(request.headers['x-ghrab-user-name']).trim() || externalId;
+    let user = store.data.users.find((item) => item.id === id || (item.authSource === 'ghrab-sso' && item.externalIdHash === tokenDigest(externalId)));
+    let changed = false;
+    if (!user) {
+      user = { id, email, displayName, role, status: 'active', passwordHash: '', authSource: 'ghrab-sso', externalIdHash: tokenDigest(externalId), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() };
+      store.data.users.push(user); changed = true;
+    } else {
+      if (user.displayName !== displayName) { user.displayName = displayName; changed = true; }
+      if (user.role !== role && user.role !== 'owner') { user.role = role; changed = true; }
+      if (user.status !== 'active') throw httpError(401, 'Uživatelský účet není aktivní.', 'user_inactive');
+      if (changed) user.updatedAt = new Date().toISOString();
+      user.lastLoginAt = new Date().toISOString();
+    }
+    if (changed) await store.save();
+    const expiresAt = String(request.headers['x-ghrab-session-expires-at'] || new Date(Date.now() + 10 * 60 * 1000).toISOString());
+    return { user, session: { id: `ghrab:${id}`, userId: id, expiresAt, lastSeenAt: new Date().toISOString(), upstream: true }, tokenDigest: null, upstream: true };
+  }
   const header = String(request.headers.authorization || '');
   const match = header.match(/^Bearer\s+(.+)$/i);
   if (!match) throw httpError(401, 'Serverová relace chybí.', 'session_missing');
@@ -161,7 +212,7 @@ function authenticate(request, store) {
   const user = store.data.users.find((item) => item.id === session.userId && item.status === 'active');
   if (!user) throw httpError(401, 'Uživatelský účet není aktivní.', 'user_inactive');
   session.lastSeenAt = new Date().toISOString();
-  return { user, session, tokenDigest: digest };
+  return { user, session, tokenDigest: digest, upstream: false };
 }
 
 function visibleRecords(store, resource, user) {
@@ -234,7 +285,7 @@ function deleteResource(store, { resource, entityId, user, clientId = '', client
   return { deleted: true, change };
 }
 
-export async function createLessonHubServer({ config = loadServerConfig(), store = new JsonStore(config.dataFile) } = {}) {
+export async function createLessonHubServer({ config = loadServerConfig(), store = createStore(config) } = {}) {
   await store.open();
   const ipLimiter = new SlidingWindowLimiter({ windowMs: config.loginWindowMs, maxAttempts: config.loginAttempts * 4 });
   const accountLimiter = new SlidingWindowLimiter({ windowMs: config.loginWindowMs, maxAttempts: config.loginAttempts });
@@ -264,7 +315,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         ipLimiter.assert(ipKey);
         accountLimiter.assert(accountKey);
         const user = store.data.users.find((item) => item.email === email && item.status === 'active');
-        if (!user || !verifyPassword(body.password, user.passwordHash)) {
+        if (!user || !(await verifyPasswordAsync(body.password, user.passwordHash))) {
           audit(store, { action: 'auth-login-failed', entityType: 'user', entityId: user?.id || null, metadata: { email }, ip });
           await store.save();
           throw httpError(401, 'E-mail nebo heslo není správné.', 'credentials_invalid');
@@ -285,12 +336,12 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         return json(response, 200, { token, expiresAt: session.expiresAt, user: safeUser(user) }, headers);
       }
 
-      const auth = authenticate(request, store);
+      const auth = await authenticate(request, store, config);
       const user = auth.user;
 
       if (request.method === 'POST' && url.pathname === '/v1/auth/logout') {
-        store.data.sessions = store.data.sessions.filter((item) => item.tokenDigest !== auth.tokenDigest);
-        audit(store, { actorId: user.id, action: 'auth-logout', entityType: 'user', entityId: user.id, ip });
+        if (!auth.upstream) store.data.sessions = store.data.sessions.filter((item) => item.tokenDigest !== auth.tokenDigest);
+        audit(store, { actorId: user.id, action: auth.upstream ? 'auth-central-logout-request' : 'auth-logout', entityType: 'user', entityId: user.id, ip });
         await store.save();
         return noContent(response, headers);
       }
@@ -357,7 +408,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
           if (requestedRole === 'owner' && user.role !== 'owner') throw httpError(403, 'Pouze vlastník může vytvořit dalšího vlastníka.', 'owner_role_forbidden');
           const created = {
             id: uid('user'), email, displayName: String(body.displayName || email).trim(),
-            role: requestedRole, status: 'active', passwordHash: hashPassword(body.password),
+            role: requestedRole, status: 'active', passwordHash: await hashPasswordAsync(body.password),
             createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastLoginAt: null,
           };
           store.data.users.push(created);
@@ -377,7 +428,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
           if (body.role != null) target.role = normalizeRole(body.role);
           if (body.status != null) target.status = body.status === 'disabled' ? 'disabled' : 'active';
           const passwordChanged = Boolean(body.password);
-          if (passwordChanged) target.passwordHash = hashPassword(body.password);
+          if (passwordChanged) target.passwordHash = await hashPasswordAsync(body.password);
           if (passwordChanged || target.status === 'disabled') {
             store.data.sessions = store.data.sessions.filter((session) => session.userId !== target.id);
           }
@@ -592,6 +643,17 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
           await store.save();
           return json(response, 200, { policy }, headers);
         }
+      }
+
+      if (request.method === 'DELETE' && url.pathname === '/v1/privacy/delete-my-data') {
+        const deletion = deleteAllUserData(store, user);
+        for (const attachmentId of deletion.attachmentIds) {
+          const attachment = store.data.attachments[attachmentId];
+          if (attachment?.storageName) await unlink(path.join(config.attachmentsDir, attachment.storageName)).catch(() => {});
+          delete store.data.attachments[attachmentId];
+        }
+        await store.save();
+        return json(response, 200, { schema: 'lesson-hub-user-data-deletion-v1', ok: true, removed: deletion.removed, backupRetentionApplies: true }, headers);
       }
 
       if (request.method === 'POST' && url.pathname === '/v1/privacy/purge') {

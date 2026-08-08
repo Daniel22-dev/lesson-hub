@@ -45,8 +45,18 @@ def finding(gate, severity, code, message, evidence=''):
 
 async def fulfill_route(route):
     url = urlparse(route.request.url)
+    path = url.path
+    if path.endswith('/AI-Studio-GHRAB/access/access-gate.css'):
+        await route.fulfill(status=200, body='', content_type='text/css')
+        return
+    if path.endswith('/AI-Studio-GHRAB/config/support.json'):
+        await route.fulfill(status=200, body='{"supportEmail":"balaz@ghrabuvka.cz"}', content_type='application/json')
+        return
+    if path.endswith('/AI-Studio-GHRAB/config/apps.generated.json'):
+        await route.fulfill(status=200, body='[{"id":"lesson-hub","version":"1.2.2","name":{"cs":"Lesson Hub","en":"Lesson Hub"}}]', content_type='application/json')
+        return
     if url.hostname == 'lesson-hub.test':
-        relative = url.path.lstrip('/') or 'index.html'
+        relative = path.lstrip('/') or 'index.html'
         target = (DIST / relative).resolve()
         if target.is_dir():
             target = target / 'index.html'
@@ -61,29 +71,22 @@ async def fulfill_route(route):
             content_type = 'application/manifest+json'
         await route.fulfill(status=200, path=str(target), content_type=content_type)
         return
-    if url.hostname == 'daniel22-dev.github.io' and url.path.endswith('/access/access-gate.css'):
-        await route.fulfill(status=200, body='', content_type='text/css')
-        return
     await route.abort()
 
 
 async def set_document(page, url):
     parsed = urlparse(url)
-    path = parsed.path.lstrip('/') or 'index.html'
-    target = DIST / path
-    if target.is_dir():
-        target = target / 'index.html'
-    html = target.read_text(encoding='utf-8')
-    base_path = '/' + str(Path(path).parent).replace('\\', '/').strip('/')
-    if base_path == '/.':
-        base_path = ''
-    base_href = f'https://lesson-hub.test{base_path}/'
-    html = re.sub(r'<head([^>]*)>', rf'<head\1><base href="{base_href}">', html, count=1, flags=re.I)
-    await page.set_content(html, wait_until='load', timeout=20000)
-    await page.wait_for_timeout(650)
+    path = parsed.path or '/index.html'
+    query = parsed.query
+    if path.endswith('/index.html') or path == '/':
+        query = f"{query}&qa=1" if query else 'qa=1'
+    target = f"https://lesson-hub.test{path}"
+    if query:
+        target += '?' + query
     if parsed.fragment:
-        await page.evaluate('(hash) => { location.hash = hash; }', '#' + parsed.fragment)
-        await page.wait_for_timeout(350)
+        target += '#' + parsed.fragment
+    await page.goto(target, wait_until='load', timeout=20000)
+    await page.wait_for_timeout(650)
 
 
 async def wait_for_app_idle(page, timeout=10000):

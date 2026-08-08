@@ -9,10 +9,12 @@ export function loadServerConfig(env = process.env) {
   return Object.freeze({
     host: env.LESSON_HUB_SERVER_HOST || '127.0.0.1',
     port: integer(env.LESSON_HUB_SERVER_PORT, 8787, 1, 65535),
+    storageDriver: String(env.LESSON_HUB_STORAGE_DRIVER || 'json').trim().toLowerCase(),
     dataFile: path.resolve(env.LESSON_HUB_SERVER_DATA || 'server/data/lesson-hub-server.json'),
     attachmentsDir: path.resolve(env.LESSON_HUB_ATTACHMENTS_DIR || 'server/data/attachments'),
     allowedOrigins: String(env.LESSON_HUB_ALLOWED_ORIGINS || 'http://localhost:4173,http://127.0.0.1:4173')
       .split(',').map((value) => value.trim()).filter(Boolean),
+    upstreamAuthSecret: String(env.LESSON_HUB_GHRAB_UPSTREAM_SECRET || '').trim(),
     sessionHours: integer(env.LESSON_HUB_SESSION_HOURS, 12, 1, 168),
     bodyLimitBytes: integer(env.LESSON_HUB_BODY_LIMIT, 12 * 1024 * 1024, 1024, 30 * 1024 * 1024),
     attachmentLimitBytes: integer(env.LESSON_HUB_ATTACHMENT_LIMIT, 8 * 1024 * 1024, 1024, 20 * 1024 * 1024),

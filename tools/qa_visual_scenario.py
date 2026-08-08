@@ -29,6 +29,7 @@ async def main():
     context = await browser.new_context(
         viewport={'width': first['width'], 'height': first['height']},
         reduced_motion='reduce',
+        service_workers='block',
     )
     page = await context.new_page()
     errors = []

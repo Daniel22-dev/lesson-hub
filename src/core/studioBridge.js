@@ -46,6 +46,8 @@ function validMaterial(material) {
 function readHandoff() {
   const query = new URLSearchParams(location.search);
   if (query.get('studioHandoff') !== '1') return null;
+  const platformPayload = globalThis.GHRAB_PLATFORM?.bridge?.take?.({ target: 'lesson-hub', maxBytes: MAX_HANDOFF_BYTES });
+  if (platformPayload) return platformPayload;
   const payload = readJson(HANDOFF_KEY, null);
   if (!payload || payload.schema !== 'ghrab-handoff-v1' || payload.target !== 'lesson-hub') return null;
   if (!validMaterial(payload.material)) return null;
@@ -78,7 +80,7 @@ export async function consumeStudioHandoff(repositories) {
     yearGroup: material.yearGroup || '',
     objectives: Array.isArray(material.objectives) ? material.objectives : [],
     content: material.content,
-    teacherNote: 'Převzato prostřednictvím Studio Bridge 1.1.',
+    teacherNote: 'Převzato prostřednictvím Studio Bridge 2.0.',
     studentFacing: false,
     visibility: 'private',
     status: 'active',

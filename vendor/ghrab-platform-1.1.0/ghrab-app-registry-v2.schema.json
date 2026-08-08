@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ghrabuvka.cz/schemas/ghrab-app-registry-v2.schema.json",
+  "title": "AI Studio GHRAB application registry v2",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "version",
+      "slug",
+      "paths",
+      "capabilities",
+      "platform"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+      },
+      "version": {
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+].*)?$"
+      },
+      "slug": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+      },
+      "paths": {
+        "type": "object",
+        "required": [
+          "app",
+          "manual"
+        ],
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "capabilities": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
+      },
+      "platform": {
+        "type": "object",
+        "required": [
+          "schema",
+          "contract",
+          "requiredPlatformRange",
+          "platformVersion",
+          "brandVersion",
+          "themeContract",
+          "swContract",
+          "studioBridge",
+          "artifactEnvelope",
+          "storagePrefix",
+          "cacheName"
+        ],
+        "properties": {
+          "contract": {
+            "const": "ghrab-platform-v1"
+          },
+          "brandVersion": {
+            "const": "1.0.0"
+          },
+          "themeContract": {
+            "const": 1
+          },
+          "swContract": {
+            "const": 1
+          },
+          "studioBridge": {
+            "oneOf": [
+              {
+                "const": 2
+              },
+              {
+                "const": "not-applicable"
+              }
+            ]
+          },
+          "artifactEnvelope": {
+            "const": 1
+          },
+          "storagePrefix": {
+            "type": "string",
+            "pattern": "^ghrab\\.[a-z0-9-]+\\.$"
+          },
+          "requiredPlatformRange": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema": {
+            "const": "ghrab-platform-app-integration-v1"
+          },
+          "platformVersion": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+].*)?$"
+          },
+          "cacheName": {
+            "type": "string",
+            "pattern": "^ghrab-[a-z0-9-]+-v\\d+\\.\\d+\\.\\d+(?:[-+].*)?$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "ghrab-brand-release-v1",
+  "brandVersion": "1.0.0",
+  "owner": "Gymnázium, Ostrava-Hrabůvka",
+  "author": "Daniel Baláž",
+  "asset": {
+    "path": "assets/brand/school-logo.png",
+    "mediaType": "image/png",
+    "sha256": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770",
+    "bytes": 57922
+  },
+  "footer": {
+    "contract": "ghrab-footer-v1",
+    "ownerLine": "Autor a vývojový garant: Daniel Baláž",
+    "schoolLine": "Gymnázium, Ostrava-Hrabůvka · Součást AI Studia GHRAB"
+  }
+}

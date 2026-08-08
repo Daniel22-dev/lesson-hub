@@ -63,5 +63,15 @@
       "purpose": "maskable"
     }
   ],
-  "id": "/lesson-hub/"
+  "id": "/lesson-hub/",
+  "version": "1.2.8",
+  "ghrab_platform": {
+    "contract": "ghrab-platform-v1",
+    "version": "1.0.0",
+    "required_range": ">=1.0.0 <2.0.0",
+    "brand_version": "1.0.0",
+    "theme_contract": "ghrab-theme-v1",
+    "sw_contract": "ghrab-sw-v1",
+    "cache_name": "ghrab-lesson-hub-v1.2.8"
+  }
 }

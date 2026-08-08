@@ -1,0 +1,65 @@
+{
+  "schema": "ghrab-deployment-config-v1",
+  "version": 1,
+  "studioBaseUrl": "/AI-Studio-GHRAB/",
+  "appBaseUrls": {
+    "ai-studio": "/AI-Studio-GHRAB/",
+    "differentiator": "/diferenciator/",
+    "generator": "/generator-testu/",
+    "essay-evaluator": "/Hodnotitel-maturitnich-slohu/",
+    "correspondence": "/korespondencni-asistent/",
+    "lesson-hub": "/lesson-hub/",
+    "ludus": "/Ludus/",
+    "activity-builder": "/Sestavovac-aktivit/",
+    "sortio": "/SORTIO/"
+  },
+  "assetBaseUrl": "./",
+  "apiBaseUrl": "",
+  "allowedOrigins": [
+    "self",
+    "https://daniel22-dev.github.io"
+  ],
+  "sharedAccessVersion": "access-p1-2026-08-04",
+  "environmentId": "github-pages-production",
+  "profile": "github-pages",
+  "authMode": "signed-permit",
+  "aiTransport": "not-applicable",
+  "telemetryMode": "local",
+  "access": {
+    "strategy": "online-first-signed-lkg",
+    "maxOfflineAgeHours": 24,
+    "failClosedWhenStale": true
+  },
+  "privacy": {
+    "sharedDeviceDefault": false,
+    "retentionDays": 30
+  },
+  "endpoints": {
+    "session": "session",
+    "logout": "session/logout",
+    "health": "health",
+    "telemetry": "telemetry",
+    "aiGenerate": "ai/generate",
+    "aiHealth": "ai/health"
+  },
+  "features": {
+    "schoolServerReady": true,
+    "allowLocalProviderKeys": true,
+    "serverSessionReady": true,
+    "schoolGatewayReady": false,
+    "sharedDeviceControls": true,
+    "dataDeletion": true,
+    "schoolServerConnected": false,
+    "liveServerValidationRequired": false
+  },
+  "appId": "lesson-hub",
+  "appBaseUrl": "/lesson-hub/",
+  "releaseAcceptance": {
+    "stage": "P5",
+    "primaryMode": "standalone-github-pages",
+    "serverConnection": "prepared-not-connected",
+    "serverRequired": false,
+    "githubUpload": "pending",
+    "postUploadValidationRequired": true
+  }
+}

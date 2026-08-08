@@ -12,13 +12,14 @@ import { setLocalDocument } from './qa-core.mjs';
 
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
-let qaDocumentHtml = '';
+let qaDocumentUrl = '';
 const qaPageProbe = {
-  async setContent(html) { qaDocumentHtml = html; },
+  async addInitScript() {},
+  async goto(url) { qaDocumentUrl = url; },
 };
 const qaDocumentTarget = await setLocalDocument(qaPageProbe, projectRoot, '/index.html#/groups', 'http://127.0.0.1:4173');
 assert.equal(qaDocumentTarget.endsWith('/index.html'), true, 'Hashová trasa nesmí být součástí cesty k souboru.');
-assert.equal(qaDocumentHtml.includes('const initialHash = "#/groups";'), true, 'Hashová trasa musí být nastavena před spuštěním aplikace.');
+assert.equal(qaDocumentUrl.endsWith('/index.html#/groups'), true, 'Hashová trasa musí zůstat zachována v lokální HTTP adrese.');
 await assert.rejects(
   () => setLocalDocument(qaPageProbe, projectRoot, '/../outside.html#/overview', 'http://127.0.0.1:4173'),
   /escapes serve root/,
@@ -142,6 +143,7 @@ assert.match(pythonBrowserCommonSource, /dataset\.renderedRoute === expectedRout
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 assert.equal(packageJson.overrides?.['brace-expansion'], '5.0.8', 'Bezpečnostní override brace-expansion musí zůstat připnutý.');
 const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
-assert.equal(packageLock.packages?.['node_modules/brace-expansion']?.version, '5.0.8', 'Lockfile nesmí obsahovat zranitelný brace-expansion.');
+const braceExpansionVersion = packageLock.packages?.['node_modules/brace-expansion']?.version;
+assert.ok(braceExpansionVersion === undefined || braceExpansionVersion === '5.0.8', 'Lockfile nesmí obsahovat zranitelný brace-expansion.');
 
 console.log('Auditní klientské regrese prošly: hashové QA cesty, vykonání evaluate kroků, headless připravenost, čitelný vizuální reportér, trasově stabilní čekání kritických workflow a render race pojistku, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

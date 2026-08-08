@@ -1,0 +1,156 @@
+{
+  "schema": "ghrab-platform-consumer-v1",
+  "appId": "lesson-hub",
+  "appName": "Lesson Hub",
+  "appVersion": "1.2.8",
+  "platform": {
+    "version": "1.1.0",
+    "contract": "ghrab-platform-v1",
+    "requiredRange": ">=1.1.0 <2.0.0",
+    "compatibilityWindow": [
+      "1.1.x",
+      "1.2.x"
+    ]
+  },
+  "brand": {
+    "version": "1.0.0",
+    "logo": "assets/brand/school-logo.png",
+    "footerContract": "ghrab-footer-v1"
+  },
+  "theme": {
+    "supported": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "default": "light",
+    "systemFallback": "light"
+  },
+  "storageMigration": {
+    "id": "p2-storage-namespace-v1",
+    "backup": "full",
+    "mappings": [
+      {
+        "legacy": "lesson-hub-ui-settings",
+        "canonical": "ghrab.lesson-hub.ui-settings.v1"
+      },
+      {
+        "legacy": "lesson-hub-server-session-v1",
+        "canonical": "ghrab.lesson-hub.server-session.v1",
+        "store": "session"
+      },
+      {
+        "legacyPrefix": "lesson-hub.lesson-draft.v1.",
+        "canonicalPrefix": "ghrab.lesson-hub.lesson-draft.v1."
+      },
+      {
+        "legacyPrefix": "sync:",
+        "canonicalPrefix": "ghrab.lesson-hub.sync."
+      },
+      {
+        "legacyPrefix": "lesson-hub-",
+        "canonicalPrefix": "ghrab.lesson-hub.legacy."
+      }
+    ]
+  },
+  "bridge": {
+    "contract": "ghrab-studio-handoff-v2",
+    "acceptsLegacy": "ghrab-handoff-v1",
+    "maxBytes": 500000
+  },
+  "artifact": {
+    "schema": "ghrab-artifact-envelope-v1",
+    "checksum": "SHA-256",
+    "exports": [
+      "lesson-hub-backup"
+    ],
+    "imports": [
+      "lesson-hub-backup"
+    ],
+    "acceptsLegacyJson": true,
+    "nativeFormats": [
+      "json"
+    ]
+  },
+  "cache": {
+    "name": "ghrab-lesson-hub-v1.2.8",
+    "updateMessage": "GHRAB_SKIP_WAITING"
+  },
+  "html": {
+    "exclude": [],
+    "noFooter": [
+      "tests/"
+    ]
+  },
+  "quality": {
+    "schema": "ghrab-quality-consumer-v1",
+    "accessibilityContract": "ghrab-a11y-v1",
+    "performanceContract": "ghrab-performance-v1",
+    "moduleContract": "ghrab-lazy-modules-v1",
+    "requireBudget": true,
+    "performanceBudget": {
+      "distBytes": 1180000,
+      "entryHtmlBytes": 10000,
+      "entryCriticalBytes": 220000,
+      "largestInlineScriptBytes": 5000,
+      "precacheBytes": 1140000,
+      "largestFileBytes": 130000,
+      "duplicateLargeBytes": 40000
+    },
+    "modules": {
+      "required": []
+    },
+    "referenceProfile": {
+      "cpuSlowdown": 4,
+      "viewport": "1366x768",
+      "memoryClassGb": 4,
+      "viewportWidths": [
+        1280,
+        390,
+        320
+      ]
+    },
+    "stage": "P5",
+    "a11yContract": "ghrab-a11y-v1",
+    "capacity": {
+      "contract": "lesson-hub-capacity-report-v1",
+      "pilotUsers": 300,
+      "pilotResources": 5000,
+      "databaseMigrationTriggers": [
+        "multi-process",
+        "store>25MiB",
+        "activeResources>10000",
+        "p95Write>1000ms"
+      ]
+    },
+    "requireRuntimeBudget": true,
+    "runtimeBudget": {
+      "maxDomNodes": 1000,
+      "maxRenderReadyMs": 1000,
+      "maxJsHeapUsedBytes": 8000000,
+      "maxLayoutDurationMs": 300,
+      "maxTaskDurationMs": 800
+    },
+    "finalRelease": true,
+    "cleanInstallRequired": true,
+    "a11yGate": "ghrab-p5-runtime-a11y-v2",
+    "releaseGate": "ghrab-p5-release-v2",
+    "runtimeAudit": {
+      "scriptsExecuted": true,
+      "transport": "local-http",
+      "dialogStates": true,
+      "viewports": [
+        1280,
+        390,
+        320
+      ]
+    }
+  },
+  "performance": {
+    "stage": "P5",
+    "a11yGate": "ghrab-p5-accessibility-acceptance-v1",
+    "releaseGate": "ghrab-p5-acceptance-v1",
+    "finalRelease": false,
+    "preProductionAccepted": true
+  }
+}

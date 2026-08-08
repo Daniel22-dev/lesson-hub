@@ -213,7 +213,11 @@ export class BackupService {
   }
 
   async validatePackage(input) {
-    const backupPackage = parsePackage(input);
+    let backupPackage = parsePackage(input);
+    if (backupPackage?.schema === 'ghrab-artifact-envelope-v1') {
+      if (!globalThis.GHRABArtifact?.unwrapMaybe) throw new Error('Jednotný formát GHRAB nelze v tomto prostředí ověřit.');
+      backupPackage = (await globalThis.GHRABArtifact.unwrapMaybe(backupPackage, { allowLegacy: false, expectedAppId: APP_RELEASE.appId, verifyChecksum: true })).payload;
+    }
     const errors = [];
     const warnings = [];
 
@@ -438,20 +442,24 @@ export class BackupService {
     return { supported: true, usage, quota, percent: quota ? (usage / quota) * 100 : 0 };
   }
 
-  createDownload(backupPackage, filename = '') {
+  async createDownload(backupPackage, filename = '') {
     if (typeof document === 'undefined') throw new Error('Stažení souboru je dostupné pouze v prohlížeči.');
     const date = new Date(backupPackage.exportedAt || Date.now()).toISOString().slice(0, 10);
-    const safeName = filename || `lesson-hub-zaloha-${date}.json`;
+    const safeName = filename || `lesson-hub-zaloha-${date}.ghrab.json`;
+    if (globalThis.GHRABArtifact?.download) {
+      await globalThis.GHRABArtifact.download({ appId: APP_RELEASE.appId, appVersion: APP_RELEASE.version, artifactType: 'lesson-hub-backup', sensitivity: 'restricted', contentManifest: [{ kind: 'database-backup', schema: BACKUP_FORMAT, records: backupPackage.summary?.totalRecords || 0 }], payload: backupPackage, filename: safeName });
+      return safeName;
+    }
     const blob = new Blob([JSON.stringify(backupPackage, null, 2)], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = safeName;
+    anchor.download = safeName.replace(/\.ghrab(?=\.json$)/, '');
     document.body.append(anchor);
     anchor.click();
     anchor.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    return safeName;
+    return anchor.download;
   }
 
   async #pruneLocalBackups() {

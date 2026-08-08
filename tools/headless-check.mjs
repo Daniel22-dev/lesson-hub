@@ -62,10 +62,23 @@ try {
     ];
     let failed = false;
     for (const [route, expected] of scenarios) {
-      const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+      const context = await browser.newContext({ viewport: { width: 1366, height: 768 }, serviceWorkers: 'block' });
+      const page = await context.newPage();
       const errors = [];
       page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
       page.on('pageerror', (error) => errors.push(error.message));
+      await page.route('**/*', async (requestRoute) => {
+        const pathname = new URL(requestRoute.request().url()).pathname;
+        if (pathname.endsWith('/AI-Studio-GHRAB/access/access-gate.css')) {
+          await requestRoute.fulfill({ status: 200, contentType: 'text/css', body: '' });
+        } else if (pathname.endsWith('/AI-Studio-GHRAB/config/support.json')) {
+          await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ supportEmail: 'balaz@ghrabuvka.cz' }) });
+        } else if (pathname.endsWith('/AI-Studio-GHRAB/config/apps.generated.json')) {
+          await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'lesson-hub', version: '1.2.8', name: { cs: 'Lesson Hub', en: 'Lesson Hub' } }]) });
+        } else {
+          await requestRoute.continue();
+        }
+      });
       const targetRoute = qaRoute(route);
       const response = await page.goto(`${baseUrl}${targetRoute}`, { waitUntil: 'networkidle', timeout: 20000 });
       if (route.startsWith('/index.html')) await waitForMainApp(page, route);
@@ -81,7 +94,7 @@ try {
         failed = true;
         console.error(JSON.stringify({ route, expectedPresent: Boolean(body?.includes(expected)), access, localErrors, errors }, null, 2));
       }
-      await page.close();
+      await context.close();
     }
     await browser.close();
     exitCode = failed ? 1 : 0;
