@@ -33,7 +33,7 @@ const sections = [
 app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list */ `
   <header class="manual-topbar">
     <div class="manual-brand">
-      <img src="../../src/assets/brand/school-logo.png" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
+      <img src="../assets/brand/school-logo.png" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
       <div><strong>Lesson Hub</strong><span>Interaktivní manuál · v__APP_VERSION__</span></div>
     </div>
     <div class="manual-actions">

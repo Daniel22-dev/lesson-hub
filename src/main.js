@@ -36,7 +36,7 @@ function renderFatalError(error) {
   document.body.style.visibility = 'visible';
   app.innerHTML = `
     <main class="fatal-error">
-      <img class="fatal-error__logo" src="./src/assets/brand/school-logo.png" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
+      <img class="fatal-error__logo" src="./assets/brand/school-logo.png" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
       <h1>Lesson Hub se nepodařilo spustit</h1>
       <p>${escapeHtml(error?.code === 'database_blocked' ? 'Aktualizaci databáze blokuje jiná otevřená karta. Zavřete ostatní karty Lesson Hubu a zkuste to znovu.' : error.message)}</p>
       <button type="button" onclick="location.reload()">Zkusit znovu</button>

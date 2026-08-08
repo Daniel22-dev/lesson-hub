@@ -25,6 +25,7 @@ const matrix = [];
 const serveRoot = path.join(ROOT, manifest.serveRoot || "dist");
 const { server, baseUrl } = await startStaticServer(serveRoot, {
   deploymentBasePath: manifest.deploymentBasePath || "",
+  qaAppId: manifest.appId,
 });
 const guardJs = `export async function protectApp(appId){document.documentElement.dataset.ghrabAccess='granted';document.dispatchEvent(new CustomEvent('ghrab:app-access-granted',{detail:{permit:{appId,qa:true}}}));return true}`;
 

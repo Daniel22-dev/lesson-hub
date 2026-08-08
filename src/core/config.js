@@ -15,7 +15,7 @@ export const APP_CONFIG = Object.freeze({
   aiStudioUrl: globalThis.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl || '/AI-Studio-GHRAB/',
   accessUrl: globalThis.__GHRAB_DEPLOYMENT_CONFIG__?.access?.accessPageUrl || '/AI-Studio-GHRAB/access/',
   accessGuardUrl: globalThis.__GHRAB_DEPLOYMENT_CONFIG__?.access?.guardUrl || '/AI-Studio-GHRAB/access/app-guard.js',
-  schoolLogoUrl: './src/assets/brand/school-logo.png',
+  schoolLogoUrl: './assets/brand/school-logo.png',
   manualUrl: './manual/',
   supportEmail: '',
   storageWarning:

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { startStaticServer } from '../scripts/qa-core.mjs';
 
 const root = path.resolve('dist');
-const { server, baseUrl } = await startStaticServer(root);
+const { server, baseUrl } = await startStaticServer(root, { qaAppId: 'lesson-hub' });
 let exitCode = 1;
 
 async function run(command, args, env = {}) {

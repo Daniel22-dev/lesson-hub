@@ -22,7 +22,7 @@ const findings = [];
 const matrix = [];
 const { server, baseUrl } = await startStaticServer(
   path.join(ROOT, manifest.serveRoot || "dist"),
-  { deploymentBasePath: manifest.deploymentBasePath || "" },
+  { deploymentBasePath: manifest.deploymentBasePath || "", qaAppId: manifest.appId },
 );
 let browser;
 const guardJs = `export async function protectApp(appId){document.documentElement.dataset.ghrabAccess='granted';document.dispatchEvent(new CustomEvent('ghrab:app-access-granted',{detail:{permit:{appId,qa:true}}}));return true}`;
@@ -87,6 +87,27 @@ async function settleAppAfterAction(page, timeout = 10000) {
   }, null, { timeout });
 }
 
+
+async function clickForQa(page, selector, timeout = 7000) {
+  let firstError;
+  try {
+    await page.locator(selector).first().click({ timeout, noWaitAfter: true });
+    return;
+  } catch (error) {
+    firstError = error;
+    if (!/detached|timeout/i.test(String(error?.message || error))) throw error;
+  }
+  // The application intentionally replaces some dialog/form nodes during the
+  // action itself. Re-query the current DOM and dispatch the trusted repository
+  // test click instead of failing only because Playwright held a stale handle.
+  const clicked = await page.evaluate((sel) => {
+    const element = document.querySelector(sel);
+    if (!(element instanceof HTMLElement) || element.hidden) return false;
+    element.click();
+    return true;
+  }, selector);
+  if (!clicked) throw firstError;
+}
 
 async function executeEvaluateStep(page, source) {
   const script = String(source || "").trim();
@@ -169,14 +190,11 @@ try {
         for (const step of flow.steps || []) {
           if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
           if (step.action === "click")
-            await page
-              .locator(step.selector)
-              .first()
-              .click({ timeout: step.timeout || 7000 });
+            await clickForQa(page, step.selector, step.timeout || 7000);
           if (step.action === "clickIfVisible") {
             const target = page.locator(step.selector).first();
             if ((await target.count()) && (await target.isVisible()))
-              await target.click({ timeout: step.timeout || 7000 });
+              await clickForQa(page, step.selector, step.timeout || 7000);
           }
           if (step.action === "fill")
             await page

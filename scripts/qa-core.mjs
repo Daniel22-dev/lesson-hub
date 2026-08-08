@@ -162,12 +162,44 @@ export function mimeFor(file) {
     }[ext] || "application/octet-stream"
   );
 }
-export async function startStaticServer(rootDir, { deploymentBasePath = "" } = {}) {
+export async function startStaticServer(rootDir, { deploymentBasePath = "", qaAppId = "" } = {}) {
   const normalizedBasePath = String(deploymentBasePath || "")
     .replace(/^\/+|\/+$/g, "");
   const server = createServer(async (req, res) => {
     try {
       const u = new URL(req.url, "http://localhost");
+      if (qaAppId) {
+        const pathname = decodeURIComponent(u.pathname);
+        const send = (status, contentType, body) => {
+          res.writeHead(status, {
+            "content-type": contentType,
+            "cache-control": "no-store",
+          });
+          return res.end(body);
+        };
+        if (pathname === "/AI-Studio-GHRAB/access/app-guard.js") {
+          return send(200, "text/javascript; charset=utf-8", `export async function protectApp(appId){document.documentElement.dataset.ghrabAccess='granted';document.documentElement.dataset.ghrabAccessMode='qa-harness';window.__GHRAB_STUDIO_ACCESS__={permit:{appId,role:'admin',apps:[appId],qa:true}};document.dispatchEvent(new CustomEvent('ghrab:app-access-granted',{detail:{permit:window.__GHRAB_STUDIO_ACCESS__.permit}}));return true}`);
+        }
+        if (pathname === "/AI-Studio-GHRAB/access/access-gate.css") {
+          return send(200, "text/css; charset=utf-8", "");
+        }
+        if (pathname === "/AI-Studio-GHRAB/config/support.json") {
+          return send(200, "application/json; charset=utf-8", JSON.stringify({ administratorEmail: "balaz@ghrabuvka.cz", supportEmail: "balaz@ghrabuvka.cz" }));
+        }
+        if (pathname === "/AI-Studio-GHRAB/config/apps.generated.json") {
+          return send(200, "application/json; charset=utf-8", JSON.stringify([{ id: qaAppId, name: { cs: "Lesson Hub", en: "Lesson Hub" } }]));
+        }
+        if (pathname === "/AI-Studio-GHRAB/manualy/error-report.html") {
+          return send(200, "text/html; charset=utf-8", "<!doctype html><title>QA report guide</title>");
+        }
+        if (pathname === "/AI-Studio-GHRAB/assets/brand/school-logo.png") {
+          const localLogo = path.resolve(rootDir, "assets/brand/school-logo.png");
+          if (await exists(localLogo)) {
+            res.writeHead(200, { "content-type": "image/png", "cache-control": "no-store" });
+            return res.end(await readFile(localLogo));
+          }
+        }
+      }
       let rel = decodeURIComponent(u.pathname).replace(/^\/+/, "");
       if (normalizedBasePath && (rel === normalizedBasePath || rel.startsWith(`${normalizedBasePath}/`))) {
         rel = rel.slice(normalizedBasePath.length).replace(/^\/+/, "");
