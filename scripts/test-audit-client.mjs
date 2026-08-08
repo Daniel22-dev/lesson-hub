@@ -31,6 +31,10 @@ assert.equal(visualReporterSource.includes('rect.top < vh'), false, 'Povinný pr
 assert.equal(visualReporterSource.includes('rect.left < vw'), true, 'Vizuální brána musí nadále hlídat vodorovné umístění povinných prvků.');
 assert.equal(visualReporterSource.includes('async function executeEvaluateStep'), true, 'Vizuální brána musí funkční evaluate kroky skutečně vykonat.');
 assert.equal(visualReporterSource.includes('await page.evaluate(step.script)'), false, 'Vizuální brána nesmí pouze vrátit funkční výraz bez zavolání.');
+assert.equal(visualReporterSource.includes('String(scenario?.url || "").includes("/manual/")'), true, 'Vizuální brána musí obsloužit standalone manuál bez SPA #app.');
+assert.equal(visualReporterSource.includes('await page.waitForSelector("#manual-app"'), true, 'Standalone manuál musí čekat na vlastní #manual-app.');
+assert.equal(visualReporterSource.includes('async function waitForScenarioState'), true, 'Vizuální brána musí čekat na skutečný finální stav scénáře.');
+assert.equal(visualReporterSource.includes('const modalContract ='), true, 'Replay posledního kliku smí být omezen na modalové vizuální kontrakty.');
 const headlessRunnerSource = await readFile(new URL('../tools/headless-check.mjs', import.meta.url), 'utf8');
 assert.equal(headlessRunnerSource.includes('async function waitForMainApp'), true, 'Headless smoke test musí počkat na dokončený render trasy.');
 assert.equal(headlessRunnerSource.includes('qa=1'), true, 'Headless smoke test musí lokální QA přístup zapnout explicitním parametrem.');

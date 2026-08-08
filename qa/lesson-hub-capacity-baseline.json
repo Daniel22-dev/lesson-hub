@@ -2,8 +2,8 @@
   "schema": "lesson-hub-capacity-report-v1",
   "appVersion": "1.2.8",
   "storageContract": "lesson-hub-store-adapter-v1",
-  "startedAt": "2026-08-08T16:51:39.441Z",
-  "completedAt": "2026-08-08T16:51:46.121Z",
+  "startedAt": "2026-08-08T17:10:00.922Z",
+  "completedAt": "2026-08-08T17:10:06.374Z",
   "profile": {
     "node": "v22.16.0",
     "platform": "linux",
@@ -17,10 +17,10 @@
     "totalSeedRecords": 9000
   },
   "measurements": {
-    "initialOpenMs": 4.007404000000001,
-    "seedSaveMs": 100.391024,
-    "concurrentMs": 6343.585011,
-    "reopenMs": 27.493216000000757,
+    "initialOpenMs": 9.078695,
+    "seedSaveMs": 32.200759000000005,
+    "concurrentMs": 5316.558115999999,
+    "reopenMs": 19.524257000000034,
     "fileBytes": 3349241
   },
   "thresholds": {

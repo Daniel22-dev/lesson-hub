@@ -319,7 +319,16 @@ const screenshotAttempts = Math.max(
   Number(process.env.GHRAB_VISUAL_SCREENSHOT_ATTEMPTS || 3),
 );
 
-async function waitForAppReady(page, timeout = 12000) {
+async function waitForAppReady(page, scenario, timeout = 12000) {
+  // The interactive manual is a standalone document and intentionally has no #app.
+  if (String(scenario?.url || "").includes("/manual/")) {
+    await page.waitForSelector("#manual-app", { state: "visible", timeout });
+    await page.waitForFunction(() =>
+      getComputedStyle(document.body).visibility !== "hidden" &&
+      (document.documentElement.dataset.ghrabAccess || "granted") === "granted",
+    null, { timeout });
+    return;
+  }
   await page.waitForSelector("#app", { state: "attached", timeout });
   await page.waitForFunction(() => {
     const app = document.querySelector("#app");
@@ -332,6 +341,33 @@ async function waitForAppReady(page, timeout = 12000) {
       app.dataset.renderedRoute === expectedRoute
     );
   }, null, { timeout });
+}
+
+async function settleAppAfterAction(page, timeout = 10000) {
+  await page.waitForTimeout(75);
+  await page.waitForFunction(() => {
+    const app = document.querySelector("#app");
+    if (!app) return true;
+    const expectedRoute = location.hash.replace(/^#\/?/, "") || "overview";
+    return !app.hasAttribute("aria-busy") && app.dataset.renderedRoute === expectedRoute;
+  }, null, { timeout });
+}
+
+async function waitForScenarioState(page, scenario, timeout = 10000) {
+  const expectedText = String(scenario.expectedText || "");
+  const mustVisible = scenario.mustVisible || [];
+  await page.waitForFunction(({ expectedText, mustVisible }) => {
+    const bodyText = (document.body?.innerText || "").replace(/\s+/g, " ").trim().toLowerCase();
+    if (expectedText && !bodyText.includes(expectedText.toLowerCase())) return false;
+    return mustVisible.every((selector) => {
+      const el = document.querySelector(selector);
+      if (!(el instanceof HTMLElement)) return false;
+      const style = getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return !el.hidden && style.display !== "none" && style.visibility !== "hidden" &&
+        Number(style.opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0;
+    });
+  }, { expectedText, mustVisible }, { timeout });
 }
 
 async function clickForQa(page, selector, timeout = 5000) {
@@ -474,7 +510,7 @@ async function runVisualCase(scenario, viewport) {
         );
       }
       await setLocalDocument(page, serveRoot, scenario.url, baseUrl);
-      await waitForAppReady(page);
+      await waitForAppReady(page, scenario);
       for (const step of scenario.steps || []) {
         if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
         if (step.action === "click") {
@@ -497,8 +533,25 @@ async function runVisualCase(scenario, viewport) {
         }
         if (step.action === "press") await page.keyboard.press(step.key);
         if (step.action === "evaluate") await executeEvaluateStep(page, step.script);
+        if (["click", "clickIfVisible", "select", "press", "evaluate"].includes(step.action)) {
+          await settleAppAfterAction(page, step.timeout || 10000);
+        }
       }
-      await page.waitForTimeout(scenario.settleMs || 700);
+      // Dialog builders can be async (for example task/reminder options from IndexedDB),
+      // and a late route render may replace a click target. Wait for the actual visual
+      // contract; if it did not materialize, replay the last repository-owned click once.
+      try {
+        await waitForScenarioState(page, scenario, scenario.stateTimeout || 10000);
+      } catch (firstStateError) {
+        const replay = [...(scenario.steps || [])].reverse().find((step) => step.action === "click");
+        const modalContract = (scenario.mustVisible || []).some((selector) => /modal|\.modal-card/i.test(String(selector)));
+        if (!modalContract || !replay?.selector) throw firstStateError;
+        await settleAppAfterAction(page, replay.timeout || 10000);
+        await clickForQa(page, replay.selector, replay.timeout || 7000);
+        await settleAppAfterAction(page, replay.timeout || 10000);
+        await waitForScenarioState(page, scenario, scenario.stateTimeout || 10000);
+      }
+      await page.waitForTimeout(scenario.settleMs || 250);
       await waitForImages(page);
       const checks = await inspectPage(page, scenario);
       const filename =
