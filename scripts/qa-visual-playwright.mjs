@@ -553,7 +553,10 @@ async function runVisualCase(scenario, viewport) {
       }
       await page.waitForTimeout(scenario.settleMs || 250);
       await waitForImages(page);
-      const checks = await inspectPage(page, scenario);
+      // A late async route/data refresh can briefly replace #page-content after the
+      // first contract wait. Re-assert the scenario immediately around evidence
+      // capture so DOM checks describe the same final state as the screenshot.
+      await waitForScenarioState(page, scenario, scenario.stateTimeout || 10000);
       const filename =
         `${scenario.id}__${viewport.width}x${viewport.height}.png`.replace(
           /[^a-zA-Z0-9_.-]/g,
@@ -564,6 +567,8 @@ async function runVisualCase(scenario, viewport) {
         page,
         path.join(SCREEN_DIR, filename),
       );
+      await waitForScenarioState(page, scenario, scenario.stateTimeout || 10000);
+      const checks = await inspectPage(page, scenario);
       const pixels = blankStats(buffer);
       const problems = [];
       if (checks.htmlHidden || checks.bodyHidden)

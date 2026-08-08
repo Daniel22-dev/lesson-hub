@@ -20,3 +20,8 @@ This hotfix addresses the GitHub Actions failures observed for Lesson Hub 1.2.8.
 - final visual contracts wait for expected text and required visible selectors;
 - if a late async rerender consumes the opening click, the last repository-owned click is replayed once after the route is stable.
 
+
+
+## Final visual-state consistency fix
+- GitHub run 31268873577 produced a false VISUAL failure for `lesson-hub-work-empty`: the DOM inspection ran during a transient rerender, while the immediately following screenshot already showed the correct Work page.
+- The visual runner now re-validates `expectedText` and `mustVisible` immediately before and after screenshot capture and only then evaluates the DOM. This keeps evidence and pass/fail checks on the same final rendered state.
