@@ -64,7 +64,7 @@ try {
   assert.ok(reopenMs <= thresholds.maxReopenMs, `Reopen je příliš pomalý: ${reopenMs.toFixed(1)} ms`);
 
   const report = {
-    schema: 'lesson-hub-capacity-report-v1', appVersion: '1.2.8', storageContract: STORE_ADAPTER_CONTRACT,
+    schema: 'lesson-hub-capacity-report-v1', appVersion: '1.2.9', storageContract: STORE_ADAPTER_CONTRACT,
     startedAt: started, completedAt: new Date().toISOString(), profile: { node: process.version, platform: process.platform, architecture: process.arch },
     dataset: { lessons: 6000, students: 2000, materials: 1000, concurrentNotes: thresholds.concurrentSaves, totalSeedRecords: thresholds.seedRecords },
     measurements: { initialOpenMs, seedSaveMs, concurrentMs, reopenMs, fileBytes: info.size }, thresholds,

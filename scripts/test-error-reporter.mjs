@@ -112,12 +112,13 @@ function staticAudit() {
   const adapter = text(config.adapterPath);
 
   check('Ochrana jediné instance používá ghrab-error-reporter', reporter.includes('const REPORTER_ID = "ghrab-error-reporter"'));
-  check('Kanonický reportér má verzi 1.1.0', reporter.includes('const REPORTER_VERSION = "1.1.0"'));
+  check('Kanonický reportér má verzi 1.1.2', reporter.includes('const REPORTER_VERSION = "1.1.2"'));
   check('Limit je přesně pět screenshotů', reporter.includes('const MAX_SCREENSHOTS = 5'));
   check('Finální compose URL je omezena na 7000 znaků', reporter.includes('const MAX_COMPOSE_URL_LENGTH = 7000') && reporter.includes('export function fitMailBodyToComposeUrl'));
   check('Zkracování zachovává plné tělo a krátí diagnostiku jako první', reporter.includes('const fullBody = makeBody') && reporter.includes('currentDiagnostics = currentDiagnostics.slice(0, 3)'));
-  check('Gmail je skutečný HTML odkaz target=_blank', reporter.includes('prepareLink.target = "_blank"') && reporter.includes('prepareLink.rel = "noopener"'));
-  check('Gmail href se připravuje před kliknutím', reporter.includes('refreshPrepareLink();') && reporter.includes('prepareLink.href = draft.gmailUrl'));
+  check('Primární akce pouze připraví ZIP', reporter.includes('const prepareLink = button(') && reporter.includes('Připravit ZIP balíček'));
+  check('ZIP má po vytvoření přímý odkaz download', reporter.includes('download.download = info.file.name') && reporter.includes('download.dataset.reportDownload = "zip"'));
+  check('Gmail se zpřístupní až po kliknutí na stažení', reporter.includes('mailStep.hidden = true') && reporter.includes('mailStep.hidden = false') && reporter.includes('ZIP mám stažený – otevřít Gmail'));
   check('Zakázaný window.open se nepoužívá', !/\bwindow\.open\s*\(/.test(reporter));
   check('Neexistuje stará přímá funkce sdílení balíčku', !/navigator\.share|Sdílet balíček přímo/.test(reporter));
   check('ZIP obsahuje povinné soubory', ['00-PREHLED-HLASENI.html', 'hlaseni.txt', 'technicke-udaje.json', 'screenshot-'].every((value) => reporter.includes(value)));
@@ -127,7 +128,7 @@ function staticAudit() {
   check('Úplné smazání maže data, ID, chyby, ZIP a stream', ['state.screenshots = []', 'state.preparedFile = null', 'state.preparedBlob = null', 'state.reportId = reportId()', 'state.technicalErrors = []', 'stopCapture()'].every((value) => reporter.includes(value)));
   check('Nové hlášení po dokončeném reportu dostane nové ID', reporter.includes('if (state.completed) resetDraft()') && reporter.includes('state.completed = true'));
   check('Dialog obsahuje focus trap a obnovu předchozího fokusu', reporter.includes('function trapDialogFocus(event)') && reporter.includes('previousFocus') && reporter.includes('target.focus?.({ preventScroll: true })'));
-  check('Stav Gmailu je neutrální, nikoli neověřené tvrzení o otevření', reporter.includes('Prohlížeč dostal odkaz na předvyplněný Gmail') && !reporter.includes('Gmail se otevřel'));
+  check('Rozhraní i e-mail výslovně upozorňují na ruční přílohu', reporter.includes('Gmail místní soubor z bezpečnostních důvodů nepřipojí automaticky') && reporter.includes('PŘÍLOHA NENÍ PŘIPOJENA AUTOMATICKY'));
   check('Přechod do aplikace je samostatné tlačítko', reporter.includes('"Přejít do aplikace"') && reporter.includes('showApplicationForCapture'));
   check('Plovoucí panel má všechny tři akce', ['"Pořídit snímek"', '"Zpět k hlášení"', '"Ukončit snímání"'].every((value) => reporter.includes(value)));
   check('Reportér se při pořízení snímku skrývá', reporter.includes('root.classList.add("ghrab-capture-hidden")') && reporter.includes('root.classList.remove("ghrab-capture-hidden")'));
@@ -140,11 +141,22 @@ function staticAudit() {
   check('CSS respektuje safe-area', css.includes('safe-area-inset-bottom') && css.includes('safe-area-inset-right'));
   check('CSS má responzivní panel snímání', css.includes('@media (max-width: 430px)') && css.includes('.ghrab-capture-bar'));
   check('CSS skrývá reportér při samotném snímku', css.includes('.ghrab-error-reporter.ghrab-capture-hidden'));
+  check('Živý obraz je uvnitř reportéru a skrytý CSS i inline',
+    reporter.includes('root.append(video)') &&
+    !reporter.includes('document.body.append(video)') &&
+    reporter.includes('visibility: "hidden"') &&
+    css.includes('.ghrab-error-reporter .ghrab-capture-video') &&
+    css.includes('visibility: hidden !important') &&
+    css.includes('pointer-events: none !important'));
+  check('Reportér používá jediný trvalý stav místo duplicitních toastů',
+    count(reporter, /const captureStatus = element\(/g) === 1 &&
+    count(reporter, /const finalStatus = element\(/g) === 1 &&
+    !/toast|snackbar/i.test(reporter));
 
   check('Adaptér má správné appId', adapter.includes(`appId: '${config.appId}'`));
   check('Adaptér má správnou verzi', adapter.includes(`appVersion: '${config.version}'`));
   check('Adaptér má bezpečný e-mailový fallback', adapter.includes("supportEmail: 'balaz@ghrabuvka.cz'"));
-  check('Adaptér odkazuje na deployment-aware centrální návod', adapter.includes('reporterGuideUrl') || adapter.includes("guideUrl: '/AI-Studio-GHRAB/manualy/error-report.html'"));
+  check('Adaptér odkazuje na deployment-aware centrální návod', adapter.includes('deployment?.access?.guideUrl') || adapter.includes('reporterGuideUrl') || adapter.includes("guideUrl: '/AI-Studio-GHRAB/manualy/error-report.html'"));
   check('Adaptér má aplikační resolver motivu', adapter.includes('themeResolver:'));
 
   for (const path of config.bootstrapPaths) {
@@ -175,7 +187,7 @@ function staticAudit() {
   if (config.centralAppGuardPath) {
     const guard = text(config.centralAppGuardPath);
     check('Centrální app-guard nemá statický import reportéru', !/^import[^;]*error-reporter/m.test(guard));
-    check('Centrální app-guard načítá reportér dynamicky best-effort', guard.includes('startErrorReporterBestEffort') && guard.includes(['import(\"', './error-reporter.js', '\")'].join('')) && guard.includes('.catch((error)'));
+    check('Centrální app-guard načítá reportér dynamicky best-effort', guard.includes('startErrorReporterBestEffort') && guard.includes('import(reporterModuleUrl)') && guard.includes('.catch((error)'));
     check('Centrální app-guard respektuje errorReporter:false a denied fallback', guard.includes('options.errorReporter !== false') && guard.includes('options.errorReporterOnDenied !== false'));
   }
   for (const path of config.versionPaths || []) {
@@ -241,8 +253,11 @@ function harnessHtml() {
     set(value) { this.__srcObject = value; },
   });
   HTMLMediaElement.prototype.play = async function() {
-    Object.defineProperty(this, 'videoWidth', { configurable: true, value: 640 });
-    Object.defineProperty(this, 'videoHeight', { configurable: true, value: 360 });
+    const video = this;
+    setTimeout(() => {
+      Object.defineProperty(video, 'videoWidth', { configurable: true, value: 640 });
+      Object.defineProperty(video, 'videoHeight', { configurable: true, value: 360 });
+    }, 80);
   };
   const nativeDrawImage = CanvasRenderingContext2D.prototype.drawImage;
   CanvasRenderingContext2D.prototype.drawImage = function(source, ...args) {
@@ -262,22 +277,6 @@ function harnessHtml() {
       window.__captureHiddenObserved = true;
     }
     return nativeToBlob.call(this, callback, ...args);
-  };
-  window.__downloadCaptures = [];
-  const nativeAnchorClick = HTMLAnchorElement.prototype.click;
-  HTMLAnchorElement.prototype.click = function() {
-    if (this.download && String(this.href).startsWith('blob:')) {
-      const filename = this.download;
-      fetch(this.href).then((response) => response.arrayBuffer()).then((buffer) => {
-        const bytes = new Uint8Array(buffer);
-        let binary = '';
-        for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-          binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-        }
-        window.__downloadCaptures.push({ filename, base64: btoa(binary) });
-      });
-    }
-    return nativeAnchorClick.call(this);
   };
   window.__sensitiveFixtures = {
     prompt: 'ANON_PROMPT_TOKEN',
@@ -441,6 +440,39 @@ async function waitJson(url, attempts = 200) {
   }
   throw new Error(`Timeout: ${url}`);
 }
+async function findPageTarget(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const targets = await response.json();
+    return targets.find((item) => item.type === 'page' && item.webSocketDebuggerUrl) || null;
+  } catch {
+    return null;
+  }
+}
+async function waitPageTarget(listUrl, browserWebSocketDebuggerUrl) {
+  const deadline = Date.now() + 12000;
+  let createAttempts = 0;
+  let nextCreateAt = 0;
+  while (Date.now() < deadline) {
+    const page = await findPageTarget(listUrl);
+    if (page) return page;
+    if (browserWebSocketDebuggerUrl && createAttempts < 4 && Date.now() >= nextCreateAt) {
+      createAttempts += 1;
+      nextCreateAt = Date.now() + 500;
+      let browserClient;
+      try {
+        browserClient = new CdpClient(browserWebSocketDebuggerUrl);
+        await browserClient.open();
+        await browserClient.call('Target.createTarget', { url: 'about:blank' });
+      } catch {} finally {
+        try { browserClient?.close(); } catch {}
+      }
+    }
+    await sleep(75);
+  }
+  throw new Error(`Chromium nemá page target ani po čekání (pokusy o vytvoření: ${createAttempts})`);
+}
 async function waitFor(client, expression, label, attempts = 240) {
   for (let index = 0; index < attempts; index += 1) {
     try {
@@ -450,6 +482,31 @@ async function waitFor(client, expression, label, attempts = 240) {
   }
   const diagnostic = await client.evaluate(`({href:location.href,ready:window.__harnessReady||false,error:window.__harnessError||null,body:document.body?.innerText?.slice(0,300)||'',root:!!document.querySelector('#ghrab-error-reporter')})`).catch(() => null);
   throw new Error(`${label}${diagnostic ? `: ${JSON.stringify(diagnostic)}` : ''}`);
+}
+function zipDownloadSnapshot(directory) {
+  const snapshot = new Map();
+  for (const name of readdirSync(directory)) {
+    if (!name.toLowerCase().endsWith('.zip')) continue;
+    const info = statSync(join(directory, name));
+    snapshot.set(name, `${info.size}:${info.mtimeMs}`);
+  }
+  return snapshot;
+}
+async function waitForZipDownload(directory, previous, label, attempts = 400) {
+  for (let index = 0; index < attempts; index += 1) {
+    for (const name of readdirSync(directory)) {
+      if (!name.toLowerCase().endsWith('.zip')) continue;
+      const path = join(directory, name);
+      const info = statSync(path);
+      const signature = `${info.size}:${info.mtimeMs}`;
+      if (info.size > 0 && previous.get(name) !== signature) {
+        return { filename: name, base64: readFileSync(path).toString('base64') };
+      }
+    }
+    await sleep(50);
+  }
+  const files = readdirSync(directory).join(', ') || 'prázdná složka';
+  throw new Error(`${label}: ${files}`);
 }
 async function navigate(client, url) {
   await client.call('Page.navigate', { url });
@@ -500,15 +557,14 @@ async function runBrowserTests() {
     '--disable-default-apps', '--no-first-run', '--no-proxy-server',
     '--disable-background-networking', '--disable-component-update',
     `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`,
+    'about:blank',
   ], { stdio: ['ignore', 'ignore', 'ignore'] });
 
   let client;
   const runtimeExceptions = [];
   try {
-    await waitJson(`http://127.0.0.1:${debugPort}/json/version`);
-    const pages = await waitJson(`http://127.0.0.1:${debugPort}/json`);
-    const page = pages.find((item) => item.type === 'page');
-    if (!page) throw new Error('Chromium nemá page target');
+    const version = await waitJson(`http://127.0.0.1:${debugPort}/json/version`);
+    const page = await waitPageTarget(`http://127.0.0.1:${debugPort}/json`, version.webSocketDebuggerUrl);
     client = new CdpClient(page.webSocketDebuggerUrl);
     await client.open();
     client.on('Runtime.exceptionThrown', (params) => runtimeExceptions.push(params.exceptionDetails?.exception?.description || params.exceptionDetails?.text || 'unknown'));
@@ -574,13 +630,32 @@ async function runBrowserTests() {
 
       byText('button', 'Povolit snímání obrazovky').click();
       await until(() => !byText('button', 'Přejít do aplikace').disabled, 'Snímání se neaktivovalo');
+      const captureVideo = root.querySelector(':scope > video.ghrab-capture-video');
+      assert(captureVideo && captureVideo.getAttribute('aria-hidden') === 'true', 'Pomocné video není uvnitř reportéru nebo není skryté pro asistivní technologie');
+      const captureVideoStyle = getComputedStyle(captureVideo);
+      const captureVideoRect = captureVideo.getBoundingClientRect();
+      assert(captureVideoStyle.opacity === '0' && captureVideoStyle.visibility === 'hidden' && captureVideoStyle.pointerEvents === 'none' && captureVideoRect.right <= 0, 'Pomocné video je viditelné a může vytvořit zrcadlovou chodbu');
+      document.body.style.minHeight = '2400px';
+      window.scrollTo(0, 900);
+      await wait(80);
+      const captureVideoAfterScroll = captureVideo.getBoundingClientRect();
+      const captureStyleAfterScroll = getComputedStyle(captureVideo);
+      assert(root.contains(captureVideo) && captureVideoAfterScroll.right <= 0 && captureStyleAfterScroll.opacity === '0' && captureStyleAfterScroll.visibility === 'hidden' && captureStyleAfterScroll.pointerEvents === 'none', 'Po scrollování se pomocné video dostalo do obrazu nebo mimo kořen reportéru');
+      window.scrollTo(0, 0);
       assert(!backdrop.hidden, 'Povolení snímání nesmí samo skrýt hlášení');
       assert(root.querySelector('.ghrab-capture-bar').hidden, 'Panel se zobrazil před explicitním přechodem');
+      byText('.ghrab-report-section button', 'Pořídit snímek').click();
+      await until(() => root.querySelectorAll('.ghrab-screenshot-card').length === 1, 'Snímek z otevřeného hlášení se nepřidal');
+      assert(root.querySelector('.ghrab-report-status').textContent.includes('Snímek 1/5'), 'Pořízení snímku nemá viditelnou odezvu');
+      assert(root.querySelectorAll('.ghrab-report-status').length === 1 && root.querySelectorAll('.ghrab-report-final').length === 1, 'Reportér vytváří duplicitní stavová oznámení');
+      root.querySelector('.ghrab-screenshot-card button.danger').click();
+      assert(root.querySelectorAll('.ghrab-screenshot-card').length === 0, 'Testovací screenshot se nepodařilo odstranit');
       byText('button', 'Přejít do aplikace').click(); await wait(60);
       assert(backdrop.hidden && !root.querySelector('.ghrab-capture-bar').hidden, 'Přejít do aplikace neotevřelo plovoucí panel');
       byText('.ghrab-capture-bar button', 'Pořídit snímek').click();
       await until(() => root.querySelectorAll('.ghrab-screenshot-card').length === 1, 'Přímý screenshot se nepřidal');
       assert(window.__captureHiddenObserved, 'Reportér nebyl při samotném screenshotu skryt');
+      assert(root.querySelector('.ghrab-capture-bar-state strong').textContent.includes('Snímek uložen'), 'Plovoucí panel nepotvrdil uložení snímku');
       byText('.ghrab-capture-bar button', 'Zpět k hlášení').click(); await wait(50);
       assert(!backdrop.hidden, 'Návrat do hlášení selhal');
       byText('.ghrab-report-section button', 'Ukončit snímání').click(); await wait(40);
@@ -620,14 +695,14 @@ async function runBrowserTests() {
       await samePrompt(() => backdrop.click(), 'kliknutí mimo dialog');
       await samePrompt(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })), 'Escape');
 
-      const idBeforeKeep = root.querySelector('a.ghrab-report-button.primary').dataset.reportId;
+      const idBeforeKeep = root.querySelector('button.ghrab-report-button.primary[data-support-email]').dataset.reportId;
       footerClose.click(); await wait(30);
       byText('.ghrab-discard-backdrop button', 'Ponechat rozepsané a zavřít').click(); await wait(40);
       launcher.click(); await wait(40);
       assert(comment.value.includes('Anonymizovaný test'), 'Ponechaný koncept ztratil popis');
       assert(steps.value.includes('Otevřít test'), 'Ponechaný koncept ztratil postup');
       assert(root.querySelectorAll('.ghrab-screenshot-card').length === 5, 'Ponechaný koncept ztratil screenshoty');
-      assert(root.querySelector('a.ghrab-report-button.primary').dataset.reportId === idBeforeKeep, 'Ponechaný koncept změnil ID');
+      assert(root.querySelector('button.ghrab-report-button.primary[data-support-email]').dataset.reportId === idBeforeKeep, 'Ponechaný koncept změnil ID');
 
       window.dispatchEvent(new ErrorEvent('error', { message: 'JS_MARKER', filename: location.origin + '/safe-script.js', lineno: 7, colno: 3 }));
       const rejection = new Event('unhandledrejection');
@@ -642,29 +717,65 @@ async function runBrowserTests() {
       });
       await wait(80);
 
-      const primary = root.querySelector('a.ghrab-report-button.primary');
-      const parsed = new URL(primary.href);
-      assert(primary.tagName === 'A' && primary.target === '_blank' && primary.rel.includes('noopener'), 'Primární akce není nativní bezpečný odkaz');
-      assert(parsed.hostname === 'mail.google.com' && parsed.searchParams.get('to') === 'balaz@ghrabuvka.cz', 'Gmail URL nemá správného příjemce');
-      assert(parsed.searchParams.get('su')?.includes(idBeforeKeep) && parsed.searchParams.get('body')?.includes('PŘILOŽTE SOUBOR'), 'Gmail URL nemá předmět nebo tělo');
-      return { lightContrast, darkContrast, idBeforeKeep, gmailHref: primary.href };
+      const primary = root.querySelector('button.ghrab-report-button.primary[data-support-email]');
+      assert(primary.tagName === 'BUTTON' && primary.textContent.includes('Připravit ZIP'), 'Primární akce není tlačítko pro přípravu ZIP');
+      assert(primary.dataset.supportEmail === 'balaz@ghrabuvka.cz', 'Tlačítko nemá správného příjemce pro následný Gmail koncept');
+      return { lightContrast, darkContrast, idBeforeKeep };
     })()`);
     check('Světlý režim, tmavý režim a změna motivu za běhu', ui.lightContrast >= 4.5 && ui.darkContrast >= 4.5, `kontrast ${ui.lightContrast.toFixed(2)} / ${ui.darkContrast.toFixed(2)}`);
     check('Screenshot workflow, limit 5, návrat, náhled, odstranění a editor', true);
     check('Všechny čtyři způsoby zavření používají stejný dialog', true);
     check('Ponechání konceptu zachová text, screenshoty a ID', true, ui.idBeforeKeep);
-    check('Primární Gmail odkaz je kompletní před kliknutím', ui.gmailHref.includes('balaz%40ghrabuvka.cz'));
+    check('Primární akce před otevřením Gmailu pouze připravuje ZIP', true);
+
+    const clickBox = await client.evaluate(`(() => {
+      const control = document.querySelector('#ghrab-error-reporter button.ghrab-report-button.primary[data-support-email]');
+      control.scrollIntoView({ block: 'center', inline: 'center' });
+      const rect = control.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })()`);
+    await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: clickBox.x, y: clickBox.y, button: 'left', clickCount: 1 });
+    await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: clickBox.x, y: clickBox.y, button: 'left', clickCount: 1 });
+    await waitFor(client, 'document.querySelector(".ghrab-report-final a[data-report-download=zip]") && document.querySelector(".ghrab-report-mail-step")?.hidden === true', 'ZIP se nepřipravil do samostatného kroku', 400);
+    const staged = await client.evaluate(`(() => {
+      const root = document.getElementById('ghrab-error-reporter');
+      const download = root.querySelector('a[data-report-download=zip]');
+      const gmail = [...root.querySelectorAll('.ghrab-report-mail-step a')].find((node) => node.textContent.includes('otevřít Gmail'));
+      const parsed = new URL(gmail.href);
+      return {
+        downloadName: download.download,
+        mailHidden: root.querySelector('.ghrab-report-mail-step').hidden,
+        gmailHref: gmail.href,
+        recipient: parsed.searchParams.get('to'),
+        subject: parsed.searchParams.get('su'),
+        body: parsed.searchParams.get('body'),
+      };
+    })()`);
+    check('Gmail zůstává skrytý, dokud uživatel nestáhne ZIP', staged.mailHidden && staged.downloadName.endsWith('.zip'));
+    check('Předvyplněný Gmail má správného příjemce a upozornění na přílohu', staged.gmailHref.includes('mail.google.com') && staged.recipient === 'balaz@ghrabuvka.cz' && staged.subject.includes(ui.idBeforeKeep) && staged.body.includes('PŘÍLOHA NENÍ PŘIPOJENA AUTOMATICKY'));
+
+    const firstDownloadSnapshot = zipDownloadSnapshot(downloadDir);
+    const downloadBox = await client.evaluate(`(() => {
+      const link = document.querySelector('#ghrab-error-reporter a[data-report-download=zip]');
+      link.scrollIntoView({ block: 'center', inline: 'center' });
+      const rect = link.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })()`);
+    await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: downloadBox.x, y: downloadBox.y, button: 'left', clickCount: 1 });
+    await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: downloadBox.x, y: downloadBox.y, button: 'left', clickCount: 1 });
+    await waitFor(client, 'document.querySelector(".ghrab-report-mail-step")?.hidden === false', 'Přímé stažení ZIP neodemklo Gmail', 400);
+    const firstDownload = await waitForZipDownload(downloadDir, firstDownloadSnapshot, 'Chromium fyzicky nestáhl první ZIP');
 
     const beforeTargets = new Set((await waitJson(`http://127.0.0.1:${debugPort}/json`)).filter((item) => item.type === 'page').map((item) => item.id));
-    const clickBox = await client.evaluate(`(() => {
-      const link = document.querySelector('#ghrab-error-reporter a.ghrab-report-button.primary');
+    const gmailBox = await client.evaluate(`(() => {
+      const link = [...document.querySelectorAll('#ghrab-error-reporter .ghrab-report-mail-step a')].find((node) => node.textContent.includes('otevřít Gmail'));
       link.href = ${JSON.stringify(`${appBase}/new-tab.html`)};
       link.scrollIntoView({ block: 'center', inline: 'center' });
       const rect = link.getBoundingClientRect();
       return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     })()`);
-    await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: clickBox.x, y: clickBox.y, button: 'left', clickCount: 1 });
-    await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: clickBox.x, y: clickBox.y, button: 'left', clickCount: 1 });
+    await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: gmailBox.x, y: gmailBox.y, button: 'left', clickCount: 1 });
+    await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: gmailBox.x, y: gmailBox.y, button: 'left', clickCount: 1 });
     let openedTarget = null;
     for (let index = 0; index < 100; index += 1) {
       const targets = await waitJson(`http://127.0.0.1:${debugPort}/json`);
@@ -672,8 +783,7 @@ async function runBrowserTests() {
       if (openedTarget) break;
       await sleep(50);
     }
-    check('Fyzické kliknutí otevře novou kartu', Boolean(openedTarget), openedTarget?.url || 'žádný nový target');
-    await waitFor(client, 'window.__downloadCaptures.length >= 1 && !document.querySelector(".ghrab-report-final").hidden', 'ZIP se nepřipravil nebo nestáhl', 400);
+    check('Gmail se otevře až samostatným fyzickým kliknutím po stažení', Boolean(openedTarget), openedTarget?.url || 'žádný nový target');
     const prepared = await client.evaluate(`(() => {
       const root = document.getElementById('ghrab-error-reporter');
       const final = root.querySelector('.ghrab-report-final');
@@ -681,13 +791,12 @@ async function runBrowserTests() {
       const copy = [...final.querySelectorAll('button')].find((node) => node.textContent.trim() === 'Zkopírovat údaje e-mailu');
       copy.click();
       return new Promise((resolve) => setTimeout(() => resolve({
-        download: window.__downloadCaptures[0], links,
-        clipboard: window.__clipboardText,
+        links, clipboard: window.__clipboardText,
       }), 80));
     })()`);
-    check('Po přípravě jsou fallbacky Gmail / poštovní aplikace / kopírování', prepared.links.some((item) => item.text === 'Otevřít Gmail' && item.href.includes('balaz%40ghrabuvka.cz')) && prepared.links.some((item) => item.text === 'Otevřít poštovní aplikaci' && item.href.startsWith('mailto:')) && prepared.clipboard.includes('balaz@ghrabuvka.cz'));
+    check('Po stažení jsou dostupné Gmail / poštovní aplikace / kopírování', prepared.links.some((item) => item.text.includes('otevřít Gmail')) && prepared.links.some((item) => item.text === 'Otevřít poštovní aplikaci' && item.href.startsWith('mailto:')) && prepared.clipboard.includes('balaz@ghrabuvka.cz'));
 
-    const zip1 = inspectZip(prepared.download.base64, 'first-draft', {
+    const zip1 = inspectZip(firstDownload.base64, 'first-draft', {
       expectedScreenshots: 5,
       requiredTypes: ['javascript', 'promise', 'http', 'network'],
       forbidden: [
@@ -698,13 +807,7 @@ async function runBrowserTests() {
     });
     check('Stažený ZIP má přesný obsah a bezpečná metadata', zip1.names.length === 8, `${zip1.names.length} souborů`);
     check('ZIP zachytil JS, Promise, HTTP a síťové chyby bez citlivých dat', zip1.metadata.technicalErrors.length >= 4);
-    check('Prohlížeč fyzicky stáhl ZIP na původní kartě', (() => {
-      for (let i = 0; i < 100; i += 1) {
-        const files = readdirSync(downloadDir).filter((name) => name.endsWith('.zip'));
-        if (files.length) return true;
-      }
-      return false;
-    })());
+    check('Prohlížeč fyzicky stáhl ZIP na původní kartě', firstDownload.filename.toLowerCase().endsWith('.zip'), firstDownload.filename);
 
     const reset = await client.evaluate(`(async () => {
       const root = document.getElementById('ghrab-error-reporter');
@@ -719,7 +822,7 @@ async function runBrowserTests() {
         steps: textareas[1].value,
         screenshots: root.querySelectorAll('.ghrab-screenshot-card').length,
         finalHidden: root.querySelector('.ghrab-report-final').hidden,
-        newId: root.querySelector('a.ghrab-report-button.primary').dataset.reportId,
+        newId: root.querySelector('button.ghrab-report-button.primary[data-support-email]').dataset.reportId,
       };
       textareas[0].value = 'Druhý anonymizovaný koncept po úplném smazání.';
       textareas[0].dispatchEvent(new Event('input', { bubbles: true }));
@@ -735,25 +838,48 @@ async function runBrowserTests() {
     check('Úplné smazání otevře čistý formulář', reset.description === '' && reset.steps === '' && reset.screenshots === 0 && reset.finalHidden === true, JSON.stringify(reset));
     check('Po smazání vznikne nové ID', reset.newId && reset.newId !== ui.idBeforeKeep, `${ui.idBeforeKeep} → ${reset.newId}`);
 
-    const beforeSecondTargets = new Set((await waitJson(`http://127.0.0.1:${debugPort}/json`)).filter((item) => item.type === 'page').map((item) => item.id));
     const secondBox = await client.evaluate(`(() => {
-      window.__downloadCaptures = [];
-      const link = document.querySelector('#ghrab-error-reporter a.ghrab-report-button.primary');
-      link.href = ${JSON.stringify(`${appBase}/new-tab.html?second=1`)};
-      link.scrollIntoView({ block: 'center' });
-      const rect = link.getBoundingClientRect();
+      const control = document.querySelector('#ghrab-error-reporter button.ghrab-report-button.primary[data-support-email]');
+      control.scrollIntoView({ block: 'center' });
+      const rect = control.getBoundingClientRect();
       return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     })()`);
     await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: secondBox.x, y: secondBox.y, button: 'left', clickCount: 1 });
     await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: secondBox.x, y: secondBox.y, button: 'left', clickCount: 1 });
-    await waitFor(client, 'window.__downloadCaptures.length >= 1', 'Druhý ZIP se nepřipravil', 400);
-    const secondDownload = await client.evaluate('window.__downloadCaptures[0]');
+    await waitFor(client, 'document.querySelector("#ghrab-error-reporter a[data-report-download=zip]")', 'Druhý ZIP se nepřipravil', 400);
+    const secondDownloadSnapshot = zipDownloadSnapshot(downloadDir);
+    const secondDownloadBox = await client.evaluate(`(() => {
+      const link = document.querySelector('#ghrab-error-reporter a[data-report-download=zip]');
+      link.scrollIntoView({ block: 'center' });
+      const rect = link.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })()`);
+    await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: secondDownloadBox.x, y: secondDownloadBox.y, button: 'left', clickCount: 1 });
+    await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: secondDownloadBox.x, y: secondDownloadBox.y, button: 'left', clickCount: 1 });
+    const secondDownload = await waitForZipDownload(downloadDir, secondDownloadSnapshot, 'Chromium fyzicky nestáhl druhý ZIP');
     const zip2 = inspectZip(secondDownload.base64, 'second-draft', {
       expectedScreenshots: 1,
       forbidden: ['OLD_DRAFT_MARKER', TEST_SENSITIVE_EMAIL, 'ANON_KEY_TOKEN', 'ANON_PROMPT_TOKEN'],
     });
     check('Smazané technické chyby ani původní ID se nevrátily', !zip2.allText.includes('OLD_DRAFT_MARKER') && zip2.metadata.reportId === reset.newId);
-    check('Druhé fyzické kliknutí opět otevřelo novou kartu', (await waitJson(`http://127.0.0.1:${debugPort}/json`)).some((item) => item.type === 'page' && !beforeSecondTargets.has(item.id)));
+    const beforeSecondTargets = new Set((await waitJson(`http://127.0.0.1:${debugPort}/json`)).filter((item) => item.type === 'page').map((item) => item.id));
+    const secondGmailBox = await client.evaluate(`(() => {
+      const link = [...document.querySelectorAll('#ghrab-error-reporter .ghrab-report-mail-step a')].find((node) => node.textContent.includes('otevřít Gmail'));
+      link.href = ${JSON.stringify(`${appBase}/new-tab.html?second=1`)};
+      link.scrollIntoView({ block: 'center' });
+      const rect = link.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    })()`);
+    await client.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: secondGmailBox.x, y: secondGmailBox.y, button: 'left', clickCount: 1 });
+    await client.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: secondGmailBox.x, y: secondGmailBox.y, button: 'left', clickCount: 1 });
+    let secondOpened = false;
+    for (let index = 0; index < 100; index += 1) {
+      const targets = await waitJson(`http://127.0.0.1:${debugPort}/json`);
+      secondOpened = targets.some((item) => item.type === 'page' && !beforeSecondTargets.has(item.id));
+      if (secondOpened) break;
+      await sleep(50);
+    }
+    check('Druhý Gmail se opět otevře až po samostatném kliknutí', secondOpened);
 
     await client.call('Emulation.setDeviceMetricsOverride', { width: 360, height: 800, deviceScaleFactor: 1, mobile: true });
     const mobile = await client.evaluate(`(async () => {
@@ -777,7 +903,7 @@ async function runBrowserTests() {
     await fetch(`${localBase}/__support-mode?mode=404`);
     await navigate(client, `${appBase}/harness.html?fallback=1`);
     await waitFor(client, 'window.__harnessReady === true', 'Fallback harness se nespustil');
-    await waitFor(client, 'document.querySelector("#ghrab-error-reporter a.ghrab-report-button.primary")?.href.includes("balaz%40ghrabuvka.cz")', 'Fallback e-mail se nepoužil');
+    await waitFor(client, 'document.querySelector("#ghrab-error-reporter button.ghrab-report-button.primary[data-support-email]")?.dataset.supportEmail === "balaz@ghrabuvka.cz"', 'Fallback e-mail se nepoužil');
     check('Při nedostupném support.json se použije bezpečný fallback', true, 'balaz@ghrabuvka.cz');
     await fetch(`${localBase}/__support-mode?mode=ok`);
 

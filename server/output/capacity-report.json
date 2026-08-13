@@ -1,10 +1,10 @@
 {
   "schema": "lesson-hub-capacity-report-v1",
-  "measuredAt": "2026-08-05T09:41:01.277Z",
+  "measuredAt": "2026-08-13T16:16:15.384Z",
   "referenceProfile": {
     "cpu": "CI/container",
     "storage": "local atomic JSON",
-    "node": "v22.16.0"
+    "node": "v24.14.0"
   },
   "dataset": {
     "users": 300,
@@ -13,12 +13,12 @@
   },
   "metrics": {
     "fileBytes": 1251897,
-    "totalMs": 2308.87,
-    "mutationPhaseMs": 2253.63,
-    "mutationsPerSecond": 53.25,
-    "transactionLatencyP50Ms": 1151.08,
-    "transactionLatencyP95Ms": 2130.27,
-    "transactionLatencyMaxMs": 2253.42,
+    "totalMs": 2882.22,
+    "mutationPhaseMs": 2810.41,
+    "mutationsPerSecond": 42.7,
+    "transactionLatencyP50Ms": 1380.66,
+    "transactionLatencyP95Ms": 2681.98,
+    "transactionLatencyMaxMs": 2810.09,
     "migrationArtifacts": 7
   },
   "thresholds": {

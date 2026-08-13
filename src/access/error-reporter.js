@@ -1,5 +1,5 @@
 const REPORTER_ID = "ghrab-error-reporter";
-const REPORTER_VERSION = "1.1.0";
+const REPORTER_VERSION = "1.1.2";
 const MAX_COMPOSE_URL_LENGTH = 7000;
 const LOCAL_REPORTER_STYLE_URL = new URL("./error-reporter.css", import.meta.url);
 const MAX_SCREENSHOTS = 5;
@@ -58,6 +58,16 @@ function twoFrames() {
   return new Promise((resolve) =>
     requestAnimationFrame(() => requestAnimationFrame(resolve)),
   );
+}
+async function waitForVideoFrame(video, stream, timeoutMs = 3000) {
+  const startedAt = performance.now();
+  while (performance.now() - startedAt < timeoutMs) {
+    const track = stream?.getVideoTracks?.()[0];
+    if (track?.readyState === "ended") throw new Error("capture-track-ended");
+    if (video?.videoWidth > 0 && video?.videoHeight > 0) return;
+    await delay(50);
+  }
+  throw new Error("capture-frame-timeout");
 }
 function bytes(text) {
   return new TextEncoder().encode(text);
@@ -684,6 +694,8 @@ export function setupErrorReporter(options = {}) {
     reportId: reportId(),
     preparedFile: null,
     preparedBlob: null,
+    preparedUrl: null,
+    packageDownloadStarted: false,
     supportEmail: options.supportEmail || DEFAULT_SUPPORT_EMAIL,
     technicalErrors: [],
     completed: false,
@@ -983,19 +995,14 @@ export function setupErrorReporter(options = {}) {
     "p",
     "ghrab-report-help",
     t(
-      "Nástroj vytvoří jeden ZIP balíček, stáhne jej a otevře předvyplněný Gmail v nové kartě. Vy pouze přiložíte stažený ZIP a zprávu odešlete. Kdyby se karta neotevřela, po přípravě se zobrazí samostatné odkazy pro Gmail i poštovní aplikaci.",
-      "The tool creates one ZIP package, downloads it and opens a prefilled Gmail draft in a new tab. You only attach the downloaded ZIP and send the message. If the tab does not open, separate Gmail and mail-app links appear after preparation.",
+      "Nejprve vytvoříte ZIP balíček a samostatným kliknutím jej stáhnete. Teprve potom otevřete předvyplněný Gmail, přes ikonu kancelářské sponky přiložíte stažený ZIP a zprávu odešlete. Gmail místní soubor z bezpečnostních důvodů nepřipojí automaticky.",
+      "First create the ZIP package and download it with a separate click. Then open the prefilled Gmail draft, attach the downloaded ZIP with the paperclip icon and send the message. For security reasons, Gmail cannot attach a local file automatically.",
     ),
   );
   const sendActions = element("div", "ghrab-report-actions");
-  const prepareLink = document.createElement("a");
-  prepareLink.className = "ghrab-report-button primary";
-  prepareLink.href = "https://mail.google.com/mail/?view=cm&fs=1";
-  prepareLink.target = "_blank";
-  prepareLink.rel = "noopener";
-  prepareLink.textContent = t(
-    "Stáhnout ZIP a otevřít Gmail",
-    "Download ZIP and open Gmail",
+  const prepareLink = button(
+    t("Připravit ZIP balíček", "Prepare ZIP package"),
+    "primary",
   );
   sendActions.append(prepareLink);
   const finalStatus = element("div", "ghrab-report-final");
@@ -1157,7 +1164,12 @@ export function setupErrorReporter(options = {}) {
     setTimeout(() => comment.focus({ preventScroll: true }), 40);
   }
   function captureIsActive() {
-    return Boolean(state.stream && state.video && !snapButton.disabled);
+    const track = state.stream?.getVideoTracks?.()[0];
+    return Boolean(
+      state.stream &&
+        state.video &&
+        (!track || track.readyState === undefined || track.readyState === "live"),
+    );
   }
   function updateCaptureControls() {
     const active = captureIsActive();
@@ -1169,6 +1181,7 @@ export function setupErrorReporter(options = {}) {
   }
   function showApplicationForCapture() {
     if (!captureIsActive()) return;
+    captureBarTitle.textContent = t("Snímání obrazovky", "Screen capture");
     backdrop.hidden = true;
     root.classList.add("ghrab-capture-mode");
     captureBar.hidden = false;
@@ -1238,8 +1251,10 @@ export function setupErrorReporter(options = {}) {
     stopCapture();
     state.screenshots.forEach(revokeScreenshot);
     state.screenshots = [];
+    revokePreparedPackageUrl();
     state.preparedFile = null;
     state.preparedBlob = null;
+    state.packageDownloadStarted = false;
     state.reportId = reportId();
     state.technicalErrors = [];
     state.completed = false;
@@ -1251,6 +1266,7 @@ export function setupErrorReporter(options = {}) {
     uploadInput.value = "";
     finalStatus.replaceChildren();
     finalStatus.hidden = true;
+    resetPrepareControl();
     renderScreenshots();
     updateCaptureControls();
     setStatus(
@@ -1271,15 +1287,30 @@ export function setupErrorReporter(options = {}) {
     captureStatus.textContent = message;
     captureStatus.dataset.type = type;
   }
+  function revokePreparedPackageUrl() {
+    if (!state.preparedUrl) return;
+    URL.revokeObjectURL(state.preparedUrl);
+    state.preparedUrl = null;
+  }
+  function resetPrepareControl() {
+    prepareLink.hidden = false;
+    prepareLink.disabled = false;
+    prepareLink.removeAttribute("aria-busy");
+    prepareLink.removeAttribute("aria-disabled");
+    prepareLink.textContent = t("Připravit ZIP balíček", "Prepare ZIP package");
+  }
   function invalidatePreparedPackage({ touch = true } = {}) {
     ensureDraftCreatedAt();
     if (touch) draftUpdatedAt = new Date();
+    revokePreparedPackageUrl();
     state.preparedFile = null;
     state.preparedBlob = null;
+    state.packageDownloadStarted = false;
     state.completed = false;
     packageCreatedAt = null;
     finalStatus.replaceChildren();
     finalStatus.hidden = true;
+    resetPrepareControl();
     refreshPrepareLink();
   }
 
@@ -1389,18 +1420,33 @@ export function setupErrorReporter(options = {}) {
         audio: false,
       });
       const video = document.createElement("video");
+      video.autoplay = true;
       video.muted = true;
       video.playsInline = true;
       video.srcObject = stream;
       video.className = "ghrab-capture-video";
-      document.body.append(video);
-      await video.play();
-      if (!video.videoWidth)
-        await new Promise((resolve) =>
-          video.addEventListener("loadedmetadata", resolve, { once: true }),
-        );
+      video.setAttribute("aria-hidden", "true");
+      video.tabIndex = -1;
+      // The live capture surface stays inside the reporter root and outside the
+      // viewport. CSS and inline styles jointly prevent same-tab recursion even
+      // before the external stylesheet is ready or while the page is scrolling.
+      Object.assign(video.style, {
+        position: "fixed",
+        left: "-10000px",
+        top: "-10000px",
+        width: "1px",
+        height: "1px",
+        maxWidth: "1px",
+        maxHeight: "1px",
+        opacity: "0",
+        visibility: "hidden",
+        pointerEvents: "none",
+      });
+      root.append(video);
       state.stream = stream;
       state.video = video;
+      await video.play();
+      await waitForVideoFrame(video, stream);
       shareButton.disabled = true;
       snapButton.disabled = false;
       stopButton.disabled = false;
@@ -1422,6 +1468,7 @@ export function setupErrorReporter(options = {}) {
         { once: true },
       );
     } catch (error) {
+      stopCapture();
       const denied = error?.name === "NotAllowedError";
       setStatus(
         denied
@@ -1438,7 +1485,21 @@ export function setupErrorReporter(options = {}) {
     }
   }
   async function captureFrame() {
-    if (!state.video || !state.stream) return;
+    if (!captureIsActive()) {
+      setStatus(
+        t(
+          "Snímání není aktivní. Nejprve znovu povolte snímání obrazovky.",
+          "Capture is not active. Allow screen capture again first.",
+        ),
+        "warn",
+      );
+      captureBarTitle.textContent = t(
+        "Snímání není aktivní",
+        "Capture is not active",
+      );
+      updateCaptureControls();
+      return;
+    }
     if (state.screenshots.length >= MAX_SCREENSHOTS) {
       setStatus(
         t(
@@ -1449,10 +1510,18 @@ export function setupErrorReporter(options = {}) {
       );
       return;
     }
+    snapButton.disabled = true;
+    captureBarSnap.disabled = true;
+    setStatus(t("Pořizuji snímek…", "Capturing screenshot…"));
+    captureBarTitle.textContent = t(
+      "Pořizuji snímek…",
+      "Capturing screenshot…",
+    );
     root.classList.add("ghrab-capture-hidden");
     await twoFrames();
     await delay(130);
     try {
+      await waitForVideoFrame(state.video, state.stream, 1500);
       const sourceWidth = state.video.videoWidth;
       const sourceHeight = state.video.videoHeight;
       if (!sourceWidth || !sourceHeight) throw new Error("no-frame");
@@ -1476,6 +1545,7 @@ export function setupErrorReporter(options = {}) {
         ),
       );
       await addScreenshot(blob);
+      captureBarTitle.textContent = t("Snímek uložen ✓", "Screenshot saved ✓");
     } catch {
       setStatus(
         t(
@@ -1484,8 +1554,13 @@ export function setupErrorReporter(options = {}) {
         ),
         "error",
       );
+      captureBarTitle.textContent = t(
+        "Snímek se nepodařilo pořídit",
+        "Screenshot failed",
+      );
     } finally {
       root.classList.remove("ghrab-capture-hidden");
+      updateCaptureControls();
     }
   }
 
@@ -1761,16 +1836,6 @@ export function setupErrorReporter(options = {}) {
       diagnostics,
     };
   }
-  function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = filename;
-    document.body.append(anchor);
-    anchor.click();
-    anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
-  }
   async function copyPrimaryScreenshot() {
     if (
       !state.screenshots.length ||
@@ -1810,7 +1875,9 @@ export function setupErrorReporter(options = {}) {
       screenshotCopied
         ? "Hlavní screenshot je zkopírovaný ve schránce – vložte jej do zprávy pomocí Ctrl+V."
         : "Screenshoty jsou uvnitř ZIP balíčku.",
-      `PŘILOŽTE SOUBOR: ${packageInfo.file.name}`,
+      "PŘÍLOHA NENÍ PŘIPOJENA AUTOMATICKY.",
+      `Povinná příloha: ${packageInfo.file.name}`,
+      "V Gmailu klikněte na ikonu kancelářské sponky a vyberte tento soubor ze složky Stažené soubory. Před odesláním ověřte, že je ZIP vidět pod textem zprávy.",
       "",
       "Děkuji.",
     ];
@@ -1834,11 +1901,8 @@ export function setupErrorReporter(options = {}) {
   }
   function refreshPrepareLink() {
     if (!prepareLink) return;
-    const packageAt = packageCreatedAt || new Date();
-    const supportEmail = state.supportEmail || DEFAULT_SUPPORT_EMAIL;
-    const draft = mailDraft(draftPackageInfo(packageAt), false, supportEmail);
-    prepareLink.href = draft.gmailUrl;
     prepareLink.dataset.reportId = state.reportId;
+    prepareLink.dataset.supportEmail = state.supportEmail || DEFAULT_SUPPORT_EMAIL;
   }
 
   function actionLink(label, href, className, target = "_blank") {
@@ -1868,24 +1932,55 @@ export function setupErrorReporter(options = {}) {
     return copied;
   }
   function showPreparedMailActions(info, screenshotCopied, draft) {
+    revokePreparedPackageUrl();
+    state.preparedUrl = URL.createObjectURL(info.blob);
+    state.packageDownloadStarted = false;
     finalStatus.hidden = false;
+    finalStatus.dataset.phase = "download";
     finalStatus.replaceChildren();
     finalStatus.append(
-      element("strong", "", t("Hlášení je připravené.", "The report is ready.")),
+      element("strong", "", t("ZIP balíček je připravený.", "The ZIP package is ready.")),
       element(
         "span",
         "",
         t(
-          `Prohlížeč dostal odkaz na předvyplněný Gmail. Pokud se nová karta neotevřela nebo ji prohlížeč zablokoval, použijte tlačítko níže. ${screenshotCopied ? "Hlavní snímek je ve schránce – v e-mailu použijte Ctrl+V. " : ""}Přiložte soubor „${info.file.name}“. Příjemce je ${draft.to}.`,
-          `The browser received a link to a prefilled Gmail draft. If the new tab did not open or was blocked, use the button below. ${screenshotCopied ? "The main screenshot is in the clipboard – paste it into the email. " : ""}Attach “${info.file.name}”. The recipient is ${draft.to}.`,
+          `1. Stáhněte soubor „${info.file.name}“. Odkaz zůstane k dispozici pro opakované stažení.`,
+          `1. Download “${info.file.name}”. The link remains available if you need to download it again.`,
+        ),
+      ),
+    );
+    const downloadActions = element("div", "ghrab-report-actions ghrab-mail-fallback-actions");
+    const download = actionLink(
+      t("1. Stáhnout ZIP", "1. Download ZIP"),
+      state.preparedUrl,
+      "primary",
+      "",
+    );
+    download.download = info.file.name;
+    download.dataset.reportDownload = "zip";
+    downloadActions.append(download);
+    const mailStep = element("div", "ghrab-report-mail-step");
+    mailStep.hidden = true;
+    mailStep.append(
+      element(
+        "strong",
+        "",
+        t("2. Přiložte ZIP v Gmailu", "2. Attach the ZIP in Gmail"),
+      ),
+      element(
+        "span",
+        "",
+        t(
+          `Gmail soubor nepřipojí sám. Po otevření konceptu klikněte na kancelářskou sponku, vyberte „${info.file.name}“ ze Stažených souborů a před odesláním zkontrolujte, že je příloha vidět. ${screenshotCopied ? "Hlavní snímek je navíc ve schránce a lze jej vložit pomocí Ctrl+V. " : ""}Příjemce je ${draft.to}.`,
+          `Gmail cannot attach the file automatically. After opening the draft, click the paperclip, choose “${info.file.name}” from Downloads and make sure the attachment is visible before sending. ${screenshotCopied ? "The main screenshot is also in the clipboard and can be pasted with Ctrl+V. " : ""}The recipient is ${draft.to}.`,
         ),
       ),
     );
     const actions = element("div", "ghrab-report-actions ghrab-mail-fallback-actions");
     const gmail = actionLink(
-      t("Otevřít Gmail", "Open Gmail"),
+      t("2. ZIP mám stažený – otevřít Gmail", "2. ZIP downloaded – open Gmail"),
       draft.gmailUrl,
-      "secondary small",
+      "primary",
     );
     const mailApp = actionLink(
       t("Otevřít poštovní aplikaci", "Open mail app"),
@@ -1907,10 +2002,25 @@ export function setupErrorReporter(options = {}) {
         copy.textContent = t("Kopírování se nezdařilo", "Copy failed");
       }
     });
+    const markCompleted = () => {
+      state.completed = true;
+      finalStatus.dataset.phase = "email";
+    };
+    gmail.addEventListener("click", markCompleted);
+    mailApp.addEventListener("click", markCompleted);
     actions.append(gmail, mailApp, copy);
-    finalStatus.append(actions);
+    mailStep.append(actions);
+    download.addEventListener("click", () => {
+      state.packageDownloadStarted = true;
+      finalStatus.dataset.phase = "email";
+      download.textContent = t("Stáhnout ZIP znovu", "Download ZIP again");
+      mailStep.hidden = false;
+      setTimeout(() => gmail.focus({ preventScroll: true }), 0);
+    });
+    finalStatus.append(downloadActions, mailStep);
   }
   async function prepareAndEmail(event) {
+    event.preventDefault();
     if (comment.value.trim().length < 8) {
       event.preventDefault();
       comment.focus();
@@ -1931,29 +2041,25 @@ export function setupErrorReporter(options = {}) {
       return;
     }
     if (prepareLink.getAttribute("aria-busy") === "true") {
-      event.preventDefault();
       return;
     }
     ensureDraftCreatedAt();
     const packageAt = new Date();
     packageCreatedAt = packageAt;
     const initialEmail = state.supportEmail || DEFAULT_SUPPORT_EMAIL;
-    const navigationDraft = mailDraft(draftPackageInfo(packageAt), false, initialEmail);
-    prepareLink.href = navigationDraft.gmailUrl;
-    // The complete Gmail URL is set synchronously before the first await. The
-    // browser therefore performs a native target=_blank navigation without a
-    // scripted popup or a last-moment href rewrite.
     prepareLink.setAttribute("aria-busy", "true");
     prepareLink.setAttribute("aria-disabled", "true");
+    prepareLink.disabled = true;
     prepareLink.textContent = t("Připravuji ZIP…", "Preparing ZIP…");
+    let prepared = false;
     try {
       const info = await buildPackage(packageAt);
       const supportEmail = state.supportEmail || initialEmail;
       const screenshotCopied = await copyPrimaryScreenshot();
       const draft = mailDraft(info, screenshotCopied, supportEmail);
-      downloadBlob(info.blob, info.file.name);
-      state.completed = true;
       showPreparedMailActions(info, screenshotCopied, draft);
+      prepareLink.hidden = true;
+      prepared = true;
     } catch (error) {
       finalStatus.hidden = false;
       finalStatus.textContent =
@@ -1963,12 +2069,7 @@ export function setupErrorReporter(options = {}) {
           "The package could not be prepared.",
         );
     } finally {
-      prepareLink.removeAttribute("aria-busy");
-      prepareLink.removeAttribute("aria-disabled");
-      prepareLink.textContent = t(
-        "Stáhnout ZIP a otevřít Gmail",
-        "Download ZIP and open Gmail",
-      );
+      if (!prepared) resetPrepareControl();
     }
   }
 

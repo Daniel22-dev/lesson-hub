@@ -1,3 +1,10 @@
+## 1.2.9 — sjednocení reportéru (2026-08-13)
+
+- Reportér používá dvoukrokové vytvoření a skutečné stažení diagnostického ZIPu; Gmail je dostupný až po kliknutí na stažení.
+- Rozhraní i e-mail vyžadují ruční přiložení ZIPu a pomocné video je bezpečně skryté uvnitř reportéru i při scrollování.
+- Regresní sada fyzicky ověřuje stažený ZIP, jeho snímky a diagnostiku, jednu instanci reportéru, motivy, mobilní zobrazení a klávesnici.
+- Plánování hodin, lokální data a volitelný server nebyly změněny; PWA cache je `ghrab-lesson-hub-v1.2.9`.
+
 ## 1.2.8 — P5 (2026-08-05)
 
 
