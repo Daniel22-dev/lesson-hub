@@ -98,21 +98,38 @@ async function clickForQa(page, selector, timeout = 7000) {
     return style.visibility !== "hidden" && style.display !== "none" && rect.width > 0 && rect.height > 0;
   }, selector, { timeout });
 
-  const clicked = await page.evaluate((sel) => {
+  const result = await page.evaluate((sel) => {
     const element = document.querySelector(sel);
-    if (!(element instanceof HTMLElement) || element.hidden) return false;
-    if (element instanceof HTMLButtonElement && element.disabled) return false;
+    if (!(element instanceof HTMLElement) || element.hidden) return { clicked: false };
+    if (element instanceof HTMLButtonElement && element.disabled) return { clicked: false };
     // Lesson Hub intentionally re-renders parts of the page during async actions.
     // Dispatch from the current DOM node instead of letting Playwright retain a
     // handle that can become detached while the click is being actionability-checked.
     if (element instanceof HTMLButtonElement && element.type === "submit" && element.form) {
+      const formId = element.form.id || "";
+      const modalSubmit = Boolean(element.form.closest(".modal-backdrop"));
       element.form.requestSubmit(element);
-    } else {
-      element.click();
+      return { clicked: true, formId, modalSubmit };
     }
-    return true;
+    element.click();
+    return { clicked: true, formId: "", modalSubmit: false };
   }, selector);
-  if (!clicked) throw new Error(`QA click target není dostupný: ${selector}`);
+  if (!result?.clicked) throw new Error(`QA click target není dostupný: ${selector}`);
+  return result;
+}
+
+async function waitForSubmittedForm(page, formId, timeout = 15000) {
+  if (!formId) return;
+  const handle = await page.waitForFunction((id) => {
+    const form = document.getElementById(id);
+    if (!form) return { state: "closed", message: "" };
+    const error = form.querySelector("[data-form-error]");
+    const message = error && !error.hidden ? String(error.textContent || "").trim() : "";
+    if (message) return { state: "error", message };
+    return false;
+  }, formId, { timeout });
+  const state = await handle.jsonValue();
+  if (state?.state === "error") throw new Error(`Formulář ${formId}: ${state.message}`);
 }
 
 async function executeEvaluateStep(page, source) {
@@ -139,6 +156,7 @@ try {
   for (const flow of plan.flows || []) {
     let status = "PASS";
     let evidence = [];
+    let context = null;
     try {
       if (flow.type === "static") {
         for (const assertion of flow.assertions || []) {
@@ -155,7 +173,7 @@ try {
           evidence.push(`${assertion.file}: PASS`);
         }
       } else {
-        const context = await browser.newContext({
+        context = await browser.newContext({
           viewport: flow.viewport || { width: 1366, height: 768 },
         });
         const page = await context.newPage();
@@ -195,18 +213,20 @@ try {
         await waitForAppReady(page);
         for (const step of flow.steps || []) {
           if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
-          if (step.action === "click")
-            await clickForQa(page, step.selector, step.timeout || 7000);
+          if (step.action === "click") {
+            const clickResult = await clickForQa(page, step.selector, step.timeout || 7000);
+            if (clickResult.modalSubmit) await waitForSubmittedForm(page, clickResult.formId, step.submitTimeout || 15000);
+          }
           if (step.action === "clickIfVisible") {
             const target = page.locator(step.selector).first();
             if ((await target.count()) && (await target.isVisible()))
               await clickForQa(page, step.selector, step.timeout || 7000);
           }
-          if (step.action === "fill")
-            await page
-              .locator(step.selector)
-              .first()
-              .fill(await resolveStepValue(page, step.value));
+          if (step.action === "fill") {
+            const target = page.locator(step.selector).first();
+            await target.waitFor({ state: "visible", timeout: step.timeout || 10000 });
+            await target.fill(await resolveStepValue(page, step.value), { timeout: step.timeout || 10000 });
+          }
           if (step.action === "select")
             await page.locator(step.selector).first().selectOption(step.value);
           if (step.action === "press") await page.keyboard.press(step.key);
@@ -220,8 +240,11 @@ try {
               throw new Error(`Chybí text ${step.text}`);
           }
           if (step.action === "assertVisible") {
-            if (!(await page.locator(step.selector).first().isVisible()))
+            try {
+              await page.locator(step.selector).first().waitFor({ state: "visible", timeout: step.timeout || 10000 });
+            } catch {
               throw new Error(`Prvek není viditelný: ${step.selector}`);
+            }
           }
         }
         const bodyText = (await page.locator("body").innerText()).trim();
@@ -237,7 +260,6 @@ try {
             `Konzole workflow: ${errors.join(" | ").slice(0, 1000)}`,
           );
         evidence.push(url);
-        await closeWithLimit(context);
       }
     } catch (error) {
       status = "FAIL";
@@ -250,6 +272,8 @@ try {
           evidence.join("; "),
         ),
       );
+    } finally {
+      await closeWithLimit(context);
     }
     matrix.push({ id: flow.id, name: flow.name, status, evidence });
   }

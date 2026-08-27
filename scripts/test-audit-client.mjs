@@ -78,6 +78,9 @@ assert.equal(headlessRunnerSource.includes('app.dataset.renderedRoute === routeK
 const criticalRunnerSource = await readFile(new URL('./qa-critical-playwright.mjs', import.meta.url), 'utf8');
 const criticalFlowsSource = await readFile(new URL('../qa/critical-flows.json', import.meta.url), 'utf8');
 assert.equal(criticalRunnerSource.includes('async function waitForAppReady'), true, 'Kritická brána musí čekat na dokončení asynchronního vykreslení aplikace.');
+assert.equal(criticalRunnerSource.includes('async function waitForSubmittedForm'), true, 'Kritická brána musí po odeslání modálního formuláře čekat na skutečné dokončení asynchronní operace.');
+assert.equal(criticalRunnerSource.includes('await closeWithLimit(context);'), true, 'Kritická brána musí uklidit browser context i po selhání workflow.');
+assert.equal(criticalRunnerSource.includes('waitFor({ state: "visible"'), true, 'Kritická brána musí na asynchronně vykreslené prvky čekat deterministicky.');
 assert.equal(criticalRunnerSource.includes('async function executeEvaluateStep'), true, 'Kritická brána musí mít explicitní vykonání důvěryhodných evaluate kroků.');
 assert.equal(criticalRunnerSource.includes('typeof candidate === "function" ? await candidate() : candidate'), true, 'Funkční evaluate krok se musí skutečně zavolat, ne pouze vrátit jako objekt.');
 assert.equal(criticalRunnerSource.includes('await page.evaluate(step.script)'), false, 'Kritická brána nesmí znovu pouze vyhodnotit funkční výraz bez zavolání.');
