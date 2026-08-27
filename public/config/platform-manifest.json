@@ -1,7 +1,7 @@
 {
   "schema": "ghrab-platform-app-integration-v1",
   "appId": "lesson-hub",
-  "appVersion": "1.2.11",
+  "appVersion": "1.2.12",
   "contract": "ghrab-platform-v1",
   "requiredPlatformRange": ">=1.0.0 <2.0.0",
   "platformVersion": "1.0.0",
@@ -25,7 +25,7 @@
     ]
   },
   "storagePrefix": "ghrab.lesson-hub.",
-  "cacheName": "ghrab-lesson-hub-v1.2.11",
+  "cacheName": "ghrab-lesson-hub-v1.2.12",
   "capabilities": [
     "artifact-envelope-v1",
     "attachments",

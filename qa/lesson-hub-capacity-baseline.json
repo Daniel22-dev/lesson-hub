@@ -1,6 +1,6 @@
 {
   "schema": "lesson-hub-capacity-report-v1",
-  "appVersion": "1.2.11",
+  "appVersion": "1.2.12",
   "storageContract": "lesson-hub-store-adapter-v1",
   "startedAt": "2026-08-27T06:21:24.502Z",
   "completedAt": "2026-08-27T06:21:39.773Z",

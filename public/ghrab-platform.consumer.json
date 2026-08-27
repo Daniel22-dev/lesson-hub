@@ -2,7 +2,7 @@
   "schema": "ghrab-platform-consumer-v1",
   "appId": "lesson-hub",
   "appName": "Lesson Hub",
-  "appVersion": "1.2.11",
+  "appVersion": "1.2.12",
   "platform": {
     "version": "1.1.0",
     "contract": "ghrab-platform-v1",
@@ -73,7 +73,7 @@
     ]
   },
   "cache": {
-    "name": "ghrab-lesson-hub-v1.2.11",
+    "name": "ghrab-lesson-hub-v1.2.12",
     "updateMessage": "GHRAB_SKIP_WAITING"
   },
   "html": {

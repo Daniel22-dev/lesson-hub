@@ -12,7 +12,7 @@ store.onWriteFailure = (error, count) => {
   }
 };
 server.listen(config.port, config.host, () => {
-  console.log(`Lesson Hub Server 1.2.11 běží na http://${config.host}:${config.port}`);
+  console.log(`Lesson Hub Server 1.2.12 běží na http://${config.host}:${config.port}`);
   console.log(`Datový soubor: ${config.dataFile}`);
   console.log(`E-mailová brána: ${mailAdapter.status.mode}${mailAdapter.status.configured ? ' · připravena' : ' · nenakonfigurována'}`);
   if (!config.backupEnabled) console.warn('VAROVÁNÍ: Automatické serverové snapshoty jsou vypnuté.');

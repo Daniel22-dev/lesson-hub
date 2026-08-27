@@ -18,7 +18,7 @@
   "allowedOrigins": [
     "self"
   ],
-  "sharedAccessVersion": "access-p1-2026-08-04",
+  "sharedAccessVersion": "access-p1-20260824175535Z-k_wtm7Zj",
   "environmentId": "school-server-production",
   "profile": "school-server",
   "authMode": "server-session",

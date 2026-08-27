@@ -1,3 +1,8 @@
+## 1.2.12 — 2026-08-27
+
+- Hotfix synchronizuje `sharedAccessVersion` s aktuální podepsanou konfigurací AI Studia, aby se aplikace po bezpečnostní rotaci nezamykala kvůli `configuration-version-mismatch`.
+- Pedagogické funkce a datové formáty se nemění.
+
 ## 1.2.11 — GARP opravy po Claude kole 1 (2026-08-27)
 
 - Blokovány samostatné identifikátory __proto__/prototype/constructor a serverové resource mapy převedeny na null-prototype objekty.
