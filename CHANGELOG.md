@@ -1,3 +1,20 @@
+## 1.2.11 — GARP opravy po Claude kole 1 (2026-08-27)
+
+- Blokovány samostatné identifikátory __proto__/prototype/constructor a serverové resource mapy převedeny na null-prototype objekty.
+- URL validace rozšířena o běžné aliasy a hodnotovou blokaci spustitelných schémat bez omezení běžného textu typu „Data: …“.
+- Veřejná GitHub Pages CSP používá connect-src 'self' bez localhost výjimek; frame-ancestors zůstává pravdivě vynucováno jen HTTP hlavičkou školního profilu.
+- Učitel už nemůže endpointem process-due spustit odesílání zpráv jiných uživatelů; globální režim zůstává vlastníkovi/správci a serverovému scheduleru.
+- Doplněny regrese pro C1–C3 a cross-user message processing.
+
+## 1.2.10 — GARP bezpečnostní kandidát (2026-08-26)
+
+- Lokální QA administrátorský permit je nyní omezen na localhost/loopback nebo `about:`; veřejná URL s `?qa=1` již nemůže obejít centrální Access Guard.
+- Import záloh, vzdálená synchronizace a serverové resource payloady mají společnou strukturální validaci nedůvěryhodných dat včetně blokace prototype-pollution klíčů, nebezpečných ID/tokenů a URL protokolů.
+- GitHub Actions jsou připnuté na neměnné commit SHA a auditní regrese odmítne návrat plovoucích `@vN` značek.
+- Doplněny regrese pro QA bypass, checksummed škodlivý import, škodlivou serverovou synchronizaci, nebezpečný serverový URL payload a prototype-pollution payload.
+- Statický GitHub Pages profil nyní skutečně vynucuje CSP přes `<meta http-equiv>`; spouštění skriptů spadá pod `default-src 'self'` a nepovoluje `unsafe-inline` ani `unsafe-eval`. Zůstává pouze přesně zdokumentovaná stylová výjimka `style-src 'unsafe-inline'` pro access-gate styly.
+- PWA cache je `ghrab-lesson-hub-v1.2.10`; distribuovaná verze je sjednocena na 1.2.10.
+
 ## 1.2.9 — sjednocení reportéru (2026-08-13)
 
 - Reportér používá dvoukrokové vytvoření a skutečné stažení diagnostického ZIPu; Gmail je dostupný až po kliknutí na stažení.

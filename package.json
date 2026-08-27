@@ -1,6 +1,6 @@
 {
   "name": "lesson-hub",
-  "version": "1.2.9",
+  "version": "1.2.11",
   "private": true,
   "type": "module",
   "description": "Lesson Hub – local-first osobní paměť učitele plně integrovaná do AI Studio GHRAB.",

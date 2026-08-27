@@ -32,7 +32,7 @@ async function request(route, options = {}) {
 try {
   const health = await request('/health');
   assert.equal(health.response.status, 200);
-  assert.equal(health.payload.version, '1.2.9');
+  assert.equal(health.payload.version, '1.2.11');
 
   const login = await request('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: ['owner', 'example.test'].join('@'), password: 'ServerTest1234' }) });
   assert.equal(login.response.status, 200);

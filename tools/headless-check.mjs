@@ -74,7 +74,7 @@ try {
         } else if (pathname.endsWith('/AI-Studio-GHRAB/config/support.json')) {
           await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ supportEmail: 'balaz@ghrabuvka.cz' }) });
         } else if (pathname.endsWith('/AI-Studio-GHRAB/config/apps.generated.json')) {
-          await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'lesson-hub', version: '1.2.9', name: { cs: 'Lesson Hub', en: 'Lesson Hub' } }]) });
+          await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'lesson-hub', version: '1.2.11', name: { cs: 'Lesson Hub', en: 'Lesson Hub' } }]) });
         } else {
           await requestRoute.continue();
         }

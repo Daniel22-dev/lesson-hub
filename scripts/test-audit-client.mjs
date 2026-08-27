@@ -9,6 +9,7 @@ import { findUnsafeHtmlAssignments } from './qa-security-utils.mjs';
 import { ENTITY_STORES } from '../src/core/constants.js';
 import { BaseRepository } from '../src/repositories/BaseRepository.js';
 import { setLocalDocument } from './qa-core.mjs';
+import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from '../src/core/untrustedData.js';
 
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -24,6 +25,14 @@ await assert.rejects(
   () => setLocalDocument(qaPageProbe, projectRoot, '/../outside.html#/overview', 'http://127.0.0.1:4173'),
   /escapes serve root/,
 );
+const workflowNames = ['axe-supplemental.yml', 'deploy.yml', 'p3-quality.yml', 'p4-release.yml', 'p5-release-gate.yml'];
+for (const workflowName of workflowNames) {
+  const workflowSource = await readFile(new URL(`../.github/workflows/${workflowName}`, import.meta.url), 'utf8');
+  const actionRefs = [...workflowSource.matchAll(/uses:\s+actions\/[^@\s]+@([^\s#]+)/g)].map((match) => match[1]);
+  assert.equal(actionRefs.length > 0, true, `${workflowName} musí obsahovat kontrolované GitHub Actions.`);
+  assert.equal(actionRefs.every((ref) => /^[0-9a-f]{40}$/.test(ref)), true, `${workflowName} musí připínat GitHub Actions na neměnný commit SHA.`);
+}
+
 const visualReporterSource = await readFile(new URL('./qa-visual-playwright.mjs', import.meta.url), 'utf8');
 assert.equal(visualReporterSource.includes('item.message || item.summary || "Nález bez popisu"'), true, 'Vizuální reportér musí vždy vypsat skutečnou zprávu nebo bezpečný fallback.');
 assert.equal(visualReporterSource.includes(': ${item.summary}`'), false, 'Vizuální reportér nesmí používat samotné neexistující pole summary.');
@@ -35,6 +44,33 @@ assert.equal(visualReporterSource.includes('String(scenario?.url || "").includes
 assert.equal(visualReporterSource.includes('await page.waitForSelector("#manual-app"'), true, 'Standalone manuál musí čekat na vlastní #manual-app.');
 assert.equal(visualReporterSource.includes('async function waitForScenarioState'), true, 'Vizuální brána musí čekat na skutečný finální stav scénáře.');
 assert.equal(visualReporterSource.includes('const modalContract ='), true, 'Replay posledního kliku smí být omezen na modalové vizuální kontrakty.');
+const indexHtmlSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const manualHtmlSource = await readFile(new URL('../public/manual/index.html', import.meta.url), 'utf8');
+for (const [label, html] of [['aplikace', indexHtmlSource], ['manuál', manualHtmlSource]]) {
+  assert.match(html, /http-equiv=["']Content-Security-Policy["']/, `Statický profil musí skutečně obsahovat CSP pro ${label}.`);
+  const csp = html.match(/http-equiv=["']Content-Security-Policy["'][^>]*content="([^"]+)"/)?.[1] || '';
+  assert.match(csp, /(?:^|;)\s*default-src\s+'self'(?:\s|;|$)/, `CSP pro ${label} musí mít bezpečný default-src 'self'.`);
+  assert.equal(/(?:^|;)\s*script-src[^;]*'unsafe-inline'/.test(csp), false, `CSP pro ${label} nesmí povolovat executable unsafe-inline skripty.`);
+  assert.equal(/'unsafe-eval'/.test(csp), false, `CSP pro ${label} nesmí povolovat unsafe-eval.`);
+  assert.equal(/https?:\/\/(?:localhost|127\.0\.0\.1)/i.test(csp), false, `Veřejná CSP pro ${label} nesmí otevírat spojení na localhost návštěvníka.`);
+}
+
+const bootstrapSource = await readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
+const manualBootstrapSource = await readFile(new URL('../public/manual/bootstrap.js', import.meta.url), 'utf8');
+assert.match(bootstrapSource, /function isTrustedLocalOrigin\(\)/, 'QA bypass musí mít explicitní kontrolu lokálního originu.');
+assert.match(bootstrapSource, /return isTrustedLocalOrigin\(\) && navigator\.webdriver/, 'Hlavní aplikace smí QA admin permit vydat jen na důvěryhodném lokálním originu.');
+assert.match(manualBootstrapSource, /if \(!isTrustedLocalOrigin\(\)\) return false;/, 'Manuál nesmí povolit webdriver QA bypass na veřejném originu.');
+
+assert.doesNotThrow(() => assertSafeUntrustedRecord({ id: 'material_safe-1', status: 'active', title: 'Uživatelský text může obsahovat <b>HTML-like</b> obsah.', url: 'https://example.test/material' }));
+assert.throws(() => assertSafeUntrustedRecord({ id: 'bad\" onclick=\"alert(1)', title: 'x' }), /nepovolené znaky/);
+assert.throws(() => assertSafeUntrustedRecord({ id: 'material_1', url: 'javascript:alert(1)' }), /(?:nepovolené znaky|nepovolený protokol|nebezpečný URL protokol)/);
+assert.throws(() => assertSafeUntrustedRecord({ id: 'material_1b', link: 'javascript:alert(1)' }), /(?:nepovolené znaky|nepovolený protokol|nebezpečný URL protokol)/);
+assert.throws(() => assertSafeUntrustedRecord({ id: 'material_1c', src: 'data:text/html,<script>alert(1)</script>' }), /(?:nepovolené znaky|nepovolený protokol|nebezpečný URL protokol)/);
+assert.doesNotThrow(() => assertSafeUntrustedRecord({ id: 'material_text', title: 'Data: interpretace výsledků', summary: 'Topic: history' }));
+for (const forbiddenId of ['__proto__', 'prototype', 'constructor']) assert.throws(() => assertSafeUntrustedIdentifier(forbiddenId), /nepovolené|zakázaný/);
+const pollutedRecord = JSON.parse('{"id":"material_2","__proto__":{"polluted":true}}');
+assert.throws(() => assertSafeUntrustedRecord(pollutedRecord), /zakázaný klíč/);
+
 const headlessRunnerSource = await readFile(new URL('../tools/headless-check.mjs', import.meta.url), 'utf8');
 assert.equal(headlessRunnerSource.includes('async function waitForMainApp'), true, 'Headless smoke test musí počkat na dokončený render trasy.');
 assert.equal(headlessRunnerSource.includes('qa=1'), true, 'Headless smoke test musí lokální QA přístup zapnout explicitním parametrem.');
@@ -121,6 +157,11 @@ const refreshed = await sync.pullRemote();
 assert.equal(refreshed.fullRefresh, true);
 assert.equal(Boolean(await repositories.lessons.get('full_1')), true);
 assert.equal(fakeServer.config.lastCursor, 50);
+fakeServer.pull = async () => ({
+  items: [{ resource: 'lessons', entityId: 'unsafe\" data-x=\"1', operation: 'upsert', payload: { id: 'unsafe\" data-x=\"1', title: 'Server XSS probe' }, cursor: 51 }],
+  cursor: 51, hasMore: false,
+});
+await assert.rejects(() => sync.pullRemote(), /nepovolené znaky/, 'Klient musí odmítnout strukturálně nebezpečný záznam i od serveru.');
 
 await database.put(ENTITY_STORES.lessons, { id: 'replace_me', title: 'Old' });
 await database.importStores({ schoolYears: [], unknownStore: [{ id: 'x' }] }, { mode: 'replace', replaceStoreNames: [ENTITY_STORES.lessons, ENTITY_STORES.schoolYears] });
@@ -131,6 +172,13 @@ const backupService = new BackupService(database, repositories);
 const restorePackage = await backupService.exportPackage({ label: 'Test obnovy', reason: 'manual' });
 await database.clear(ENTITY_STORES.lessons);
 const restored = await backupService.importPackage(restorePackage, { mode: 'replace', createSafetyBackup: false });
+await database.put(ENTITY_STORES.materials, { id: 'unsafe\" onmouseover=\"alert(1)', title: 'Záměrně škodlivý testovací záznam', url: 'javascript:alert(1)', updatedAt: new Date().toISOString() });
+const maliciousButChecksummedBackup = await backupService.exportPackage({ label: 'Bezpečnostní regrese', reason: 'test' });
+await database.delete(ENTITY_STORES.materials, 'unsafe\" onmouseover=\"alert(1)');
+const maliciousValidation = await backupService.validatePackage(maliciousButChecksummedBackup);
+assert.equal(maliciousValidation.checksumValid, true, 'Regresní balíček musí mít platný checksum, aby testoval schéma a ne integritu.');
+assert.equal(maliciousValidation.valid, false, 'Platný checksum nesmí obejít bezpečnostní validaci importovaných záznamů.');
+assert.equal(maliciousValidation.errors.some((message) => message.includes('Nebezpečná struktura importu')), true);
 await sync.prepareFromAudit();
 const restoreQueue = await repositories.syncQueue.list();
 assert.equal(Boolean(await repositories.lessons.get('restored_lesson')), true);
@@ -150,4 +198,4 @@ const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', im
 const braceExpansionVersion = packageLock.packages?.['node_modules/brace-expansion']?.version;
 assert.ok(braceExpansionVersion === undefined || braceExpansionVersion === '5.0.8', 'Lockfile nesmí obsahovat zranitelný brace-expansion.');
 
-console.log('Auditní klientské regrese prošly: hashové QA cesty, vykonání evaluate kroků, headless připravenost, čitelný vizuální reportér, trasově stabilní čekání kritických workflow a render race pojistku, dynamická data, XSS detektor včetně render funkcí, amortizace auditu, SHA-256, dávková synchronizace, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');
+console.log('Auditní klientské regrese prošly: lokálně omezený QA přístup, validace nedůvěryhodných importů a synchronizace, hashové QA cesty, evaluate kroky, headless připravenost, vizuální reportér, render race pojistka, XSS detektor, amortizace auditu, SHA-256, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

@@ -19,8 +19,8 @@ jobs:
   qa-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -46,7 +46,7 @@ jobs:
           GHRAB_VISUAL_SCREENSHOT_ATTEMPTS: 3
       - name: Upload QA evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ghrab-qa-lesson-hub-${{ github.sha }}
           path: qa-results
@@ -56,9 +56,9 @@ jobs:
       - name: Enforce P5 R2 release gate
         run: npm run qa:p5:ci
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
         if: github.event_name != 'pull_request'
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         if: github.event_name != 'pull_request'
         with:
           path: dist
@@ -72,7 +72,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
 
   notify-ai-studio:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

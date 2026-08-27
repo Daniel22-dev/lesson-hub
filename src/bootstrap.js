@@ -1,9 +1,15 @@
 const APP_ID = 'lesson-hub';
 let studioUrl = '/AI-Studio-GHRAB/';
 
-function isLocalDevelopment() {
-  return navigator.webdriver === true && (new URLSearchParams(location.search).get('qa') === '1' || location.protocol === 'about:');
+function isTrustedLocalOrigin() {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) || location.protocol === 'about:';
 }
+
+function isLocalDevelopment() {
+  return isTrustedLocalOrigin() && navigator.webdriver === true
+    && (new URLSearchParams(location.search).get('qa') === '1' || location.protocol === 'about:');
+}
+
 
 function grantLocalDevelopmentAccess() {
   const now = Math.floor(Date.now() / 1000);

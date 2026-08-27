@@ -53,6 +53,25 @@ try {
     assert.equal(weak.response.status, 400);
     assert.equal(weak.payload.error, 'password_weak');
 
+    const unsafeUrlRecord = await api('/v1/materials', { ...ownerAuth, method: 'POST', body: JSON.stringify({ id: 'unsafe_url_material', title: 'Probe', url: 'javascript:alert(1)', visibility: 'shared' }) });
+    assert.equal(unsafeUrlRecord.response.status, 400, 'Server nesmí přijmout nebezpečný URL protokol do sdíleného záznamu.');
+    assert.equal(unsafeUrlRecord.payload.error, 'record_schema_invalid');
+    const prototypeRecord = await api('/v1/materials', { ...ownerAuth, method: 'POST', body: '{"id":"prototype_material","title":"Probe","__proto__":{"polluted":true}}' });
+    assert.equal(prototypeRecord.response.status, 400, 'Server nesmí přijmout prototype-pollution klíč.');
+    assert.equal(prototypeRecord.payload.error, 'record_schema_invalid');
+    const aliasUrlRecord = await api('/v1/materials', { ...ownerAuth, method: 'POST', body: JSON.stringify({ id: 'unsafe_alias_material', title: 'Probe', link: 'javascript:alert(1)', visibility: 'shared' }) });
+    assert.equal(aliasUrlRecord.response.status, 400, 'Server nesmí přijmout nebezpečný protokol ani v URL alias poli.');
+    assert.equal(aliasUrlRecord.payload.error, 'record_schema_invalid');
+    const textWithColon = await api('/v1/materials', { ...ownerAuth, method: 'POST', body: JSON.stringify({ id: 'safe_text_colon', title: 'Data: interpretace výsledků', visibility: 'private' }) });
+    assert.equal(textWithColon.response.status, 201, 'Běžný pedagogický text s dvojtečkou nesmí být URL hardeningem odmítnut.');
+    const guardRecord = await api('/v1/materials', { ...ownerAuth, method: 'POST', body: JSON.stringify({ id: 'prototype_guard', title: 'Zachovat', visibility: 'private' }) });
+    assert.equal(guardRecord.response.status, 201);
+    assert.equal(Object.getPrototypeOf(store.resource('materials')), null, 'Serverové resource mapy musí být bez prototypu.');
+    const prototypeIdPush = await api('/v1/sync/push', { ...ownerAuth, method: 'POST', body: JSON.stringify({ schema: SYNC_CONTRACT, clientId: 'prototype-probe', changes: [{ id: 'prototype-change', resource: 'materials', entityId: '__proto__', operation: 'upsert', payload: { id: '__proto__', title: 'Probe', visibility: 'shared', updatedAt: now } }] }) });
+    assert.equal(prototypeIdPush.response.status, 400, 'Samostatný entityId __proto__ musí být odmítnut před zápisem.');
+    assert.equal(prototypeIdPush.payload.error, 'record_schema_invalid');
+    assert.equal(store.resource('materials').prototype_guard.title, 'Zachovat', 'Odmítnutý prototype-pollution pokus nesmí poškodit existující resource mapu.');
+
     for (const [id, email] of [['a', 'a@example.test'], ['b', 'b@example.test']]) {
       const created = await api('/v1/users', { ...ownerAuth, method: 'POST', body: JSON.stringify({ email, displayName: id.toUpperCase(), role: 'teacher', password: `Teacher${id.toUpperCase()}Password123` }) });
       assert.equal(created.response.status, 201);
@@ -63,6 +82,13 @@ try {
     const tokenB = loginB.payload.token;
     const userA = store.data.users.find((item) => item.email === 'a@example.test');
     const userB = store.data.users.find((item) => item.email === 'b@example.test');
+
+    const foreignReadyMessage = { id: 'foreign_ready', ownerId: userA.id, subject: 'Cizí zpráva', body: 'Nesmí ji spustit jiný učitel.', recipients: [{ email: 'recipient@example.test' }], status: 'ready', requireApproval: false, updatedAt: now, createdAt: now };
+    store.resource('messages')[foreignReadyMessage.id] = foreignReadyMessage;
+    const crossUserProcess = await api('/v1/messages/process-due', { token: tokenB, method: 'POST', body: '{}' });
+    assert.equal(crossUserProcess.response.status, 200);
+    assert.equal(store.resource('messages')[foreignReadyMessage.id].status, 'ready', 'Učitel nesmí přes process-due spustit cizí zprávu.');
+    assert.equal(crossUserProcess.payload.items.some((item) => item.id === foreignReadyMessage.id), false, 'Výsledek učitele nesmí obsahovat cizí zprávu.');
 
     const shared = await api('/v1/students', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'shared_student', displayName: 'Sdílený', visibility: 'shared', updatedAt: now }) });
     assert.equal(shared.response.status, 201);
@@ -130,7 +156,7 @@ try {
     assert.equal(staleResult.dispatched.some((item) => item.message.id === stale.id), true);
     assert.equal(stale.status, 'sent');
 
-    console.log('Auditní serverové regrese prošly: oprávnění, zotavení zápisu, retence, hesla, kurzory, zastupování, doručenky a hlavičky.');
+    console.log('Auditní serverové regrese prošly: validace nedůvěryhodných záznamů, oprávnění, zotavení zápisu, retence, hesla, kurzory, zastupování, doručenky a hlavičky.');
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

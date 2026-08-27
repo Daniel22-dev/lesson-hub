@@ -120,13 +120,13 @@ export class MessageDispatcher {
     return { message, deliveries: current };
   }
 
-  async processDue({ actorId = null } = {}) {
+  async processDue({ actorId = null, ownerId = null } = {}) {
     if (this.running) return { prepared: [], dispatched: [], skipped: true };
     this.running = true;
     try {
       const prepared = [];
       const dispatched = [];
-      const messages = Object.values(this.store.resource('messages'));
+      const messages = Object.values(this.store.resource('messages')).filter((message) => !ownerId || message.ownerId === ownerId);
       for (const message of messages) {
         if (staleSending(message, this.config)) {
           message.status = 'ready';

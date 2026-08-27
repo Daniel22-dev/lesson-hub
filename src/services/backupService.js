@@ -4,9 +4,11 @@ import { DATABASE_VERSION, SCHEMA_VERSION, STORE_DEFINITIONS, createId } from '.
 import { ENTITY_STORES } from '../core/constants.js';
 import { loadSettings, saveSettings } from '../core/settings.js';
 import { SERVER_API_CONTRACT } from '../server/dataGateway.js';
+import { assertSafeUntrustedRecord } from '../core/untrustedData.js';
 
 export const BACKUP_FORMAT = 'lesson-hub-backup-v1';
 export const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
+export const MAX_IMPORT_RECORDS = 100_000;
 const MAX_LOCAL_BACKUPS = 3;
 export const RESTORE_SYNC_META_KEY = 'sync:restorePending';
 const PREPARED_AUDIT_META_KEY = 'sync:lastPreparedAudit';
@@ -243,11 +245,21 @@ export class BackupService {
     }
 
     const normalizedData = currentStoreTemplate();
+    let totalRecords = 0;
     for (const storeName of EXPORT_STORE_NAMES) {
       const value = backupPackage.data?.[storeName];
       if (value !== undefined && !Array.isArray(value)) errors.push(`Úložiště ${storeName} nemá očekávaný seznam záznamů.`);
       normalizedData[storeName] = Array.isArray(value) ? value : [];
+      totalRecords += normalizedData[storeName].length;
+      for (let index = 0; index < normalizedData[storeName].length && errors.length < 20; index += 1) {
+        try {
+          assertSafeUntrustedRecord(normalizedData[storeName][index], { label: `${storeName}[${index}]` });
+        } catch (error) {
+          errors.push(`Nebezpečná struktura importu: ${error.message}`);
+        }
+      }
     }
+    if (totalRecords > MAX_IMPORT_RECORDS) errors.push(`Záloha obsahuje více než povolených ${MAX_IMPORT_RECORDS} záznamů.`);
 
     return {
       valid: errors.length === 0,

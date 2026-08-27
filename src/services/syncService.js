@@ -1,5 +1,6 @@
 import { ENTITY_STORES } from '../core/constants.js';
 import { SERVER_API_CONTRACT } from '../server/dataGateway.js';
+import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from '../core/untrustedData.js';
 
 const ENTITY_RESOURCE_MAP = Object.freeze({
   schoolYear: 'schoolYears', subject: 'subjects', groupIdentity: 'groupIdentities', group: 'groupInstances', groupInstance: 'groupInstances',
@@ -118,8 +119,13 @@ export class SyncService {
     let conflicts = 0;
     const outstanding = (await this.list()).filter((item) => ['pending', 'failed', 'blocked'].includes(item.status));
     for (const change of items) {
+      if (!change || typeof change !== 'object') throw new Error('Server vrátil neplatnou synchronizační změnu.');
+      if (!SYNC_RESOURCES.has(change.resource)) throw new Error('Server vrátil neznámý synchronizační zdroj.');
+      if (!['upsert', 'delete'].includes(change.operation)) throw new Error('Server vrátil neplatnou synchronizační operaci.');
+      assertSafeUntrustedIdentifier(change.entityId, { label: 'synchronizační entityId' });
+      if (change.operation !== 'delete') assertSafeUntrustedRecord(change.payload, { label: `synchronizace.${change.resource}` });
       const repository = this.repositories[change.resource];
-      if (!repository) continue;
+      if (!repository) throw new Error('Pro synchronizační zdroj chybí lokální úložiště.');
       const localPending = outstanding.find((item) => item.resource === change.resource && item.entityId === change.entityId);
       if (localPending) {
         await this.repositories.syncConflicts.create({

@@ -13,8 +13,9 @@ import { createMailAdapter } from './lib/mailer.mjs';
 import { MessageDispatcher } from './lib/messageDispatcher.mjs';
 import { OperationsManager } from './lib/operations.mjs';
 import { canEditPeriod, canViewPeriod, createItem, createPeriod, createPlan, listSubstitutionBundles, publicItem, publicPeriod, publicPlan, updateItemByOwner, updateItemProgress, updatePeriod, updatePlan } from './lib/substitution.mjs';
+import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from './lib/untrustedData.mjs';
 
-export const SERVER_VERSION = '1.2.9';
+export const SERVER_VERSION = '1.2.11';
 export const API_CONTRACT = 'lesson-hub-api-v1';
 export const SYNC_CONTRACT = 'lesson-hub-sync-v1';
 export const RESOURCE_NAMES = Object.freeze([
@@ -244,6 +245,12 @@ function changeFor(store, { resource, entityId, operation, payload, ownerId, act
 
 function upsertResource(store, { resource, entityId, payload, user, clientId = '', clientChangeId = '' }) {
   if (!RESOURCE_NAMES.includes(resource)) throw httpError(404, 'Neznámý datový zdroj.', 'resource_unknown');
+  try {
+    assertSafeUntrustedIdentifier(entityId, { label: 'entityId' });
+    assertSafeUntrustedRecord(payload, { label: `payload.${resource}` });
+  } catch (error) {
+    throw httpError(400, `Datový záznam neprošel bezpečnostní validací: ${error.message}`, 'record_schema_invalid');
+  }
   const records = store.resource(resource);
   const current = records[entityId] || null;
   if (current && !canAccessRecord(user, current, { write: true })) throw httpError(403, 'Záznam patří jinému uživateli.', 'record_forbidden');
@@ -276,6 +283,11 @@ function upsertResource(store, { resource, entityId, payload, user, clientId = '
 
 function deleteResource(store, { resource, entityId, user, clientId = '', clientChangeId = '' }) {
   if (!RESOURCE_NAMES.includes(resource)) throw httpError(404, 'Neznámý datový zdroj.', 'resource_unknown');
+  try {
+    assertSafeUntrustedIdentifier(entityId, { label: 'entityId' });
+  } catch (error) {
+    throw httpError(400, `Identifikátor záznamu neprošel bezpečnostní validací: ${error.message}`, 'record_schema_invalid');
+  }
   const records = store.resource(resource);
   const current = records[entityId];
   if (!current) return { deleted: false, change: null };
@@ -504,7 +516,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
 
       if (request.method === 'POST' && url.pathname === '/v1/messages/process-due') {
         requirePermission(user, 'mail:send');
-        const result = await dispatcher.processDue({ actorId: user.id });
+        const result = await dispatcher.processDue({ actorId: user.id, ownerId: ['owner', 'admin'].includes(user.role) ? null : user.id });
         audit(store, { actorId: user.id, action: 'messages-due-processed', entityType: 'messageBatch', metadata: { prepared: result.prepared.length, dispatched: result.dispatched.length }, ip });
         await store.save();
         return json(response, 200, { items: [...result.prepared, ...result.dispatched.map((item) => item.message)], ...result }, headers);

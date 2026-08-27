@@ -22,7 +22,7 @@ function emptyStore() {
     updatedAt: new Date().toISOString(),
     users: [],
     sessions: [],
-    resources: {},
+    resources: Object.create(null),
     attachments: {},
     privacyPolicies: {},
     changes: [],
@@ -52,7 +52,7 @@ export class JsonStore {
         ...emptyStore(),
         ...parsed,
         schema: SERVER_SCHEMA,
-        resources: parsed.resources || {},
+        resources: Object.assign(Object.create(null), parsed.resources || {}),
         attachments: parsed.attachments || {},
         privacyPolicies: parsed.privacyPolicies || {},
         oldestCursor: Number(parsed.oldestCursor || parsed.changes?.[0]?.cursor || 1),
@@ -67,7 +67,12 @@ export class JsonStore {
   }
 
   resource(name) {
-    if (!this.data.resources[name]) this.data.resources[name] = {};
+    const current = this.data.resources[name];
+    if (!current || typeof current !== 'object' || Array.isArray(current)) {
+      this.data.resources[name] = Object.create(null);
+    } else if (Object.getPrototypeOf(current) !== null) {
+      this.data.resources[name] = Object.assign(Object.create(null), current);
+    }
     return this.data.resources[name];
   }
 
