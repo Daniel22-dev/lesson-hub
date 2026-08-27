@@ -120,16 +120,19 @@ async function clickForQa(page, selector, timeout = 7000) {
 
 async function waitForSubmittedForm(page, formId, timeout = 15000) {
   if (!formId) return;
-  const handle = await page.waitForFunction((id) => {
-    const form = document.getElementById(id);
-    if (!form) return { state: "closed", message: "" };
-    const error = form.querySelector("[data-form-error]");
-    const message = error && !error.hidden ? String(error.textContent || "").trim() : "";
-    if (message) return { state: "error", message };
-    return false;
-  }, formId, { timeout });
-  const state = await handle.jsonValue();
-  if (state?.state === "error") throw new Error(`Formulář ${formId}: ${state.message}`);
+  const form = page.locator(`#${formId}`);
+  const error = form.locator("[data-form-error]");
+  // The successful submit may close the modal and immediately change the SPA route.
+  // Keep no JSHandle from the old execution context: Playwright locators survive that
+  // transition and remove the jsonValue/navigation race seen in CI.
+  const state = await Promise.race([
+    form.waitFor({ state: "detached", timeout }).then(() => ({ state: "closed", message: "" })),
+    error.waitFor({ state: "visible", timeout }).then(async () => ({
+      state: "error",
+      message: String((await error.textContent()) || "").trim(),
+    })),
+  ]);
+  if (state.state === "error") throw new Error(`Formulář ${formId}: ${state.message}`);
 }
 
 async function executeEvaluateStep(page, source) {

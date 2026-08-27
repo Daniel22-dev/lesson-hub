@@ -79,6 +79,8 @@ const criticalRunnerSource = await readFile(new URL('./qa-critical-playwright.mj
 const criticalFlowsSource = await readFile(new URL('../qa/critical-flows.json', import.meta.url), 'utf8');
 assert.equal(criticalRunnerSource.includes('async function waitForAppReady'), true, 'Kritická brána musí čekat na dokončení asynchronního vykreslení aplikace.');
 assert.equal(criticalRunnerSource.includes('async function waitForSubmittedForm'), true, 'Kritická brána musí po odeslání modálního formuláře čekat na skutečné dokončení asynchronní operace.');
+assert.equal(criticalRunnerSource.includes('handle.jsonValue()'), false, 'Kritická brána nesmí držet JSHandle přes uzavření modalu/navigaci.');
+assert.equal(criticalRunnerSource.includes('form.waitFor({ state: \"detached\"'), true, 'Kritická brána musí úspěšný submit detekovat přes locator, který přežije navigaci.');
 assert.equal(criticalRunnerSource.includes('await closeWithLimit(context);'), true, 'Kritická brána musí uklidit browser context i po selhání workflow.');
 assert.equal(criticalRunnerSource.includes('waitFor({ state: "visible"'), true, 'Kritická brána musí na asynchronně vykreslené prvky čekat deterministicky.');
 assert.equal(criticalRunnerSource.includes('async function executeEvaluateStep'), true, 'Kritická brána musí mít explicitní vykonání důvěryhodných evaluate kroků.');
