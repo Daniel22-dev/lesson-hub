@@ -82,6 +82,10 @@ assert.equal(criticalRunnerSource.includes('async function waitForSubmittedForm'
 assert.equal(criticalRunnerSource.includes('handle.jsonValue()'), false, 'Kritická brána nesmí držet JSHandle přes uzavření modalu/navigaci.');
 assert.equal(criticalRunnerSource.includes('form.waitFor({ state: \"detached\"'), true, 'Kritická brána musí úspěšný submit detekovat přes locator, který přežije navigaci.');
 assert.equal(criticalRunnerSource.includes('await closeWithLimit(context);'), true, 'Kritická brána musí uklidit browser context i po selhání workflow.');
+assert.equal(criticalRunnerSource.includes('flowBrowser = await launchBrowser();'), true, 'Každé browserové kritické workflow musí dostat čerstvý Chromium proces.');
+assert.equal(criticalRunnerSource.includes('serviceWorkers: "block"'), true, 'Kritická funkční brána musí blokovat service worker; PWA má samostatnou bránu.');
+assert.equal(criticalRunnerSource.includes('await closeWithLimit(flowBrowser);'), true, 'Kritická brána musí po každém workflow uklidit i jeho Chromium proces.');
+assert.equal(criticalRunnerSource.includes('diag=${JSON.stringify(diagnostic)}'), true, 'Selhání kritického workflow musí nést diagnostiku route a viditelného stavu.');
 assert.equal(criticalRunnerSource.includes('waitFor({ state: "visible"'), true, 'Kritická brána musí na asynchronně vykreslené prvky čekat deterministicky.');
 assert.equal(criticalRunnerSource.includes('async function executeEvaluateStep'), true, 'Kritická brána musí mít explicitní vykonání důvěryhodných evaluate kroků.');
 assert.equal(criticalRunnerSource.includes('typeof candidate === "function" ? await candidate() : candidate'), true, 'Funkční evaluate krok se musí skutečně zavolat, ne pouze vrátit jako objekt.');

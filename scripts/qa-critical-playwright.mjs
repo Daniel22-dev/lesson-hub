@@ -24,7 +24,6 @@ const { server, baseUrl } = await startStaticServer(
   path.join(ROOT, manifest.serveRoot || "dist"),
   { deploymentBasePath: manifest.deploymentBasePath || "", qaAppId: manifest.appId },
 );
-let browser;
 const guardJs = `export async function protectApp(appId){document.documentElement.dataset.ghrabAccess='granted';document.dispatchEvent(new CustomEvent('ghrab:app-access-granted',{detail:{permit:{appId,qa:true}}}));return true}`;
 
 async function launchBrowser() {
@@ -155,10 +154,10 @@ async function resolveStepValue(page, value) {
   });
 }
 try {
-  browser = await launchBrowser();
   for (const flow of plan.flows || []) {
     let status = "PASS";
     let evidence = [];
+    let flowBrowser = null;
     let context = null;
     try {
       if (flow.type === "static") {
@@ -176,8 +175,15 @@ try {
           evidence.push(`${assertion.file}: PASS`);
         }
       } else {
-        context = await browser.newContext({
+        // Critical workflows must be isolated at the browser-process level. Reusing a
+        // long-lived Chromium process allowed service-worker/cache/background state
+        // from earlier flows to make later IndexedDB-heavy setup scenarios flaky in CI.
+        // PWA/service-worker behavior has its own dedicated release gate, so critical
+        // functional flows intentionally run against an uncached fresh document.
+        flowBrowser = await launchBrowser();
+        context = await flowBrowser.newContext({
           viewport: flow.viewport || { width: 1366, height: 768 },
+          serviceWorkers: "block",
         });
         const page = await context.newPage();
         const errors = [];
@@ -266,6 +272,24 @@ try {
       }
     } catch (error) {
       status = "FAIL";
+      if (context) {
+        try {
+          const pages = context.pages();
+          const page = pages.at(-1);
+          if (page) {
+            const diagnostic = await page.evaluate(() => ({
+              url: location.href,
+              hash: location.hash,
+              renderedRoute: document.querySelector("#app")?.dataset?.renderedRoute || "",
+              pendingRoute: document.querySelector("#app")?.dataset?.pendingRoute || "",
+              busy: document.querySelector("#app")?.getAttribute("aria-busy") || "",
+              formError: document.querySelector("[data-form-error]:not([hidden])")?.textContent?.trim() || "",
+              body: document.body?.innerText?.replace(/\s+/g, " ").trim().slice(0, 500) || "",
+            }));
+            evidence.push(`diag=${JSON.stringify(diagnostic)}`);
+          }
+        } catch {}
+      }
       findings.push(
         finding(
           "critical",
@@ -277,6 +301,7 @@ try {
       );
     } finally {
       await closeWithLimit(context);
+      await closeWithLimit(flowBrowser);
     }
     matrix.push({ id: flow.id, name: flow.name, status, evidence });
   }
@@ -290,7 +315,6 @@ try {
     ),
   );
 } finally {
-  await closeWithLimit(browser);
   await Promise.race([
     new Promise((resolve) => server.close(resolve)),
     new Promise((resolve) => setTimeout(resolve, 2000)),
