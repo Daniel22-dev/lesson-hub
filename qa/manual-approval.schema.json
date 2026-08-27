@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GHRAB QA manual approval",
+  "type": "object",
+  "required": [
+    "schema",
+    "appId",
+    "appVersion",
+    "buildSha256",
+    "manualVisualReview",
+    "deployedSmokeTest",
+    "reviewer",
+    "reviewedAt"
+  ],
+  "properties": {
+    "schema": { "const": "GHRAB-QA-MANUAL-APPROVAL-1.0.0" },
+    "appId": { "type": "string" },
+    "appVersion": { "type": "string" },
+    "buildSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "manualVisualReview": { "type": "boolean" },
+    "deployedSmokeTest": { "type": "boolean" },
+    "reviewer": { "type": "string" },
+    "reviewedAt": { "type": "string", "format": "date-time" },
+    "notes": { "type": "string" }
+  }
+}

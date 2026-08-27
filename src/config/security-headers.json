@@ -1,0 +1,20 @@
+{
+  "schema": "ghrab-security-headers-v1",
+  "appId": "lesson-hub",
+  "version": "1.2.11",
+  "staticProfile": {
+    "contentSecurityPolicy": "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'",
+    "note": "GitHub Pages vynucuje CSP přes meta tag. Veřejný profil nepovoluje spojení na localhost; frame-ancestors nelze v meta CSP spolehlivě vynutit a zůstává serverovou HTTP hlavičkou ve school-server profilu. style-src 'unsafe-inline' zůstává explicitní kompatibilitní výjimka kvůli inline access-gate CSS/style atributům; executable inline JavaScript povolen není."
+  },
+  "schoolServerProfile": {
+    "headers": {
+      "Content-Security-Policy": "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'self'; manifest-src 'self'",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "X-Content-Type-Options": "nosniff",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cross-Origin-Resource-Policy": "same-origin",
+      "X-Frame-Options": "SAMEORIGIN"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "ghrab-deployment-config-v1",
+  "version": 1,
+  "studioBaseUrl": "/ai-studio/",
+  "appBaseUrls": {
+    "ai-studio": "/ai-studio/",
+    "differentiator": "/apps/diferenciator/",
+    "generator": "/apps/generator-testu/",
+    "essay-evaluator": "/apps/hodnotitel-slohu/",
+    "correspondence": "/apps/korespondencni-asistent/",
+    "lesson-hub": "/apps/lesson-hub/",
+    "ludus": "/apps/ludus/",
+    "activity-builder": "/apps/activa/",
+    "sortio": "/apps/sortio/"
+  },
+  "assetBaseUrl": "/",
+  "apiBaseUrl": "/api/v1/",
+  "allowedOrigins": [
+    "self"
+  ],
+  "sharedAccessVersion": "access-p1-2026-08-04",
+  "environmentId": "school-server-production",
+  "profile": "school-server",
+  "authMode": "server-session",
+  "aiTransport": "not-applicable",
+  "telemetryMode": "server",
+  "access": {
+    "strategy": "server-authoritative",
+    "maxOfflineAgeHours": 0,
+    "failClosedWhenStale": true
+  },
+  "privacy": {
+    "sharedDeviceDefault": true,
+    "retentionDays": 30
+  },
+  "endpoints": {
+    "session": "session",
+    "logout": "session/logout",
+    "health": "health",
+    "telemetry": "telemetry",
+    "aiGenerate": "ai/generate",
+    "aiHealth": "ai/health"
+  },
+  "features": {
+    "schoolServerReady": true,
+    "allowLocalProviderKeys": false,
+    "serverSessionReady": true,
+    "schoolGatewayReady": false,
+    "sharedDeviceControls": true,
+    "dataDeletion": true,
+    "schoolServerConnected": false,
+    "liveServerValidationRequired": false
+  },
+  "services": {
+    "lessonHubApiBaseUrl": "/api/v1/lesson-hub"
+  },
+  "appId": "lesson-hub",
+  "appBaseUrl": "/apps/lesson-hub/",
+  "releaseAcceptance": {
+    "stage": "P5",
+    "primaryMode": "standalone-github-pages",
+    "serverConnection": "prepared-not-connected",
+    "serverRequired": false,
+    "githubUpload": "pending",
+    "postUploadValidationRequired": true
+  }
+}

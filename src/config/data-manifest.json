@@ -1,0 +1,123 @@
+{
+  "schema": "ghrab-data-manifest-v1",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.11",
+  "manifestVersion": 3,
+  "dataCategories": [
+    "settings",
+    "application-content",
+    "diagnostics"
+  ],
+  "privacy": {
+    "studentContentMayOccur": true,
+    "telemetryContainsContent": false,
+    "diagnosticsContainContentByDefault": false,
+    "pseudonymisationIsNotAnonymisation": true
+  },
+  "stores": [
+    {
+      "kind": "localStorage",
+      "category": "application-data",
+      "patterns": [
+        "ghrab.lesson-hub.*",
+        "ghrab.lesson-hub.sync.*"
+      ],
+      "sensitivity": "potentially-personal",
+      "authority": "client",
+      "clearOnEndWork": true
+    },
+    {
+      "kind": "sessionStorage",
+      "category": "session-data",
+      "patterns": [
+        "ghrab.lesson-hub.server-session-v1"
+      ],
+      "sensitivity": "confidential",
+      "authority": "client",
+      "clearOnEndWork": true
+    },
+    {
+      "kind": "localStorage",
+      "category": "credential",
+      "patterns": [
+        "ghrab.lesson-hub.server-session-v1"
+      ],
+      "sensitivity": "secret",
+      "authority": "client-direct-mode-only; school profile purges legacy storage and keeps the secondary Lesson Hub token in memory only",
+      "clearOnEndWork": true
+    },
+    {
+      "kind": "sessionStorage",
+      "category": "credential",
+      "patterns": [
+        "ghrab.lesson-hub.server-session-v1"
+      ],
+      "sensitivity": "secret",
+      "authority": "client-direct-mode-only; school profile purges legacy storage and keeps the secondary Lesson Hub token in memory only",
+      "clearOnEndWork": true
+    },
+    {
+      "kind": "indexedDB",
+      "category": "application-data",
+      "names": [
+        "lesson-hub"
+      ],
+      "sensitivity": "potentially-personal",
+      "authority": "client",
+      "clearOnEndWork": true
+    },
+    {
+      "kind": "cacheStorage",
+      "category": "application-cache",
+      "patterns": [
+        "ghrab-lesson-hub-v*",
+        "lesson-hub*"
+      ],
+      "sensitivity": "non-content-cache",
+      "authority": "client",
+      "clearOnEndWork": false
+    }
+  ],
+  "retention": {
+    "defaultDays": 30,
+    "sessionEndsOnLogout": true,
+    "serverLogsDays": 30
+  },
+  "export": {
+    "supported": true,
+    "requiresExplicitUserAction": true,
+    "includesSecrets": false,
+    "envelopeSchema": "ghrab-artifact-envelope-v1",
+    "artifactTypes": [
+      "lesson-hub-backup"
+    ],
+    "nativeFormats": [
+      "json"
+    ]
+  },
+  "deletion": {
+    "supported": true,
+    "clientVerified": true,
+    "serverEndpoint": "data/lesson-hub"
+  },
+  "sharedDevice": {
+    "supported": true,
+    "defaultInSchoolProfile": true,
+    "control": "GHRABPlatform.endWork()"
+  },
+  "storageNamespace": {
+    "schema": "ghrab-storage-namespace-v1",
+    "prefix": "ghrab.lesson-hub.",
+    "migrationId": "p2-storage-namespace-v1",
+    "backup": "full",
+    "rollbackSupported": true
+  },
+  "import": {
+    "supported": true,
+    "artifactTypes": [
+      "lesson-hub-backup"
+    ],
+    "acceptsLegacyJson": true,
+    "checksumRequiredForEnvelope": true
+  }
+}

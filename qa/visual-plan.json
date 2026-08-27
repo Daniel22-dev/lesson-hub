@@ -1,0 +1,928 @@
+{
+  "scenarios": [
+    {
+      "id": "lesson-hub-overview",
+      "name": "Hlavní přehled před prvním nastavením",
+      "url": "/index.html#/overview",
+      "expectedText": "Připravte Lesson Hub na svou výuku",
+      "mustVisible": [
+        "#page-content",
+        ".hero-panel",
+        "[data-open-quick-setup]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 900
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 412,
+          "height": 915
+        },
+        {
+          "width": 768,
+          "height": 1024
+        },
+        {
+          "width": 1366,
+          "height": 768
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-quick-setup",
+      "name": "Průvodce prvním nastavením",
+      "url": "/index.html#/overview",
+      "expectedText": "Připravit první skupinu",
+      "mustVisible": [
+        "#quick-setup-modal",
+        "#quick-setup-form"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 600
+        },
+        {
+          "action": "click",
+          "selector": ".hero-panel__action"
+        },
+        {
+          "action": "wait",
+          "ms": 350
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-groups",
+      "name": "První spuštění sekce skupin",
+      "url": "/index.html#/groups",
+      "expectedText": "Vytvořte pracovní prostor pro svou výuku",
+      "mustVisible": [
+        "#page-content",
+        ".onboarding-panel"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 700
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-academic",
+      "name": "Správa školních roků a předmětů",
+      "url": "/index.html#/academic",
+      "expectedText": "Historie skupiny nesmí záviset na jejím názvu",
+      "mustVisible": [
+        "#page-content",
+        ".academic-hero"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 700
+        }
+      ],
+      "viewports": [
+        {
+          "width": 412,
+          "height": 915
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-diagnostics",
+      "name": "Interní diagnostika",
+      "url": "/index.html#/diagnostics",
+      "expectedText": "Interní diagnostika Lesson Hubu",
+      "mustVisible": [
+        "#diagnostics-panel",
+        "#run-diagnostics"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 700
+        },
+        {
+          "action": "click",
+          "selector": "#run-diagnostics"
+        },
+        {
+          "action": "wait",
+          "ms": 900
+        }
+      ],
+      "viewports": [
+        {
+          "width": 412,
+          "height": 915
+        },
+        {
+          "width": 1920,
+          "height": 1080
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-manual",
+      "name": "Interaktivní manuál",
+      "url": "/manual/index.html",
+      "expectedText": "Interaktivní manuál",
+      "mustVisible": [
+        "#manual-app",
+        ".manual-hero"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 700
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-plan-empty",
+      "name": "Plánovací centrum před vytvořením hodin",
+      "url": "/index.html#/plan",
+      "expectedText": "Zatím není nic naplánováno",
+      "mustVisible": [
+        "#page-content",
+        ".plan-hero",
+        "[data-open-lesson]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 750
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-lesson-editor",
+      "name": "Editor plánované hodiny s automatickým konceptem",
+      "url": "/index.html#/overview",
+      "expectedText": "Naplánovat hodinu",
+      "mustVisible": [
+        "#lesson-editor-modal",
+        "#lesson-form",
+        "[data-draft-status]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 500
+        },
+        {
+          "action": "click",
+          "selector": ".hero-panel__action"
+        },
+        {
+          "action": "fill",
+          "selector": "#quick-setup-form input[name=\"subjectName\"]",
+          "value": "Anglický jazyk"
+        },
+        {
+          "action": "fill",
+          "selector": "#quick-setup-form input[name=\"groupName\"]",
+          "value": "QA 1.A"
+        },
+        {
+          "action": "click",
+          "selector": "button[form=\"quick-setup-form\"]"
+        },
+        {
+          "action": "wait",
+          "ms": 650
+        },
+        {
+          "action": "click",
+          "selector": ".topbar__actions [data-open-lesson]"
+        },
+        {
+          "action": "wait",
+          "ms": 350
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-quick-record",
+      "name": "Rychlý zápis během probíhající hodiny",
+      "url": "/index.html#/overview",
+      "expectedText": "Hodina právě probíhá",
+      "mustVisible": [
+        "#quick-lesson-modal",
+        "#quick-lesson-form",
+        "[data-live-save-status]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 500
+        },
+        {
+          "action": "click",
+          "selector": ".hero-panel__action"
+        },
+        {
+          "action": "fill",
+          "selector": "#quick-setup-form input[name=\"subjectName\"]",
+          "value": "Španělský jazyk"
+        },
+        {
+          "action": "fill",
+          "selector": "#quick-setup-form input[name=\"groupName\"]",
+          "value": "QA 2.B"
+        },
+        {
+          "action": "click",
+          "selector": "button[form=\"quick-setup-form\"]"
+        },
+        {
+          "action": "wait",
+          "ms": 650
+        },
+        {
+          "action": "click",
+          "selector": ".topbar__actions [data-open-quick-lesson]"
+        },
+        {
+          "action": "wait",
+          "ms": 450
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-work-empty",
+      "name": "Centrum povinností bez dat",
+      "url": "/index.html#/work",
+      "expectedText": "Povinnosti a připomínky",
+      "mustVisible": [
+        ".work-summary",
+        ".work-toolbar"
+      ],
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768
+        },
+        {
+          "width": 360,
+          "height": 800
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-task-editor",
+      "name": "Editor otevřeného úkolu",
+      "url": "/index.html#/work",
+      "expectedText": "Co je potřeba udělat?",
+      "mustVisible": [
+        "#task-form",
+        ".modal-card"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": "[data-open-task]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768
+        },
+        {
+          "width": 360,
+          "height": 800
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-reminder-editor",
+      "name": "Editor připomínky",
+      "url": "/index.html#/work?tab=reminders",
+      "expectedText": "Na co nesmím zapomenout?",
+      "mustVisible": [
+        "#reminder-form",
+        ".modal-card"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": "[data-open-reminder]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768
+        },
+        {
+          "width": 360,
+          "height": 800
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-materials-empty",
+      "name": "Centrální knihovna materiálů bez dat",
+      "url": "/index.html#/materials",
+      "expectedText": "Knihovna čeká na první materiál",
+      "mustVisible": [
+        ".material-summary",
+        ".material-toolbar",
+        "[data-open-material]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 650
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-material-editor",
+      "name": "Editor materiálu a vazeb",
+      "url": "/index.html#/overview",
+      "expectedText": "Co chcete uložit do knihovny?",
+      "mustVisible": [
+        "#material-editor-modal",
+        "#material-form",
+        ".material-link-editor"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": ".hero-panel__action"
+        },
+        {
+          "action": "fill",
+          "selector": "#quick-setup-form input[name=\"subjectName\"]",
+          "value": "Anglický jazyk"
+        },
+        {
+          "action": "fill",
+          "selector": "#quick-setup-form input[name=\"groupName\"]",
+          "value": "QA Visual Group"
+        },
+        {
+          "action": "click",
+          "selector": "button[form=\"quick-setup-form\"]"
+        },
+        {
+          "action": "wait",
+          "ms": 600
+        },
+        {
+          "action": "click",
+          "selector": ".topbar__actions [data-open-material]"
+        },
+        {
+          "action": "wait",
+          "ms": 300
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-search",
+      "name": "Globální vyhledávání a pokročilé filtry",
+      "url": "/index.html#/search",
+      "expectedText": "Rychlý přehled napříč aplikací",
+      "mustVisible": [
+        "#global-search-form",
+        "[data-toggle-search-filters]",
+        ".search-results-section"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": "[data-toggle-search-filters]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-data-empty",
+      "name": "Data a zálohy bez lokálního bodu",
+      "url": "/index.html#/data",
+      "expectedText": "Úplný export databáze",
+      "mustVisible": [
+        ".data-summary-grid",
+        ".data-page-grid",
+        "[data-export-database]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 700
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-backup-editor",
+      "name": "Editor lokálního bodu obnovy",
+      "url": "/index.html#/data",
+      "expectedText": "Vytvořit bod obnovy",
+      "mustVisible": [
+        "#create-backup-modal",
+        "#create-backup-form",
+        ".modal-card"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": ".topbar__actions [data-create-backup]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-templates",
+      "name": "Knihovna šablon před vytvořením první předlohy",
+      "url": "/index.html#/templates",
+      "expectedText": "Zatím nemáte žádnou šablonu",
+      "mustVisible": [
+        ".workspace-tabs--prominent",
+        ".template-summary",
+        ".template-grid"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 650
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-template-editor",
+      "name": "Editor opakovaně použitelné hodiny",
+      "url": "/index.html#/templates",
+      "expectedText": "Vytvořit šablonu hodiny",
+      "mustVisible": [
+        "#template-editor-modal",
+        "#template-form",
+        ".form-section"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": ".topbar__actions [data-open-template]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-cycles",
+      "name": "Volitelná cyklická organizace výuky",
+      "url": "/index.html#/templates?tab=cycles",
+      "expectedText": "Volitelná cyklická organizace",
+      "mustVisible": [
+        ".workspace-tabs--prominent",
+        ".cycle-intro",
+        ".cycle-grid"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 650
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-cycle-editor",
+      "name": "Editor výukového cyklu",
+      "url": "/index.html#/templates?tab=cycles",
+      "expectedText": "Vytvořit cyklus",
+      "mustVisible": [
+        "#cycle-editor-modal",
+        "#cycle-form",
+        ".cycle-help"
+      ],
+      "steps": [
+        {
+          "action": "click",
+          "selector": ".topbar__actions [data-open-cycle]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-bulk-server",
+      "name": "Hromadné operace a server-ready přehled",
+      "url": "/index.html#/templates?tab=bulk",
+      "expectedText": "Server-ready datové rozhraní",
+      "mustVisible": [
+        ".bulk-operation-card",
+        ".server-ready-card",
+        ".readiness-grid"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 650
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-server",
+      "name": "Serverové centrum bez aktivní relace",
+      "url": "/index.html#/server",
+      "expectedText": "Server a synchronizace",
+      "mustVisible": [
+        ".server-summary",
+        ".server-connection-card",
+        "[data-server-login]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 700
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-server-login",
+      "name": "Dialog serverového přihlášení",
+      "url": "/index.html#/server",
+      "expectedText": "Přihlásit k Lesson Hub Serveru",
+      "mustVisible": [
+        "#server-login-modal",
+        "#server-login-form"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 500
+        },
+        {
+          "action": "click",
+          "selector": "[data-server-login]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-communication-empty",
+      "name": "Komunikační centrum bez studentů",
+      "url": "/index.html#/communication",
+      "expectedText": "Zatím nejsou importováni studenti",
+      "mustVisible": [
+        ".communication-summary",
+        "[data-student-import]"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 650
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-student-import",
+      "name": "Dialog hromadného importu studentů",
+      "url": "/index.html#/communication",
+      "expectedText": "Načíst školní e-maily studentů",
+      "mustVisible": [
+        "#student-import-modal",
+        "#student-import-form"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 450
+        },
+        {
+          "action": "click",
+          "selector": "[data-student-import]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-message-editor",
+      "name": "Editor komunikačního konceptu",
+      "url": "/index.html#/communication?tab=messages",
+      "expectedText": "Připravit zprávu studentům",
+      "mustVisible": [
+        "#message-editor-modal",
+        "#message-form",
+        ".recipient-selector"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 450
+        },
+        {
+          "action": "click",
+          "selector": "[data-message-create]"
+        },
+        {
+          "action": "wait",
+          "ms": 250
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-deliveries-locked",
+      "name": "Doručenky bez serverové relace",
+      "url": "/index.html#/communication?tab=deliveries",
+      "expectedText": "Doručenky vyžadují server",
+      "mustVisible": [
+        ".empty-state"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 500
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "lesson-hub-substitution-locked",
+      "name": "Zastupování bez serverové relace",
+      "url": "/index.html#/substitution",
+      "expectedText": "Zastupování vyžaduje serverovou relaci",
+      "mustVisible": [
+        ".empty-state"
+      ],
+      "steps": [
+        {
+          "action": "wait",
+          "ms": 500
+        }
+      ],
+      "viewports": [
+        {
+          "width": 360,
+          "height": 800
+        },
+        {
+          "width": 1366,
+          "height": 768
+        }
+      ]
+    }
+  ]
+}
