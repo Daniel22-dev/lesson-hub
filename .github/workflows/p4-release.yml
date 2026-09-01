@@ -22,6 +22,8 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Dependency audit
+        run: npm audit --package-lock-only --audit-level=high --registry=https://registry.npmjs.org
       - name: Install pinned Playwright Chromium
         shell: bash
         run: |

@@ -10,6 +10,7 @@ import { ENTITY_STORES } from '../src/core/constants.js';
 import { BaseRepository } from '../src/repositories/BaseRepository.js';
 import { setLocalDocument } from './qa-core.mjs';
 import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from '../src/core/untrustedData.js';
+import { ServerService } from '../src/services/serverService.js';
 
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -31,7 +32,20 @@ for (const workflowName of workflowNames) {
   const actionRefs = [...workflowSource.matchAll(/uses:\s+actions\/[^@\s]+@([^\s#]+)/g)].map((match) => match[1]);
   assert.equal(actionRefs.length > 0, true, `${workflowName} musí obsahovat kontrolované GitHub Actions.`);
   assert.equal(actionRefs.every((ref) => /^[0-9a-f]{40}$/.test(ref)), true, `${workflowName} musí připínat GitHub Actions na neměnný commit SHA.`);
+  assert.match(workflowSource, /npm audit --package-lock-only --audit-level=high/, `${workflowName} musí mít explicitní high-severity dependency audit.`);
 }
+
+const observedFetchOptions = [];
+const serverServiceProbe = new ServerService({ fetchImpl: async (_url, options = {}) => {
+  observedFetchOptions.push(options);
+  return new Response(JSON.stringify({ status: 'ok', version: 'synthetic' }), { status: 200, headers: { 'content-type': 'application/json' } });
+} });
+await serverServiceProbe.health();
+assert.equal(observedFetchOptions.at(-1)?.cache, 'no-store', 'Běžný API request musí explicitně zakázat browser cache.');
+serverServiceProbe.saveSession({ token: 'synthetic-token', user: { id: 'synthetic-user', role: 'teacher' } }, false);
+serverServiceProbe.fetchImpl = async (_url, options = {}) => { observedFetchOptions.push(options); return new Response(new Uint8Array([1, 2, 3]), { status: 200, headers: { 'content-type': 'application/octet-stream' } }); };
+await serverServiceProbe.downloadAttachment('synthetic-attachment');
+assert.equal(observedFetchOptions.at(-1)?.cache, 'no-store', 'Binární API request musí explicitně zakázat browser cache.');
 
 const visualReporterSource = await readFile(new URL('./qa-visual-playwright.mjs', import.meta.url), 'utf8');
 assert.equal(visualReporterSource.includes('item.message || item.summary || "Nález bez popisu"'), true, 'Vizuální reportér musí vždy vypsat skutečnou zprávu nebo bezpečný fallback.');
@@ -54,6 +68,28 @@ for (const [label, html] of [['aplikace', indexHtmlSource], ['manuál', manualHt
   assert.equal(/'unsafe-eval'/.test(csp), false, `CSP pro ${label} nesmí povolovat unsafe-eval.`);
   assert.equal(/https?:\/\/(?:localhost|127\.0\.0\.1)/i.test(csp), false, `Veřejná CSP pro ${label} nesmí otevírat spojení na localhost návštěvníka.`);
 }
+
+const serverAppSource = await readFile(new URL('../server/app.mjs', import.meta.url), 'utf8');
+const storeNormalizationSource = await readFile(new URL('../server/lib/storeNormalization.mjs', import.meta.url), 'utf8');
+const operationsSource = await readFile(new URL('../server/lib/operations.mjs', import.meta.url), 'utf8');
+const permissionsSource = await readFile(new URL('../server/lib/permissions.mjs', import.meta.url), 'utf8');
+const bootstrapAdminSource = await readFile(new URL('../server/bootstrap-admin.mjs', import.meta.url), 'utf8');
+const migrationExportSource = await readFile(new URL('../server/export-migration-bundle.mjs', import.meta.url), 'utf8');
+const persistenceSource = await readFile(new URL('../server/lib/persistence.mjs', import.meta.url), 'utf8');
+assert.match(serverAppSource, /const startupNormalization = normalizeOpenedStore\(store\)/, 'Server musí po startovním store.open() spustit normalizaci legacy dat.');
+assert.match(operationsSource, /await this\.store\.open\(\);\s*const normalization = this\.normalizeStore\(this\.store\);/s, 'Restore musí bezprostředně po store.open() spustit stejnou normalizaci.');
+assert.match(bootstrapAdminSource, /normalizeOpenedStore\(store\)/, 'Bootstrap účtu nesmí otevřít legacy store bez normalizace.');
+assert.match(migrationExportSource, /normalizeOpenedStore\(store\)/, 'Migrační export nesmí serializovat legacy store bez normalizace v paměti.');
+assert.match(persistenceSource, /normalizeOpenedStore\(this\.store\)/, 'Persistence adapter musí po open() normalizovat legacy store.');
+assert.match(storeNormalizationSource, /delete next\.fileName/, 'Normalizace musí odstraňovat legacy raw fileName z auditních metadat.');
+assert.match(storeNormalizationSource, /delete next\.email;/, 'Normalizace musí odstraňovat legacy raw e-mail z auditních metadat.');
+assert.match(storeNormalizationSource, /delete next\.emailHash;/, 'Normalizace musí odstranit i legacy nesolený emailHash.');
+assert.match(permissionsSource, /const shareable = isShareableResource\(resource\)/, 'Read authorization musí vázat stored visibility na typ resource.');
+assert.match(permissionsSource, /return shareable && \(record\.visibility === 'shared' \|\| record\.visibility === 'substitution'\)/, 'Legacy shared nesmí být univerzální oprávnění pro citlivý resource.');
+assert.equal(serverAppSource.includes("metadata: { fileName, mimeType"), false, 'Upload audit nesmí ukládat raw fileName.');
+assert.equal(serverAppSource.includes("metadata: { email, role"), false, 'User-created audit nesmí ukládat raw e-mail.');
+assert.equal(serverAppSource.includes('emailHash:'), false, 'Failed-login audit nesmí ukládat slovníkově dohledatelný emailHash.');
+assert.match(serverAppSource, /metadata: \{ accountMatched: Boolean\(user\) \}/, 'Failed-login audit smí zachovat pouze neidentifikující informaci o existenci účtu.');
 
 const bootstrapSource = await readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
 const manualBootstrapSource = await readFile(new URL('../public/manual/bootstrap.js', import.meta.url), 'utf8');
@@ -206,9 +242,12 @@ assert.match(mainSource, /dataset\.renderedRoute/, 'Aplikace musí zveřejnit do
 assert.match(criticalRunnerSource, /dataset\.renderedRoute === expectedRoute/, 'Kritická QA musí čekat na render aktuální hash trasy.');
 assert.match(pythonBrowserCommonSource, /dataset\.renderedRoute === expectedRoute/, 'Python fallback musí čekat na render aktuální hash trasy.');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.equal(packageJson.overrides?.['brace-expansion'], '5.0.8', 'Bezpečnostní override brace-expansion musí zůstat připnutý.');
+assert.equal(packageJson.overrides?.['brace-expansion'], '5.0.9', 'Bezpečnostní override brace-expansion musí zůstat na opravené verzi.');
+assert.equal(packageJson.overrides?.undici, '7.29.0', 'Bezpečnostní override undici musí zůstat na opravené verzi.');
 const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
 const braceExpansionVersion = packageLock.packages?.['node_modules/brace-expansion']?.version;
-assert.ok(braceExpansionVersion === undefined || braceExpansionVersion === '5.0.8', 'Lockfile nesmí obsahovat zranitelný brace-expansion.');
+const undiciVersion = packageLock.packages?.['node_modules/undici']?.version;
+assert.equal(braceExpansionVersion, '5.0.9', 'Lockfile musí obsahovat opravený brace-expansion 5.0.9.');
+assert.equal(undiciVersion, '7.29.0', 'Lockfile musí obsahovat opravený undici 7.29.0.');
 
 console.log('Auditní klientské regrese prošly: lokálně omezený QA přístup, validace nedůvěryhodných importů a synchronizace, hashové QA cesty, evaluate kroky, headless připravenost, vizuální reportér, render race pojistka, XSS detektor, amortizace auditu, SHA-256, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

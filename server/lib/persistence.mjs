@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { JsonStore } from './store.mjs';
+import { normalizeOpenedStore } from './storeNormalization.mjs';
 
 export const PERSISTENCE_CONTRACT = 'lesson-hub-persistence-v1';
 
@@ -11,7 +12,12 @@ export class JsonPersistenceAdapter {
     this.kind = 'json-atomic';
     this.store = new JsonStore(filePath);
   }
-  async open() { await this.store.open(); return this; }
+  async open() {
+    await this.store.open();
+    const normalization = normalizeOpenedStore(this.store);
+    if (normalization.changed > 0) await this.store.save();
+    return this;
+  }
   snapshot() { return this.store.snapshot(); }
   stats() { return this.store.stats(); }
   transact(mutator, options) { return this.store.transact(mutator, options); }

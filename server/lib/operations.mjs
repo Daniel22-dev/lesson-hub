@@ -60,7 +60,7 @@ function resourceCount(store) {
 }
 
 export class OperationsManager {
-  constructor({ store, config, serverVersion, audit = () => {} }) {
+  constructor({ store, config, serverVersion, audit = () => {}, normalizeStore = () => ({ changed: 0 }) }) {
     this.store = store;
     this.config = {
       backupDir: path.join(path.dirname(config.dataFile), 'backups'),
@@ -71,6 +71,7 @@ export class OperationsManager {
     };
     this.serverVersion = serverVersion;
     this.audit = audit;
+    this.normalizeStore = normalizeStore;
     this.startedAt = Date.now();
     this.lastMaintenanceAt = null;
     this.lastMaintenanceResult = null;
@@ -225,6 +226,7 @@ export class OperationsManager {
       await rename(temporaryStore, this.config.dataFile);
       await rename(temporaryAttachments, this.config.attachmentsDir);
       await this.store.open();
+      const normalization = this.normalizeStore(this.store);
       this.store.data.sessions = [];
       this.store.unfreeze();
       const pruned = await this.pruneBackups({ protectedIds: [verified.id, safety.id] });
@@ -232,7 +234,7 @@ export class OperationsManager {
       await this.store.save();
       await rm(previousStore, { force: true });
       await rm(previousAttachments, { recursive: true, force: true });
-      return { restored: verified.manifest, safetyBackup: safety, pruned, sessionsInvalidated: true };
+      return { restored: verified.manifest, safetyBackup: safety, pruned, sessionsInvalidated: true, normalization };
     } catch (error) {
       this.store.unfreeze();
       await rm(this.config.dataFile, { force: true }).catch(() => {});
@@ -241,7 +243,10 @@ export class OperationsManager {
       if (attachmentsMoved && await exists(previousAttachments)) await rename(previousAttachments, this.config.attachmentsDir).catch(() => {});
       await rm(temporaryStore, { force: true }).catch(() => {});
       await rm(temporaryAttachments, { recursive: true, force: true }).catch(() => {});
-      await this.store.open().catch(() => {});
+      await this.store.open().then(async () => {
+        const normalization = this.normalizeStore(this.store);
+        if (normalization?.changed > 0) await this.store.save();
+      }).catch(() => {});
       throw error;
     }
   }

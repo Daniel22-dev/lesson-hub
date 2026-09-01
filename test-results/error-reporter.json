@@ -1,0 +1,280 @@
+{
+  "schema": "ghrab-error-reporter-test-v1",
+  "appId": "lesson-hub",
+  "appName": "Lesson Hub",
+  "version": "1.2.15",
+  "createdAt": "2026-09-01T04:46:22.894Z",
+  "browser": {
+    "status": "not-ready",
+    "reason": "Spravovaná politika URLBlocklist blokuje všechny testovací stránky (/etc/chromium/policies/managed/000_policy_merge.json)."
+  },
+  "passed": 53,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Patch verze v package.json",
+      "ok": true,
+      "detail": "1.2.15"
+    },
+    {
+      "name": "Existuje src/access/error-reporter.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Existuje src/access/error-reporter.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Existuje src/access/error-reporter-adapter.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Ochrana jediné instance používá ghrab-error-reporter",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Kanonický reportér má verzi 1.1.2",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Limit je přesně pět screenshotů",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Finální compose URL je omezena na 7000 znaků",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Zkracování zachovává plné tělo a krátí diagnostiku jako první",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Primární akce pouze připraví ZIP",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ZIP má po vytvoření přímý odkaz download",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Gmail se zpřístupní až po kliknutí na stažení",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Zakázaný window.open se nepoužívá",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Neexistuje stará přímá funkce sdílení balíčku",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ZIP obsahuje povinné soubory",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ZIP vyžaduje alespoň jeden screenshot",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Schéma ZIP diagnostiky je v3 a rozlišuje tři časy",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Zavření používá jednotný requestClose",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Úplné smazání maže data, ID, chyby, ZIP a stream",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Nové hlášení po dokončeném reportu dostane nové ID",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Dialog obsahuje focus trap a obnovu předchozího fokusu",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Rozhraní i e-mail výslovně upozorňují na ruční přílohu",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Přechod do aplikace je samostatné tlačítko",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Plovoucí panel má všechny tři akce",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Reportér se při pořízení snímku skrývá",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Technické chyby pokrývají JS, Promise, HTTP a síť",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Citlivé technické texty se sanitizují",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Bezpečná URL odstraňuje query/hash a citlivé segmenty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CSS podporuje světlý režim",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CSS podporuje tmavý režim",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CSS respektuje safe-area",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CSS má responzivní panel snímání",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "CSS skrývá reportér při samotném snímku",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Živý obraz je uvnitř reportéru a skrytý CSS i inline",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Reportér používá jediný trvalý stav místo duplicitních toastů",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Adaptér má správné appId",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Adaptér má správnou verzi",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Adaptér má bezpečný e-mailový fallback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Adaptér odkazuje na deployment-aware centrální návod",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Adaptér má aplikační resolver motivu",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "src/bootstrap.js: centrální reportér je vypnut",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "src/bootstrap.js: lokální adaptér se načítá",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "src/bootstrap.js: reportér není blokující await",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Lokální manuál odkazuje na aktuální centrální návod",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Lokální manuál nevytváří vlastní reportér",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Lokální manuál popisuje pět snímků, koncept, ZIP, Gmail a soukromí",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "public/sw.js: service worker cachuje společné soubory reportéru",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "src/core/release.js: obsahuje verzi 1.2.15",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "public/manifest.webmanifest: obsahuje verzi 1.2.15",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "public/sw.js: obsahuje verzi 1.2.15",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "README.md: obsahuje verzi 1.2.15",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "docs/RELEASE-1.2.15-ERROR-REPORTER.md: obsahuje verzi 1.2.15",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Nezůstala stará paralelní implementace KS",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

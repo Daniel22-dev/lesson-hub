@@ -2,7 +2,7 @@
   "schema": "ghrab-platform-consumer-v1",
   "appId": "lesson-hub",
   "appName": "Lesson Hub",
-  "appVersion": "1.2.12",
+  "appVersion": "1.2.15",
   "platform": {
     "version": "1.1.0",
     "contract": "ghrab-platform-v1",
@@ -73,7 +73,7 @@
     ]
   },
   "cache": {
-    "name": "ghrab-lesson-hub-v1.2.12",
+    "name": "ghrab-lesson-hub-v1.2.15",
     "updateMessage": "GHRAB_SKIP_WAITING"
   },
   "html": {
@@ -110,7 +110,7 @@
         320
       ]
     },
-    "stage": "P4",
+    "stage": "P5",
     "a11yContract": "ghrab-a11y-v1",
     "capacity": {
       "contract": "lesson-hub-capacity-report-v1",
@@ -133,8 +133,18 @@
     },
     "finalRelease": true,
     "cleanInstallRequired": true,
-    "a11yGate": "ghrab-p4-a11y-v1",
-    "releaseGate": "ghrab-p4-release-v1"
+    "a11yGate": "ghrab-p5-runtime-a11y-v2",
+    "releaseGate": "ghrab-p5-release-v2",
+    "runtimeAudit": {
+      "scriptsExecuted": true,
+      "transport": "local-http",
+      "dialogStates": true,
+      "viewports": [
+        1280,
+        390,
+        320
+      ]
+    }
   },
   "performance": {
     "stage": "P5",

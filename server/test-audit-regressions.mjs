@@ -28,7 +28,22 @@ try {
     mailSchedulerIntervalMs: 60_000, mailMaxAttempts: 3, mailRetryMinutes: 1,
     backupDir: path.join(dir, 'backups'), backupEnabled: false, backupRetentionCount: 3, backupIntervalHours: 24, operationsIntervalMs: 60_000,
   };
-  const { server, store } = await createLessonHubServer({ config });
+  const apiStore = new JsonStore(config.dataFile);
+  await apiStore.open();
+  apiStore.data.audit.push({ id: 'legacy_audit_probe', actorId: null, action: 'legacy-probe', entityType: 'attachment', entityId: 'legacy_attachment', metadata: { fileName: 'GARP-SYNTH-LEGACY-FILENAME', email: 'legacy-audit@example.invalid', size: 1 }, ip: '', timestamp: new Date().toISOString() });
+  apiStore.resource('students').startup_legacy_student = { id: 'startup_legacy_student', ownerId: 'legacy-owner', displayName: 'GARP-STUDENT-CANARY-K3-STARTUP-LEGACY', visibility: 'shared', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  apiStore.resource('messages').startup_legacy_message = { id: 'startup_legacy_message', ownerId: 'legacy-owner', subject: 'Synthetic legacy message', body: 'Synthetic', status: 'draft', visibility: 'shared', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  apiStore.resource('materials').startup_legacy_material = { id: 'startup_legacy_material', ownerId: 'legacy-owner', title: 'Synthetic shared material', visibility: 'shared', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  apiStore.data.changes.push({ cursor: apiStore.nextCursor(), id: 'startup_legacy_change', schema: SYNC_CONTRACT, resource: 'students', entityId: 'startup_legacy_student', operation: 'upsert', payload: { ...apiStore.resource('students').startup_legacy_student }, ownerId: 'legacy-owner', actorId: 'legacy-owner', clientId: 'legacy', clientChangeId: 'legacy', timestamp: new Date().toISOString() });
+  await apiStore.save();
+  const { server, store } = await createLessonHubServer({ config, store: apiStore });
+  assert.equal(JSON.stringify(store.data.audit).includes('GARP-SYNTH-LEGACY-FILENAME'), false, 'Start serveru musí migračně odstranit legacy raw fileName z auditních metadat.');
+  assert.equal(JSON.stringify(store.data.audit).includes('legacy-audit@example.invalid'), false, 'Start serveru musí migračně odstranit legacy raw e-mail z auditních metadat.');
+  assert.equal(Object.prototype.hasOwnProperty.call(store.data.audit.find((item) => item.id === 'legacy_audit_probe')?.metadata || {}, 'emailHash'), false, 'Legacy e-mail nesmí přežívat ani jako nesolený korelační hash.');
+  assert.equal(store.resource('students').startup_legacy_student.visibility, 'private', 'Start musí normalizovat legacy shared student na private.');
+  assert.equal(store.resource('messages').startup_legacy_message.visibility, 'private', 'Start musí normalizovat legacy shared message na private.');
+  assert.equal(store.resource('materials').startup_legacy_material.visibility, 'shared', 'Start nesmí zrušit legitimní shared material.');
+  assert.equal(store.data.changes.find((item) => item.id === 'startup_legacy_change')?.payload?.visibility, 'private', 'Start musí normalizovat i legacy sync payload.');
   const now = new Date().toISOString();
   store.data.users.push({ id: 'owner', email: 'owner@example.test', displayName: 'Owner', role: 'owner', status: 'active', passwordHash: hashPassword('OwnerPassword123'), createdAt: now, updatedAt: now });
   await store.save();
@@ -76,12 +91,31 @@ try {
       const created = await api('/v1/users', { ...ownerAuth, method: 'POST', body: JSON.stringify({ email, displayName: id.toUpperCase(), role: 'teacher', password: `Teacher${id.toUpperCase()}Password123` }) });
       assert.equal(created.response.status, 201);
     }
+    const substituteCreate = await api('/v1/users', { ...ownerAuth, method: 'POST', body: JSON.stringify({ email: 'substitute@example.test', displayName: 'Substitute', role: 'substitute', password: 'SubstitutePassword123' }) });
+    assert.equal(substituteCreate.response.status, 201);
     const loginA = await api('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: 'a@example.test', password: 'TeacherAPassword123' }) });
     const loginB = await api('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: 'b@example.test', password: 'TeacherBPassword123' }) });
+    const loginSubstitute = await api('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: 'substitute@example.test', password: 'SubstitutePassword123' }) });
     const tokenA = loginA.payload.token;
     const tokenB = loginB.payload.token;
+    const tokenSubstitute = loginSubstitute.payload.token;
     const userA = store.data.users.find((item) => item.email === 'a@example.test');
     const userB = store.data.users.find((item) => item.email === 'b@example.test');
+
+    // GARP 2.3 round 3 K2-N01: stored legacy visibility='shared' is not an authorization capability.
+    // Simulate records created by a pre-1.2.13 server by inserting them directly after startup.
+    const legacyStudentMarker = 'GARP-STUDENT-CANARY-K3-LEGACY-SHARED-STUDENT';
+    const legacyMessageMarker = 'GARP-STUDENT-CANARY-K3-LEGACY-SHARED-MESSAGE';
+    store.resource('students').legacy_shared_student = { id: 'legacy_shared_student', ownerId: userA.id, displayName: legacyStudentMarker, visibility: 'shared', createdAt: now, updatedAt: now };
+    store.resource('messages').legacy_shared_message = { id: 'legacy_shared_message', ownerId: userA.id, subject: legacyMessageMarker, body: 'Synthetic only', status: 'draft', visibility: 'shared', createdAt: now, updatedAt: now };
+    store.resource('materials').legacy_shared_material = { id: 'legacy_shared_material', ownerId: userA.id, title: 'Legacy shared material', visibility: 'shared', createdAt: now, updatedAt: now };
+    await store.save();
+    assert.equal((await api('/v1/students/legacy_shared_student', { token: tokenB })).response.status, 404, 'Legacy shared student nesmí být čitelný cizím učitelem.');
+    assert.equal((await api('/v1/students/legacy_shared_student', { token: tokenSubstitute })).response.status, 404, 'Legacy shared student nesmí být čitelný rolí substitute.');
+    assert.equal(JSON.stringify((await api('/v1/students', { token: tokenB })).payload).includes(legacyStudentMarker), false);
+    assert.equal((await api('/v1/messages/legacy_shared_message', { token: tokenB })).response.status, 404, 'Legacy shared message nesmí být čitelná cizím učitelem.');
+    assert.equal(JSON.stringify((await api('/v1/messages', { token: tokenSubstitute })).payload).includes(legacyMessageMarker), false);
+    assert.equal((await api('/v1/materials/legacy_shared_material', { token: tokenB })).response.status, 200, 'Oprava nesmí rozbít legitimní shared materiály.');
 
     const foreignReadyMessage = { id: 'foreign_ready', ownerId: userA.id, subject: 'Cizí zpráva', body: 'Nesmí ji spustit jiný učitel.', recipients: [{ email: 'recipient@example.test' }], status: 'ready', requireApproval: false, updatedAt: now, createdAt: now };
     store.resource('messages')[foreignReadyMessage.id] = foreignReadyMessage;
@@ -90,21 +124,101 @@ try {
     assert.equal(store.resource('messages')[foreignReadyMessage.id].status, 'ready', 'Učitel nesmí přes process-due spustit cizí zprávu.');
     assert.equal(crossUserProcess.payload.items.some((item) => item.id === foreignReadyMessage.id), false, 'Výsledek učitele nesmí obsahovat cizí zprávu.');
 
-    const shared = await api('/v1/students', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'shared_student', displayName: 'Sdílený', visibility: 'shared', updatedAt: now }) });
-    assert.equal(shared.response.status, 201);
-    assert.equal((await api('/v1/students/shared_student', { token: tokenB })).response.status, 200);
-    assert.equal((await api('/v1/students/shared_student', { token: tokenB, method: 'PATCH', body: JSON.stringify({ displayName: 'Přepsáno' }) })).response.status, 403);
-    assert.equal((await api('/v1/students/shared_student', { token: tokenB, method: 'DELETE' })).response.status, 403);
+    const privateStudent = await api('/v1/students', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'private_student_probe', displayName: 'Soukromý', visibility: 'shared', updatedAt: now }) });
+    assert.equal(privateStudent.response.status, 201);
+    assert.equal(privateStudent.payload.visibility, 'private', 'Studentský záznam musí být serverově vynucen jako soukromý.');
+    assert.equal((await api('/v1/students/private_student_probe', { token: tokenB })).response.status, 404, 'Jiný učitel nesmí číst studentský záznam ani po klientském pokusu o visibility=shared.');
+    assert.equal((await api('/v1/students/private_student_probe', { token: tokenB, method: 'PATCH', body: JSON.stringify({ displayName: 'Přepsáno' }) })).response.status, 404);
+    assert.equal((await api('/v1/students/private_student_probe', { token: tokenB, method: 'DELETE' })).response.status, 403);
+    const sensitiveMarker = 'GARP-STUDENT-CANARY-DELETE-HISTORY';
+    await api('/v1/students/private_student_probe', { token: tokenA, method: 'PATCH', body: JSON.stringify({ notes: sensitiveMarker, updatedAt: new Date().toISOString() }) });
+    assert.equal(store.data.changes.some((item) => JSON.stringify(item).includes(sensitiveMarker)), true);
+    assert.equal((await api('/v1/students/private_student_probe', { token: tokenA, method: 'DELETE' })).response.status, 204);
+    assert.equal(store.data.changes.some((item) => JSON.stringify(item).includes(sensitiveMarker)), false, 'Po výmazu nesmí historická sync payload kopie držet studentský canary.');
+    assert.equal(store.data.changes.some((item) => item.resource === 'students' && item.entityId === 'private_student_probe' && item.operation === 'delete'), true, 'Výmaz musí zachovat pouze bezpečný sync tombstone.');
 
-    await api('/v1/messages', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'shared_message', subject: 'Test', body: 'Text', status: 'approval_required', requireApproval: true, visibility: 'shared', updatedAt: now }) });
-    assert.equal((await api('/v1/messages/shared_message/approve', { token: tokenB, method: 'POST', body: '{}' })).response.status, 404);
+    const privateMessage = await api('/v1/messages', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'private_message_probe', subject: 'Test', body: 'Text', status: 'approval_required', requireApproval: true, visibility: 'shared', updatedAt: now }) });
+    assert.equal(privateMessage.payload.visibility, 'private', 'Komunikační zpráva musí být serverově vynucena jako soukromá.');
+    assert.equal((await api('/v1/messages/private_message_probe', { token: tokenB })).response.status, 404, 'Jiný učitel nesmí číst cizí komunikační zprávu.');
+    assert.equal((await api('/v1/messages/private_message_probe/approve', { token: tokenB, method: 'POST', body: '{}' })).response.status, 404);
+
+    const sharedMaterial = await api('/v1/materials', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'shared_material_probe', title: 'Sdílený materiál', visibility: 'shared', updatedAt: now }) });
+    assert.equal(sharedMaterial.payload.visibility, 'shared', 'Výslovně sdílitelný materiál musí zůstat sdílitelný.');
+    assert.equal((await api('/v1/materials/shared_material_probe', { token: tokenB })).response.status, 200);
+    const substitutionMaterial = await api('/v1/materials', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'substitution_material_probe', title: 'Materiál pro suplování', visibility: 'substitution', updatedAt: now }) });
+    assert.equal(substitutionMaterial.payload.visibility, 'substitution');
+    assert.equal((await api('/v1/materials/substitution_material_probe', { token: tokenSubstitute })).response.status, 200, 'Bezpečnostní oprava nesmí rozbít explicitně sdílený materiál pro zastupování.');
+
+    // GARP 2.3 round 2: N-01. Dedicated substitution authorization must not be bypassable via generic resources.
+    const substitutionMarker = 'GARP-SYNTH-N01-PRIVATE-NOTES';
+    const draftPeriod = await api('/v1/substitution/periods', { token: tokenA, method: 'POST', body: JSON.stringify({
+      title: 'Synthetic draft', startDate: '2026-09-01', endDate: '2026-09-02', status: 'draft', accessMode: 'selected', allowedUserIds: [], privateNotes: 'owner-only'
+    }) });
+    assert.equal(draftPeriod.response.status, 201);
+    const draftPlan = await api('/v1/substitution/plans', { token: tokenA, method: 'POST', body: JSON.stringify({
+      periodId: draftPeriod.payload.period.id, groupName: 'Synthetic group', title: 'Synthetic plan', privateNotes: substitutionMarker
+    }) });
+    assert.equal(draftPlan.response.status, 201);
+    const dedicatedB = await api('/v1/substitution/periods', { token: tokenB });
+    assert.equal(JSON.stringify(dedicatedB.payload).includes(substitutionMarker), false, 'Cizí učitel nesmí vidět draft přes vyhrazené substitution API.');
+    const genericPlansB = await api('/v1/substitutionPlans', { token: tokenB });
+    assert.equal(JSON.stringify(genericPlansB.payload).includes(substitutionMarker), false, 'Generický resource endpoint nesmí obejít period-scoped autorizaci substitution plánů.');
+    assert.equal((await api(`/v1/substitutionPlans/${draftPlan.payload.plan.id}`, { token: tokenB })).response.status, 404);
+    assert.equal((await api(`/v1/substitutionPlans/${draftPlan.payload.plan.id}`, { token: tokenSubstitute })).response.status, 404);
+    const genericInjectedPlan = await api('/v1/substitutionPlans', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'synthetic_generic_sub_plan', periodId: draftPeriod.payload.period.id, title: 'Injected plan', privateNotes: substitutionMarker, visibility: 'shared', updatedAt: now }) });
+    assert.equal(genericInjectedPlan.response.status, 201);
+    assert.equal(genericInjectedPlan.payload.visibility, 'private', 'Generická substitution data nesmějí získat globální shared visibility.');
+    assert.equal((await api('/v1/substitutionPlans/synthetic_generic_sub_plan', { token: tokenB })).response.status, 404);
+
+    // GARP 2.3 round 2: N-03. Sensitive attachments are private and dedupe cannot reuse broader access.
+    const attachmentMarker = 'GARP-SYNTH-N03-STUDENT-FILE';
+    const sharedBytes = Buffer.from('GARP-SYNTH-ATTACHMENT-BYTES');
+    const publicMaterialUpload = await api('/v1/attachments/upload', { token: tokenA, method: 'POST', body: JSON.stringify({ fileName: 'shared-material.pdf', mimeType: 'application/pdf', contentBase64: sharedBytes.toString('base64'), purpose: 'material', visibility: 'shared' }) });
+    assert.equal(publicMaterialUpload.response.status, 201);
+    assert.equal(publicMaterialUpload.payload.attachment.visibility, 'shared');
+    const sensitiveUpload = await api('/v1/attachments/upload', { token: tokenA, method: 'POST', body: JSON.stringify({ fileName: `${attachmentMarker}.pdf`, mimeType: 'application/pdf', contentBase64: sharedBytes.toString('base64'), purpose: 'student', visibility: 'shared' }) });
+    assert.equal(sensitiveUpload.response.status, 201, 'Jiný privacy context stejného obsahu nesmí být deduplikován na širší záznam.');
+    assert.equal(sensitiveUpload.payload.duplicate, false);
+    assert.equal(sensitiveUpload.payload.attachment.visibility, 'private', 'purpose=student musí server vynutit jako private.');
+    assert.notEqual(sensitiveUpload.payload.attachment.id, publicMaterialUpload.payload.attachment.id);
+    assert.equal(store.data.audit.some((item) => JSON.stringify(item).includes(attachmentMarker)), false, 'Audit nesmí ukládat původní název přílohy s potenciálním osobním údajem.');
+    const attachmentsB = await api('/v1/attachments', { token: tokenB });
+    assert.equal(JSON.stringify(attachmentsB.payload).includes(attachmentMarker), false, 'Cizí učitel nesmí v seznamu vidět studentskou přílohu.');
+    assert.equal((await api(`/v1/attachments/${sensitiveUpload.payload.attachment.id}/content`, { token: tokenB })).response.status, 404);
+    assert.equal((await api(`/v1/attachments/${sensitiveUpload.payload.attachment.id}/content`, { token: tokenSubstitute })).response.status, 404);
+    const unscopedSubUpload = await api('/v1/attachments/upload', { token: tokenA, method: 'POST', body: JSON.stringify({ fileName: 'unscoped-substitution.pdf', mimeType: 'application/pdf', contentBase64: Buffer.from('unscoped-substitution').toString('base64'), purpose: 'material', visibility: 'substitution' }) });
+    assert.equal(unscopedSubUpload.payload.attachment.visibility, 'private', 'Unscoped substitution attachment se musí fail-closed uložit jako private.');
+
+    // GARP 2.3 round 2: N-02. Attachment-link history must be scrubbed and replaced by a safe tombstone.
+    const historyMarker = 'GARP-SYNTH-N02-ATTACHMENT-LINK-HISTORY';
+    const link = await api('/v1/attachmentLinks', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'synthetic_attachment_link', attachmentId: sensitiveUpload.payload.attachment.id, label: historyMarker, updatedAt: now }) });
+    assert.equal(link.response.status, 201);
+    assert.equal(store.data.changes.some((item) => JSON.stringify(item).includes(historyMarker)), true);
+    assert.equal((await api(`/v1/attachments/${sensitiveUpload.payload.attachment.id}`, { token: tokenA, method: 'DELETE' })).response.status, 204);
+    assert.equal(Boolean(store.resource('attachmentLinks').synthetic_attachment_link), false);
+    assert.equal(store.data.changes.some((item) => JSON.stringify(item).includes(historyMarker)), false, 'Smazání přílohy nesmí ponechat historický attachmentLink payload.');
+    assert.equal(store.data.changes.some((item) => item.resource === 'attachmentLinks' && item.entityId === 'synthetic_attachment_link' && item.operation === 'delete'), true, 'Smazání navázaného attachmentLink musí vytvořit sync tombstone.');
+    assert.equal(store.data.audit.some((item) => JSON.stringify(item).includes(attachmentMarker)), false, 'Po smazání přílohy nesmí audit držet citlivý název souboru.');
+
+    const failedLoginEmail = 'synthetic-login-marker@example.invalid';
+    const failedLogin = await api('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: failedLoginEmail, password: 'SyntheticWrongPassword123' }) });
+    assert.equal(failedLogin.response.status, 401);
+    assert.equal(store.data.audit.some((item) => JSON.stringify(item).includes(failedLoginEmail)), false, 'Audit neúspěšného loginu nesmí ukládat raw e-mail.');
+    const failedLoginAudit = store.data.audit.find((item) => item.action === 'auth-login-failed' && item.metadata?.accountMatched === false);
+    assert.equal(Boolean(failedLoginAudit), true, 'Audit může zachovat pouze neidentifikující informaci, zda účet existoval.');
+    assert.equal(Object.prototype.hasOwnProperty.call(failedLoginAudit?.metadata || {}, 'emailHash'), false, 'Audit neúspěšného loginu nesmí ukládat slovníkově dohledatelný hash e-mailu.');
 
     const oldDate = new Date(Date.now() - 100 * 86_400_000).toISOString();
     await api('/v1/privacy/policy', { token: tokenA, method: 'PUT', body: JSON.stringify({ studentRetentionDays: 3650, communicationRetentionDays: 3650, orphanAttachmentRetentionDays: 3650 }) });
     await api('/v1/students', { token: tokenA, method: 'POST', body: JSON.stringify({ id: 'retained_student', displayName: 'Zachovat', status: 'archived', archivedAt: oldDate, updatedAt: oldDate }) });
     await api('/v1/privacy/policy', { token: ownerToken, method: 'PUT', body: JSON.stringify({ studentRetentionDays: 30, communicationRetentionDays: 30, orphanAttachmentRetentionDays: 30 }) });
+    const oldMessage = await api('/v1/messages', { token: ownerToken, method: 'POST', body: JSON.stringify({ id: 'old_message_for_purge', subject: 'Staré', body: 'Starý obsah', status: 'cancelled', cancelledAt: oldDate, updatedAt: oldDate }) });
+    store.resource('messageDeliveries').old_delivery_for_purge = { id: 'old_delivery_for_purge', ownerId: 'owner', messageId: oldMessage.payload.id, recipientEmail: 'garp.retention@example.invalid', status: 'sent', sentAt: oldDate, updatedAt: oldDate };
+    await store.save();
     const purge = await api('/v1/privacy/purge', { token: ownerToken, method: 'POST', body: JSON.stringify({ commit: true }) });
     assert.equal(purge.response.status, 200);
+    assert.equal(Boolean(store.resource('messageDeliveries').old_delivery_for_purge), false, 'Retenční výmaz zprávy musí odstranit i doručenku s adresou příjemce.');
+    assert.equal(JSON.stringify(store.data.changes).includes('garp.retention@example.invalid'), false, 'Retenční výmaz nesmí ponechat PII v historických sync payloadech.');
     assert.equal(purge.payload.summary.scope, 'self');
     assert.equal(Boolean(store.resource('students').retained_student), true, 'Výchozí retenční úklid vlastníka smí zasáhnout pouze jeho vlastní data.');
     assert.equal(Boolean(purge.payload.summary.byOwner[userA.id]), false);
@@ -114,6 +228,15 @@ try {
     assert.equal(globalPreview.payload.summary.byOwner[userA.id].students, 0, 'Globální náhled musí použít politiku konkrétního vlastníka.');
     const forbiddenGlobal = await api('/v1/privacy/purge', { token: tokenA, method: 'POST', body: JSON.stringify({ commit: false, scope: 'all' }) });
     assert.equal(forbiddenGlobal.response.status, 403);
+
+    const deleteTargetCreate = await api('/v1/users', { ...ownerAuth, method: 'POST', body: JSON.stringify({ email: 'delete-target@example.test', displayName: 'Delete Target', role: 'teacher', password: 'DeleteTargetPassword123' }) });
+    assert.equal(deleteTargetCreate.response.status, 201);
+    const deleteTargetId = deleteTargetCreate.payload.user.id;
+    assert.equal(store.data.audit.some((item) => item.entityType === 'user' && item.entityId === deleteTargetId), true, 'Kontrolní audit cílového účtu musí před výmazem existovat.');
+    const deleteTargetLogin = await api('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: 'delete-target@example.test', password: 'DeleteTargetPassword123' }) });
+    const deleteTargetResult = await api('/v1/privacy/delete-my-data', { token: deleteTargetLogin.payload.token, method: 'DELETE' });
+    assert.equal(deleteTargetResult.response.status, 200);
+    assert.equal(store.data.audit.some((item) => item.actorId === deleteTargetId || (item.entityType === 'user' && item.entityId === deleteTargetId)), false, 'Úplný výmaz účtu nesmí ponechat auditní vazbu na interní ID smazaného uživatele.');
 
     const missingPatch = await api('/v1/lessons/does-not-exist', { token: ownerToken, method: 'PATCH', body: JSON.stringify({ title: 'Nope' }) });
     assert.equal(missingPatch.response.status, 404);
@@ -156,7 +279,22 @@ try {
     assert.equal(staleResult.dispatched.some((item) => item.message.id === stale.id), true);
     assert.equal(stale.status, 'sent');
 
-    console.log('Auditní serverové regrese prošly: validace nedůvěryhodných záznamů, oprávnění, zotavení zápisu, retence, hesla, kurzory, zastupování, doručenky a hlavičky.');
+    // RT-04: manipulate the application clock source. Expiry must fail closed and clock rollback must not resurrect a pruned session.
+    const clockUser = await api('/v1/users', { ...ownerAuth, method: 'POST', body: JSON.stringify({ email: 'clock@example.test', displayName: 'Clock', role: 'teacher', password: 'ClockPassword123' }) });
+    assert.equal(clockUser.response.status, 201);
+    const clockLogin = await api('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: 'clock@example.test', password: 'ClockPassword123' }) });
+    const clockToken = clockLogin.payload.token;
+    assert.equal((await api('/v1/auth/me', { token: clockToken })).response.status, 200);
+    const realNow = Date.now;
+    const expiresMs = new Date(clockLogin.payload.expiresAt).getTime();
+    try {
+      Date.now = () => expiresMs + 60_000;
+      assert.equal((await api('/v1/auth/me', { token: clockToken })).response.status, 401, 'Relace musí po posunu času za expiraci selhat uzavřeně.');
+      Date.now = () => expiresMs - 60_000;
+      assert.equal((await api('/v1/auth/me', { token: clockToken })).response.status, 401, 'Zpětný skok času nesmí již odstraněnou relaci obnovit.');
+    } finally { Date.now = realNow; }
+
+    console.log('Auditní serverové regrese prošly: validace nedůvěryhodných záznamů, oprávnění, legacy shared K2-N01, N-01/N-02/N-03, K2-N03, RT-04, zotavení zápisu, retence, hesla, kurzory, zastupování, doručenky a hlavičky.');
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }

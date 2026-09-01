@@ -2,7 +2,7 @@
   "standard": "GHRAB-QA-1.0.2",
   "appId": "lesson-hub",
   "appName": "Lesson Hub",
-  "appVersion": "1.2.12",
+  "appVersion": "1.2.15",
   "entryPoint": "dist/index.html",
   "serveRoot": "dist",
   "buildRoot": "dist",
@@ -50,17 +50,17 @@
     {
       "file": "src/core/release.js",
       "regex": "version:\\s*['\\\"]([0-9.]+)['\\\"]",
-      "expected": "1.2.12"
+      "expected": "1.2.15"
     },
     {
       "file": "dist/build-info.json",
       "regex": "\\\"version\\\"\\s*:\\s*\\\"([0-9.]+)\\\"",
-      "expected": "1.2.12"
+      "expected": "1.2.15"
     },
     {
       "file": "dist/sw.js",
       "regex": "ghrab-lesson-hub-v([0-9.]+)",
-      "expected": "1.2.12"
+      "expected": "1.2.15"
     }
   ],
   "pwaTargets": [

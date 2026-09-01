@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.12
+# Lesson Hub 1.2.15
 
-**Aktuální verze:** 1.2.12  
+**Aktuální verze:** 1.2.15  
 **Platforma:** GHRAB Platform 1.1.0 · etapa P3
 
 
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.12 je chráněná aplikace současného AI Studia GHRAB a používá GHRAB Platform 1.1.0. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.15 je chráněná aplikace současného AI Studia GHRAB a používá GHRAB Platform 1.1.0. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -34,7 +34,7 @@ Workflow nasazení nevydá aplikaci, pokud selže čistá instalace, bezpečnost
 
 ## Stabilizovaná GitHub QA
 
-Verze 1.2.12 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
+Verze 1.2.15 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 
 - funkční kroky `evaluate` se nyní v Node Playwrightu i Python fallbacku skutečně vykonají; dříve se pouze vytvořil objekt funkce, takže se hash trasa nezměnila,
 - headless smoke test používá explicitní lokální QA přístup a čeká na dokončený render požadované trasy.

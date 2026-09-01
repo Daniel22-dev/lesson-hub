@@ -1,7 +1,7 @@
 {
   "schema": "ghrab-data-manifest-v1",
   "appId": "lesson-hub",
-  "appVersion": "1.2.12",
+  "appVersion": "1.2.15",
   "manifestVersion": 3,
   "dataCategories": [
     "settings",

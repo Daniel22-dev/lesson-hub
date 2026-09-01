@@ -32,7 +32,7 @@ async function request(route, options = {}) {
 try {
   const health = await request('/health');
   assert.equal(health.response.status, 200);
-  assert.equal(health.payload.version, '1.2.12');
+  assert.equal(health.payload.version, '1.2.15');
 
   const login = await request('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: ['owner', 'example.test'].join('@'), password: 'ServerTest1234' }) });
   assert.equal(login.response.status, 200);
@@ -85,7 +85,7 @@ try {
   const attachmentId = upload.payload.attachment.id;
   const duplicateUpload = await request('/v1/attachments/upload', {
     method: 'POST', headers: auth,
-    body: JSON.stringify({ fileName: 'test-copy.pdf', mimeType: 'application/pdf', contentBase64: attachmentContent.toString('base64') }),
+    body: JSON.stringify({ fileName: 'test-copy.pdf', mimeType: 'application/pdf', contentBase64: attachmentContent.toString('base64'), purpose: 'student', visibility: 'private' }),
   });
   assert.equal(duplicateUpload.payload.duplicate, true);
   const attachmentDownload = await request(`/v1/attachments/${attachmentId}/content`, { headers: auth });

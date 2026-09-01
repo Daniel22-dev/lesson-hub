@@ -52,6 +52,7 @@ async function waitForMainApp(page, route, timeout = 20000) {
 try {
   try {
     const { chromium } = await import('playwright');
+    console.log('HEADLESS_RUNTIME: node-playwright');
     const browser = await chromium.launch({ headless: true });
     const scenarios = [
       ['/index.html#/overview', 'Připravte Lesson Hub na svou výuku'],
@@ -74,7 +75,7 @@ try {
         } else if (pathname.endsWith('/AI-Studio-GHRAB/config/support.json')) {
           await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ supportEmail: 'balaz@ghrabuvka.cz' }) });
         } else if (pathname.endsWith('/AI-Studio-GHRAB/config/apps.generated.json')) {
-          await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'lesson-hub', version: '1.2.12', name: { cs: 'Lesson Hub', en: 'Lesson Hub' } }]) });
+          await requestRoute.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'lesson-hub', version: '1.2.15', name: { cs: 'Lesson Hub', en: 'Lesson Hub' } }]) });
         } else {
           await requestRoute.continue();
         }
@@ -100,6 +101,7 @@ try {
     exitCode = failed ? 1 : 0;
   } catch (nodeError) {
     console.warn(`Node Playwright není dostupný (${nodeError.code || nodeError.message}); používám Python Playwright.`);
+    console.log('HEADLESS_RUNTIME: python-playwright-fallback');
     exitCode = await run('python3', ['tools/headless_check.py'], { LESSON_HUB_BASE_URL: baseUrl });
   }
 } finally {

@@ -6,7 +6,8 @@ import { URL } from 'node:url';
 import { loadServerConfig } from './lib/config.mjs';
 import { createStore } from './lib/storeFactory.mjs';
 import { constantTimeTokenEqual, createSessionToken, hashPasswordAsync, normalizeEmail, safeUser, tokenDigest, verifyPasswordAsync } from './lib/security.mjs';
-import { canAccessRecord, normalizeRole, normalizeVisibility, requirePermission } from './lib/permissions.mjs';
+import { canAccessRecord, isShareableResource, normalizeRole, normalizeVisibility, requirePermission } from './lib/permissions.mjs';
+import { normalizeOpenedStore } from './lib/storeNormalization.mjs';
 import { binary, json, noContent, readJson, requestIp } from './lib/http.mjs';
 import { SlidingWindowLimiter } from './lib/rateLimit.mjs';
 import { createMailAdapter } from './lib/mailer.mjs';
@@ -15,7 +16,7 @@ import { OperationsManager } from './lib/operations.mjs';
 import { canEditPeriod, canViewPeriod, createItem, createPeriod, createPlan, listSubstitutionBundles, publicItem, publicPeriod, publicPlan, updateItemByOwner, updateItemProgress, updatePeriod, updatePlan } from './lib/substitution.mjs';
 import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from './lib/untrustedData.mjs';
 
-export const SERVER_VERSION = '1.2.12';
+export const SERVER_VERSION = '1.2.15';
 export const API_CONTRACT = 'lesson-hub-api-v1';
 export const SYNC_CONTRACT = 'lesson-hub-sync-v1';
 export const RESOURCE_NAMES = Object.freeze([
@@ -26,6 +27,22 @@ export const RESOURCE_NAMES = Object.freeze([
 ]);
 
 
+function visibilityForResource(resource, requested, fallback = 'private') {
+  if (!isShareableResource(resource)) return 'private';
+  return normalizeVisibility(requested, fallback);
+}
+
+
+const ATTACHMENT_PURPOSES = new Set(['material', 'student', 'teacher', 'solution']);
+const SENSITIVE_ATTACHMENT_PURPOSES = new Set(['student', 'solution']);
+
+function attachmentPolicy(purpose, requestedVisibility) {
+  const normalizedPurpose = ATTACHMENT_PURPOSES.has(String(purpose || '')) ? String(purpose) : 'material';
+  if (SENSITIVE_ATTACHMENT_PURPOSES.has(normalizedPurpose)) return { purpose: normalizedPurpose, visibility: 'private' };
+  // Unscoped 'substitution' is deliberately fail-closed. A future implementation must bind it
+  // to a concrete substitution period and canViewPeriod() before enabling cross-user access.
+  return { purpose: normalizedPurpose, visibility: requestedVisibility === 'shared' ? 'shared' : 'private' };
+}
 
 const ALLOWED_ATTACHMENT_TYPES = new Set([
   'application/pdf',
@@ -61,7 +78,11 @@ function canAccessAttachment(user, attachment, { write = false } = {}) {
   if (user.role === 'owner' || user.role === 'admin') return true;
   if (attachment.ownerId === user.id) return user.role !== 'substitute' || !write;
   if (write) return false;
-  return attachment.visibility === 'shared' || attachment.visibility === 'substitution';
+  const purpose = String(attachment.purpose || 'material');
+  if (SENSITIVE_ATTACHMENT_PURPOSES.has(purpose)) return false;
+  if (purpose === 'teacher' && user.role === 'substitute') return false;
+  // Legacy unscoped substitution attachments are intentionally not shared cross-user.
+  return attachment.visibility === 'shared';
 }
 
 function deleteAllUserData(store, user) {
@@ -80,8 +101,9 @@ function deleteAllUserData(store, user) {
   store.data.sessions = store.data.sessions.filter((item) => item.userId !== user.id);
   removed.changes = store.data.changes.filter((item) => item.ownerId === user.id || item.actorId === user.id).length;
   store.data.changes = store.data.changes.filter((item) => item.ownerId !== user.id && item.actorId !== user.id);
-  removed.audit = store.data.audit.filter((item) => item.actorId === user.id).length;
-  store.data.audit = store.data.audit.filter((item) => item.actorId !== user.id);
+  const auditBelongsToUser = (item) => item.actorId === user.id || (item.entityType === 'user' && item.entityId === user.id);
+  removed.audit = store.data.audit.filter(auditBelongsToUser).length;
+  store.data.audit = store.data.audit.filter((item) => !auditBelongsToUser(item));
   delete store.data.privacyPolicies[user.id];
   const before = store.data.users.length;
   store.data.users = store.data.users.filter((item) => item.id !== user.id);
@@ -141,7 +163,7 @@ function safeMessagePayload(payload = {}, current = null) {
 
 function ownedMessage(store, user, id) {
   const message = store.resource('messages')[id];
-  if (!message || !canAccessRecord(user, message, { write: true })) throw httpError(404, 'Zpráva nebyla nalezena.', 'message_missing');
+  if (!message || !canAccessRecord(user, message, { write: true, resource: 'messages' })) throw httpError(404, 'Zpráva nebyla nalezena.', 'message_missing');
   return message;
 }
 
@@ -217,7 +239,19 @@ async function authenticate(request, store, config) {
 }
 
 function visibleRecords(store, resource, user) {
-  return Object.values(store.resource(resource)).filter((record) => canAccessRecord(user, record));
+  return Object.values(store.resource(resource)).filter((record) => canAccessRecord(user, record, { resource }));
+}
+
+function scrubHistoricalChangesForEntity(store, resource, entityId) {
+  const before = store.data.changes.length;
+  store.data.changes = store.data.changes.filter((item) => !(item.resource === resource && item.entityId === entityId));
+  return before - store.data.changes.length;
+}
+
+function deleteWithSyncTombstone(store, { resource, entityId, ownerId, actorId, clientId = '', clientChangeId = '' }) {
+  scrubHistoricalChangesForEntity(store, resource, entityId);
+  delete store.resource(resource)[entityId];
+  return changeFor(store, { resource, entityId, operation: 'delete', payload: { id: entityId }, ownerId, actorId, clientId, clientChangeId });
 }
 
 function changeFor(store, { resource, entityId, operation, payload, ownerId, actorId, clientId = '', clientChangeId = '' }) {
@@ -253,7 +287,7 @@ function upsertResource(store, { resource, entityId, payload, user, clientId = '
   }
   const records = store.resource(resource);
   const current = records[entityId] || null;
-  if (current && !canAccessRecord(user, current, { write: true })) throw httpError(403, 'Záznam patří jinému uživateli.', 'record_forbidden');
+  if (current && !canAccessRecord(user, current, { write: true, resource })) throw httpError(403, 'Záznam patří jinému uživateli.', 'record_forbidden');
   const now = new Date().toISOString();
   const incomingUpdatedAt = String(payload?.updatedAt || payload?.createdAt || '');
   const incomingRevision = Number(payload?.serverRevision);
@@ -262,8 +296,8 @@ function upsertResource(store, { resource, entityId, payload, user, clientId = '
     return { conflict: true, serverRecord: current };
   }
   const requestedVisibility = payload && Object.prototype.hasOwnProperty.call(payload, 'visibility')
-    ? normalizeVisibility(payload.visibility, current?.visibility || 'private')
-    : (current?.visibility || 'private');
+    ? visibilityForResource(resource, payload.visibility, current?.visibility || 'private')
+    : visibilityForResource(resource, current?.visibility || 'private', 'private');
   const record = {
     ...(current || {}),
     ...(payload || {}),
@@ -291,19 +325,20 @@ function deleteResource(store, { resource, entityId, user, clientId = '', client
   const records = store.resource(resource);
   const current = records[entityId];
   if (!current) return { deleted: false, change: null };
-  if (!canAccessRecord(user, current, { write: true })) throw httpError(403, 'Záznam patří jinému uživateli.', 'record_forbidden');
-  delete records[entityId];
-  const change = changeFor(store, { resource, entityId, operation: 'delete', payload: { id: entityId }, ownerId: current.ownerId, actorId: user.id, clientId, clientChangeId });
+  if (!canAccessRecord(user, current, { write: true, resource })) throw httpError(403, 'Záznam patří jinému uživateli.', 'record_forbidden');
+  const change = deleteWithSyncTombstone(store, { resource, entityId, ownerId: current.ownerId, actorId: user.id, clientId, clientChangeId });
   return { deleted: true, change };
 }
 
 export async function createLessonHubServer({ config = loadServerConfig(), store = createStore(config) } = {}) {
   await store.open();
+  const startupNormalization = normalizeOpenedStore(store);
+  if (startupNormalization.changed > 0) await store.save();
   const ipLimiter = new SlidingWindowLimiter({ windowMs: config.loginWindowMs, maxAttempts: config.loginAttempts * 4 });
   const accountLimiter = new SlidingWindowLimiter({ windowMs: config.loginWindowMs, maxAttempts: config.loginAttempts });
   const mailAdapter = createMailAdapter(config);
   const dispatcher = new MessageDispatcher({ store, config, mailAdapter, audit: (details) => audit(store, details) });
-  const operations = await new OperationsManager({ store, config, serverVersion: SERVER_VERSION, audit: (details) => audit(store, details) }).initialize();
+  const operations = await new OperationsManager({ store, config, serverVersion: SERVER_VERSION, audit: (details) => audit(store, details), normalizeStore: normalizeOpenedStore }).initialize();
 
   const handler = async (request, response) => {
     const headers = corsHeaders(request, config);
@@ -328,7 +363,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         accountLimiter.assert(accountKey);
         const user = store.data.users.find((item) => item.email === email && item.status === 'active');
         if (!user || !(await verifyPasswordAsync(body.password, user.passwordHash))) {
-          audit(store, { action: 'auth-login-failed', entityType: 'user', entityId: user?.id || null, metadata: { email }, ip });
+          audit(store, { action: 'auth-login-failed', entityType: 'user', entityId: user?.id || null, metadata: { accountMatched: Boolean(user) }, ip });
           await store.save();
           throw httpError(401, 'E-mail nebo heslo není správné.', 'credentials_invalid');
         }
@@ -424,7 +459,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
             createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastLoginAt: null,
           };
           store.data.users.push(created);
-          audit(store, { actorId: user.id, action: 'user-created', entityType: 'user', entityId: created.id, metadata: { email, role: created.role }, ip });
+          audit(store, { actorId: user.id, action: 'user-created', entityType: 'user', entityId: created.id, metadata: { role: created.role }, ip });
           await store.save();
           return json(response, 201, { user: safeUser(created) }, headers);
         }
@@ -470,18 +505,21 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
           if (content.length > config.attachmentLimitBytes) throw httpError(413, 'Příloha překračuje povolenou velikost.', 'attachment_too_large');
           const id = uid('attachment');
           const checksum = createHash('sha256').update(content).digest('hex');
-          const duplicate = Object.values(store.data.attachments).find((item) => item.ownerId === user.id && item.checksum === checksum && item.size === content.length);
+          const policy = attachmentPolicy(body.purpose, body.visibility);
+          // Deduplicate only inside the same privacy context. Reusing a broader legacy record
+          // for a sensitive/private upload would silently re-expand access to the bytes.
+          const duplicate = Object.values(store.data.attachments).find((item) => item.ownerId === user.id && item.checksum === checksum && item.size === content.length && item.purpose === policy.purpose && item.visibility === policy.visibility);
           if (duplicate) return json(response, 200, { attachment: duplicate, duplicate: true }, headers);
           await mkdir(config.attachmentsDir, { recursive: true });
           const storageName = `${id}.bin`;
           await writeFile(path.join(config.attachmentsDir, storageName), content, { mode: 0o600 });
           const attachment = {
             id, ownerId: user.id, fileName, mimeType, size: content.length, checksum, storageName,
-            purpose: String(body.purpose || 'material'), visibility: ['shared', 'substitution'].includes(body.visibility) ? body.visibility : 'private',
+            purpose: policy.purpose, visibility: policy.visibility,
             createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           };
           store.data.attachments[id] = attachment;
-          audit(store, { actorId: user.id, action: 'attachment-uploaded', entityType: 'attachment', entityId: id, metadata: { fileName, mimeType, size: content.length }, ip });
+          audit(store, { actorId: user.id, action: 'attachment-uploaded', entityType: 'attachment', entityId: id, metadata: { mimeType, size: content.length }, ip });
           await store.save();
           return json(response, 201, { attachment, duplicate: false }, headers);
         }
@@ -497,8 +535,11 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         if (request.method === 'DELETE' && segments.length === 3) {
           await unlink(path.join(config.attachmentsDir, attachment.storageName)).catch(() => {});
           delete store.data.attachments[attachmentId];
-          for (const [id, link] of Object.entries(store.resource('attachmentLinks'))) if (link.attachmentId === attachmentId || link.serverId === attachmentId) delete store.resource('attachmentLinks')[id];
-          audit(store, { actorId: user.id, action: 'attachment-deleted', entityType: 'attachment', entityId: attachmentId, metadata: { fileName: attachment.fileName }, ip });
+          const relatedLinks = Object.values(store.resource('attachmentLinks')).filter((link) => link.attachmentId === attachmentId || link.serverId === attachmentId);
+          for (const link of relatedLinks) {
+            deleteWithSyncTombstone(store, { resource: 'attachmentLinks', entityId: link.id, ownerId: link.ownerId || attachment.ownerId, actorId: user.id });
+          }
+          audit(store, { actorId: user.id, action: 'attachment-deleted', entityType: 'attachment', entityId: attachmentId, ip });
           await store.save();
           return noContent(response, headers);
         }
@@ -676,15 +717,26 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         const candidates = purgeCandidates(store, user, { scope: requestedScope });
         const summary = { scope: candidates.scope, students: candidates.students.length, messages: candidates.messages.length, attachments: candidates.attachments.length, byOwner: candidates.byOwner };
         if (body.commit === true) {
-          for (const item of candidates.students) delete store.resource('students')[item.id];
-          for (const item of candidates.messages) delete store.resource('messages')[item.id];
+          for (const item of candidates.students) {
+            deleteWithSyncTombstone(store, { resource: 'students', entityId: item.id, ownerId: item.ownerId, actorId: user.id });
+          }
+          const removedMessageIds = new Set(candidates.messages.map((item) => item.id));
+          const relatedDeliveries = Object.values(store.resource('messageDeliveries')).filter((item) => removedMessageIds.has(item.messageId));
+          for (const item of candidates.messages) {
+            deleteWithSyncTombstone(store, { resource: 'messages', entityId: item.id, ownerId: item.ownerId, actorId: user.id });
+          }
+          for (const delivery of relatedDeliveries) {
+            deleteWithSyncTombstone(store, { resource: 'messageDeliveries', entityId: delivery.id, ownerId: delivery.ownerId, actorId: user.id });
+          }
+          summary.messageDeliveries = relatedDeliveries.length;
           const removedAttachmentIds = new Set(candidates.attachments.map((item) => item.id));
           for (const item of candidates.attachments) {
             await unlink(path.join(config.attachmentsDir, item.storageName)).catch(() => {});
             delete store.data.attachments[item.id];
           }
-          for (const link of Object.values(store.resource('attachmentLinks'))) {
-            if (removedAttachmentIds.has(link.attachmentId || link.serverId)) delete store.resource('attachmentLinks')[link.id];
+          const relatedAttachmentLinks = Object.values(store.resource('attachmentLinks')).filter((link) => removedAttachmentIds.has(link.attachmentId || link.serverId));
+          for (const link of relatedAttachmentLinks) {
+            deleteWithSyncTombstone(store, { resource: 'attachmentLinks', entityId: link.id, ownerId: link.ownerId || user.id, actorId: user.id });
           }
           audit(store, { actorId: user.id, action: 'privacy-retention-purge', entityType: 'privacyPolicy', entityId: user.id, metadata: summary, ip });
           await store.save();
@@ -745,7 +797,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         if (request.method === 'GET' && !entityId) return json(response, 200, { items: visibleRecords(store, resource, user) }, headers);
         if (request.method === 'GET' && entityId) {
           const record = store.resource(resource)[entityId];
-          if (!record || !canAccessRecord(user, record)) throw httpError(404, 'Záznam nebyl nalezen.', 'record_missing');
+          if (!record || !canAccessRecord(user, record, { resource })) throw httpError(404, 'Záznam nebyl nalezen.', 'record_missing');
           return json(response, 200, record, headers);
         }
         if (request.method === 'POST' && !entityId) {
@@ -759,7 +811,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         }
         if (request.method === 'PATCH' && entityId) {
           const current = store.resource(resource)[entityId];
-          if (!current || !canAccessRecord(user, current)) throw httpError(404, 'Záznam nebyl nalezen.', 'record_missing');
+          if (!current || !canAccessRecord(user, current, { write: true, resource })) throw httpError(404, 'Záznam nebyl nalezen.', 'record_missing');
           const body = await readJson(request, config.bodyLimitBytes);
           const payload = resource === 'messages' ? safeMessagePayload(body, current) : body;
           const result = upsertResource(store, { resource, entityId, payload, user, clientId: request.headers['x-lesson-hub-client'] || '' });

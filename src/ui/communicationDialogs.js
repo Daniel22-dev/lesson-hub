@@ -113,10 +113,21 @@ export async function openMessageDialog(message = null) {
 export function openAttachmentDialog() {
   return openModal({
     id: 'attachment-upload-modal', eyebrow: 'Serverové úložiště', title: 'Nahrát přílohu',
-    body: `<form id="attachment-upload-form" class="form-stack"><label class="form-field"><span>Soubor</span><input name="file" type="file" required accept=".pdf,.docx,.xlsx,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp,.mp3,.wav,.ogg"></label><div class="form-grid"><label class="form-field"><span>Účel</span><select name="purpose"><option value="material">Materiál</option><option value="student">Pro studenty</option><option value="teacher">Pro učitele</option><option value="solution">Řešení / klíč</option></select></label><label class="form-field"><span>Viditelnost</span><select name="visibility"><option value="private">Pouze já</option><option value="shared">Sdílené</option><option value="substitution">Pro zastupování</option></select></label></div><p class="privacy-note">Maximální velikost určuje server; výchozí limit je 8 MB. Nepřidávejte dokumenty s nadbytečnými osobními údaji.</p><p class="form-error" data-form-error hidden></p></form>`,
+    body: `<form id="attachment-upload-form" class="form-stack"><label class="form-field"><span>Soubor</span><input name="file" type="file" required accept=".pdf,.docx,.xlsx,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp,.mp3,.wav,.ogg"></label><div class="form-grid"><label class="form-field"><span>Účel</span><select name="purpose"><option value="material">Materiál</option><option value="student">Pro studenty</option><option value="teacher">Pro učitele</option><option value="solution">Řešení / klíč</option></select></label><label class="form-field"><span>Viditelnost</span><select name="visibility"><option value="private">Pouze já</option><option value="shared">Sdílené</option></select></label></div><p class="privacy-note">Maximální velikost určuje server; výchozí limit je 8 MB. Nepřidávejte dokumenty s nadbytečnými osobními údaji.</p><p class="form-error" data-form-error hidden></p></form>`,
     actions: '<button class="button button--ghost" type="button" data-close-modal>Zrušit</button><button class="button button--primary" type="submit" form="attachment-upload-form">Nahrát</button>',
     onOpen(backdrop, close) {
       const form = backdrop.querySelector('#attachment-upload-form');
+      const purposeSelect = form.elements.purpose;
+      const visibilitySelect = form.elements.visibility;
+      const syncAttachmentPrivacy = () => {
+        const sensitive = ['student', 'solution'].includes(String(purposeSelect.value));
+        const sharedOption = visibilitySelect.querySelector('option[value="shared"]');
+        if (sharedOption) sharedOption.disabled = sensitive;
+        if (sensitive) visibilitySelect.value = 'private';
+        visibilitySelect.title = sensitive ? 'Studentské podklady a řešení jsou na serveru vždy soukromé.' : '';
+      };
+      purposeSelect.addEventListener('change', syncAttachmentPrivacy);
+      syncAttachmentPrivacy();
       form.addEventListener('submit', async (event) => { event.preventDefault(); const submit = backdrop.querySelector('button[form="attachment-upload-form"]'); submit.disabled = true; try { const data = new FormData(form); const result = await appState.serverService.uploadAttachment(data.get('file'), { purpose: data.get('purpose'), visibility: data.get('visibility') }); await appState.communicationService.rememberServerAttachment(result.attachment); close(); eventBus.emit(APP_EVENTS.communicationChanged, {}); showToast(result.duplicate ? 'Stejná příloha už na serveru existovala; použil se původní záznam.' : 'Příloha byla bezpečně uložena na server.', result.duplicate ? 'info' : 'success'); } catch (error) { showError(form, error); } finally { submit.disabled = false; } });
     },
   });

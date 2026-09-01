@@ -22,6 +22,8 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Dependency audit
+        run: npm audit --package-lock-only --audit-level=high --registry=https://registry.npmjs.org
       - name: Verify exact axe-core version
         run: node -e "const p=require('./node_modules/axe-core/package.json'); if(p.version!=='4.12.1') process.exit(1)"
       - name: Install pinned Playwright Chromium

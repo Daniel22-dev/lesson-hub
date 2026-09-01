@@ -1,5 +1,24 @@
 ## 1.2.12 — 2026-08-27
 
+
+## 1.2.15 — GARP 2.3 remediation po Claude kole 2
+
+- autorizace generických resources už nepovažuje uložené `visibility: shared` za samostatné právo; sdílení je při každém čtení vázáno na aktuální allowlist typu resource,
+- po každém `store.open()`, včetně `restoreBackup()`, probíhá idempotentní normalizace legacy visibility, sync payloadů, citlivých příloh a auditních metadat,
+- legacy `students` a `messages` s historickým `shared` se normalizují na `private`, zatímco legitimní `materials` / `materialLinks` zůstávají sdílené,
+- audit neúspěšného přihlášení už neukládá raw e-mail ani nesolený zkrácený SHA-256 `emailHash`; zachovává pouze neidentifikující `accountMatched`,
+- regrese pokrývají přímé legacy záznamy i obnovu staré zálohy a ověřují, že oprava nerozbíjí oprávněné shared/substitution materiály.
+
+
+## 1.2.14 — GARP 2.3 remediation kolo 2
+
+- uzavřena generická cross-user čtecí cesta k `substitution*` záznamům; period-scoped sdílení zůstává pouze ve vyhrazeném substitution API,
+- studentské přílohy a řešení jsou serverově private; unscoped `substitution` attachment fail-closed; deduplikace respektuje privacy context,
+- mazání `attachmentLinks` používá scrub + sync tombstone i při smazání přílohy a retenčním purge,
+- klientská API a binární volání používají `cache: no-store`,
+- CI obsahuje explicitní dependency audit a lockfile připíná opravené `brace-expansion 5.0.9` a `undici 7.29.0`,
+- rozšířeny GARP regrese, PC-01 evidence a time-manipulation test.
+
 - Hotfix synchronizuje `sharedAccessVersion` s aktuální podepsanou konfigurací AI Studia, aby se aplikace po bezpečnostní rotaci nezamykala kvůli `configuration-version-mismatch`.
 - Pedagogické funkce a datové formáty se nemění.
 
@@ -42,6 +61,12 @@
 - Přidán aktualizovaný release-acceptance kontrakt a odložený GitHub upload.
 
 # Changelog
+
+## 1.2.13 – GARP 2.3 privacy hardening
+
+- serverově omezuje sdílení generických resource záznamů na explicitně sdílené typy; studentské a komunikační záznamy zůstávají private i při klientském pokusu o `visibility: shared`;
+- rozšiřuje regresi o cross-user privacy kontrolu studentských záznamů a zpráv a zachovává legitimní sdílení materiálů;
+- synchronizuje release metadata, public consumer a aktivní testovací harnessy na 1.2.13.
 
 ## 1.2.6 — P4 FINAL (2026-08-04)
 

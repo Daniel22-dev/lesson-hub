@@ -174,6 +174,7 @@ export class ServerService {
       const response = await this.fetchImpl(`${normalizeBaseUrl(this.config.baseUrl)}${path}`, {
         method,
         signal: controller.signal,
+        cache: 'no-store',
         credentials: this.schoolProfile ? 'include' : 'same-origin',
         headers: {
           'content-type': 'application/json',
@@ -205,6 +206,7 @@ export class ServerService {
     try {
       const response = await this.fetchImpl(`${normalizeBaseUrl(this.config.baseUrl)}${path}`, {
         signal: controller.signal,
+        cache: 'no-store',
         credentials: this.schoolProfile ? 'include' : 'same-origin',
         headers: {
           'x-lesson-hub-client': this.config.clientId,

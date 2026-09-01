@@ -3,6 +3,7 @@ import { loadServerConfig } from './lib/config.mjs';
 import { createStore } from './lib/storeFactory.mjs';
 import { hashPassword, normalizeEmail } from './lib/security.mjs';
 import { randomUUID } from 'node:crypto';
+import { normalizeOpenedStore } from './lib/storeNormalization.mjs';
 
 const { values } = parseArgs({ options: {
   email: { type: 'string' }, name: { type: 'string' }, role: { type: 'string', default: 'owner' },
@@ -16,6 +17,8 @@ if (!email || !password) {
 }
 const config = loadServerConfig();
 const store = await createStore(config).open();
+const normalization = normalizeOpenedStore(store);
+if (normalization.changed > 0) await store.save();
 if (store.data.users.some((user) => user.email === email)) {
   console.error('Účet s tímto e-mailem již existuje.');
   process.exit(1);

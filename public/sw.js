@@ -1,6 +1,6 @@
 const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
 /* GHRAB service-worker contract v1 · update activation is user-controlled. */
-const CACHE_NAME = "ghrab-lesson-hub-v1.2.12";
+const CACHE_NAME = "ghrab-lesson-hub-v1.2.15";
 const CACHE_PREFIXES = ["ghrab-lesson-hub-v", "lesson-hub-pwa-v"];
 const CORE_ASSETS = /*__CORE_ASSETS__*/[
   "./",
