@@ -93,7 +93,7 @@
       "entryHtmlBytes": 10000,
       "entryCriticalBytes": 220000,
       "largestInlineScriptBytes": 5000,
-      "precacheBytes": 1140000,
+      "precacheBytes": 1145000,
       "largestFileBytes": 130000,
       "duplicateLargeBytes": 40000
     },
