@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
 
-  const PLATFORM_VERSION = '1.1.0';
+  const PLATFORM_VERSION = '1.1.2';
   const CONTRACT = 'ghrab-platform-v1';
   const HANDOFF_SCHEMA = 'ghrab-studio-handoff-v2';
   const LEGACY_HANDOFF_SCHEMA = 'ghrab-handoff-v1';
@@ -118,6 +118,44 @@
       return false;
     }
   }
+
+  const SUITE_SESSION_KEY = 'ghrab.platform.suite-session-generation.v1';
+  const suiteSessionHandlers = new Set();
+  const suiteSeenKey = () => `ghrab.${appId || 'platform'}.suite-session-seen.v1`;
+  const suiteGeneration = () => safeGet(storage('localStorage'), SUITE_SESSION_KEY) || '';
+  const suiteSeen = () => safeGet(storage('localStorage'), suiteSeenKey()) || '';
+  async function notifySuiteSession(detail) {
+    if (!suiteSessionHandlers.size) return { ok: false, pending: true, generation: detail.generation };
+    let ok = true;
+    for (const handler of [...suiteSessionHandlers]) {
+      try { const result = await handler(detail); if (result === false || result?.ok === false) ok = false; }
+      catch (_) { ok = false; }
+    }
+    if (ok) safeSet(storage('localStorage'), suiteSeenKey(), detail.generation);
+    return { ok, generation: detail.generation };
+  }
+  function emitSuiteSession(detail) {
+    try { document.dispatchEvent(new CustomEvent('ghrab:suite-session-end', { detail })); } catch (_) {}
+    void notifySuiteSession(detail);
+  }
+  function endSuiteSession(options) {
+    const opts = options || {};
+    const generation = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    if (!safeSet(storage('localStorage'), SUITE_SESSION_KEY, generation)) return { ok: false, reason: 'storage-error' };
+    const detail = Object.freeze({ schema: 'ghrab-suite-session-v1', generation, reason: String(opts.reason || 'end-work'), clearApplicationData: opts.clearApplicationData !== false, appId });
+    emitSuiteSession(detail);
+    return { ok: true, generation, detail };
+  }
+  function onSuiteSessionEnd(handler, options) {
+    if (typeof handler !== 'function') throw new TypeError('Suite session handler must be a function.');
+    suiteSessionHandlers.add(handler);
+    const generation = suiteGeneration();
+    if ((options?.replay !== false) && generation && generation !== suiteSeen()) emitSuiteSession(Object.freeze({ schema: 'ghrab-suite-session-v1', generation, reason: 'pending-suite-end', clearApplicationData: true, appId, replay: true }));
+    return () => suiteSessionHandlers.delete(handler);
+  }
+  if (typeof global.addEventListener === 'function') global.addEventListener('storage', (event) => {
+    if (event.key === SUITE_SESSION_KEY && event.newValue && event.newValue !== suiteSeen()) emitSuiteSession(Object.freeze({ schema: 'ghrab-suite-session-v1', generation: String(event.newValue), reason: 'cross-context', clearApplicationData: true, appId }));
+  });
 
   const rawStorage = (() => {
     const proto = global.Storage && global.Storage.prototype;
@@ -569,9 +607,9 @@
     } };
   }
 
-  function recordBridgeEvent(type, materialId, details) {
+  function recordBridgeEvent(type, _materialId, details) {
     const events = readJson(EVENT_KEY) || [];
-    const row = Object.assign({ at: new Date().toISOString(), type, appId, appVersion, materialId: String(materialId || '').slice(0, 160) }, details || {});
+    const row = Object.assign({ at: new Date().toISOString(), type, appId, appVersion }, details || {});
     const next = (Array.isArray(events) ? events : []).concat(row).slice(-500);
     safeSet(storage('localStorage'), EVENT_KEY, JSON.stringify(next));
     return row;
@@ -602,6 +640,8 @@
   function createHandoff(options) {
     const opts = options || {};
     if (!validMaterial(opts.material)) throw new Error('Invalid GHRAB Material v1');
+    const pending = peekHandoff({ allowAnyTarget: true, maxBytes: opts.maxBytes || 500000 });
+    if (pending) return null;
     const ttlMs = Math.min(Math.max(Number(opts.ttlMs || 30 * 60 * 1000), 60000), 24 * 60 * 60 * 1000);
     const packet = {
       schema: HANDOFF_SCHEMA,
@@ -1231,6 +1271,7 @@
     rollbackStorageMigration,
     theme: Object.freeze({ getContext: getThemeContext, set: applyTheme, normalise: normaliseTheme }),
     bridge: Object.freeze({ schema: HANDOFF_SCHEMA, key: HANDOFF_KEY, legacyKey: LEGACY_HANDOFF_KEY, validate: validateHandoff, peek: peekHandoff, take: takeHandoff, create: createHandoff, recordEvent: recordBridgeEvent }),
+    session: Object.freeze({ contract: 'ghrab-suite-session-v1', generationKey: SUITE_SESSION_KEY, generation: suiteGeneration, seen: suiteSeen, pending: () => Boolean(suiteGeneration() && suiteGeneration() !== suiteSeen()), end: endSuiteSession, onEnd: onSuiteSessionEnd, acknowledge: (generation) => safeSet(storage('localStorage'), suiteSeenKey(), String(generation || suiteGeneration())) }),
     unlockProtectedScripts,
     artifact: Object.freeze({ schema: ARTIFACT_SCHEMA, create: createArtifactEnvelope, validate: validateArtifactEnvelope, parse: parseArtifactEnvelope, isEnvelope: isArtifactEnvelope, unwrap: unwrapArtifact, unwrapMaybe: unwrapMaybeArtifact, download: downloadArtifact, stableStringify, sha256 }),
     mountFooter,

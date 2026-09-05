@@ -2,13 +2,13 @@
   "schema": "ghrab-release-acceptance-v1",
   "stage": "P5",
   "appId": "lesson-hub",
-  "appVersion": "1.2.15",
-  "releaseStatus": "pre-production-accepted",
+  "appVersion": "1.2.16",
+  "releaseStatus": "ecosystem-wave-candidate",
   "primaryRuntime": {
     "mode": "standalone-github-pages",
     "serverRequired": false,
     "offlineCapable": true,
-    "currentUseApproved": true
+    "currentUseApproved": false
   },
   "github": {
     "status": "not-yet-uploaded",
@@ -50,5 +50,11 @@
     "required": true,
     "scriptsExecuted": true,
     "transport": "local-http"
+  },
+  "ecosystemWave": {
+    "platformVersion": "1.1.2",
+    "status": "pending-independent-review-and-cross-app-validation",
+    "syntheticDataOnly": true,
+    "e01Closed": false
   }
 }

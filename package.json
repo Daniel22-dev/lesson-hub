@@ -1,6 +1,6 @@
 {
   "name": "lesson-hub",
-  "version": "1.2.15",
+  "version": "1.2.16",
   "private": true,
   "type": "module",
   "description": "Lesson Hub – local-first osobní paměť učitele plně integrovaná do AI Studio GHRAB.",
@@ -8,7 +8,7 @@
     "start": "npm run build && node scripts/serve.mjs",
     "build": "node scripts/build.mjs",
     "check": "node scripts/check-project.mjs && node scripts/check-versions.mjs",
-    "test": "npm run check && npm run test:core && npm run test:server && npm run test:wave10 && npm run test:wave11 && npm run test:integration && npm run test:audit-server && npm run test:audit-client && npm run test:school-profile && npm run test:capacity && npm run build && npm run test:async-security",
+    "test": "npm run check && npm run test:core && npm run test:server && npm run test:wave10 && npm run test:wave11 && npm run test:integration && npm run test:audit-server && npm run test:audit-client && npm run test:school-profile && npm run test:capacity && npm run build && npm run test:suite-session && npm run test:async-security",
     "test:headless": "node tools/headless-check.mjs",
     "qa:technical": "node scripts/qa-technical.mjs",
     "qa:security": "node scripts/qa-security.mjs",
@@ -56,7 +56,8 @@
     "test:async-security": "node server/test-async-security.mjs",
     "qa:xss": "node scripts/qa-p5-xss-sinks.mjs",
     "qa:lock": "node scripts/qa-p5-lock.mjs",
-    "pretest:reporter": "npm run build"
+    "pretest:reporter": "npm run build",
+    "test:suite-session": "node scripts/test-suite-session-node.mjs && node scripts/test-suite-session.mjs"
   },
   "engines": {
     "node": ">=22"

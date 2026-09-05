@@ -1,6 +1,7 @@
 import { DATABASE_NAME, DATABASE_VERSION, SCHEMA_VERSION, STORE_DEFINITIONS } from './schema.js';
 import { ENTITY_STORES } from './constants.js';
 import { migrations } from './migrations.js';
+import { assertPersistenceAllowed } from './persistenceGuard.js';
 
 export class DatabaseBlockedError extends Error {
   constructor(message = 'Aktualizace databáze je blokována jinou kartou.') {
@@ -30,17 +31,19 @@ class MemoryDatabase {
   async get(storeName, key) { return structuredClone(this.#store(storeName).get(key)); }
   async getAll(storeName) { return [...this.#store(storeName).values()].map((item) => structuredClone(item)); }
   async put(storeName, value) {
+    assertPersistenceAllowed(`zápis do ${storeName}`);
     const definition = STORE_DEFINITIONS.find((store) => store.name === storeName);
     const key = value[definition?.keyPath ?? 'id'];
     if (key === undefined) throw new Error(`Záznam pro ${storeName} nemá klíč.`);
     this.#store(storeName).set(key, structuredClone(value));
     return key;
   }
-  async delete(storeName, key) { this.#store(storeName).delete(key); }
-  async clear(storeName) { this.#store(storeName).clear(); }
+  async delete(storeName, key) { assertPersistenceAllowed(`mazání z ${storeName}`); this.#store(storeName).delete(key); }
+  async clear(storeName) { assertPersistenceAllowed(`čištění ${storeName}`); this.#store(storeName).clear(); }
   async count(storeName) { return this.#store(storeName).size; }
 
   async importStores(dataByStore, { mode = 'merge', replaceStoreNames = [] } = {}) {
+    assertPersistenceAllowed('import dat');
     const snapshots = new Map([...this.stores.entries()].map(([name, store]) => [name, new Map([...store.entries()].map(([key, value]) => [key, structuredClone(value)]))]));
     const entries = Object.entries(dataByStore).filter(([storeName]) => validStoreNames.has(storeName));
     try {
@@ -61,6 +64,10 @@ class MemoryDatabase {
       this.stores = snapshots;
       throw error;
     }
+  }
+
+  async purgeForSuiteEnd() {
+    for (const store of this.stores.values()) store.clear();
   }
 
   async close() {}
@@ -109,12 +116,13 @@ class IndexedDbDatabase {
 
   async get(storeName, key) { return this.#request(storeName, 'readonly', (store) => store.get(key)); }
   async getAll(storeName) { return this.#request(storeName, 'readonly', (store) => store.getAll()); }
-  async put(storeName, value) { return this.#request(storeName, 'readwrite', (store) => store.put(value)); }
-  async delete(storeName, key) { return this.#request(storeName, 'readwrite', (store) => store.delete(key)); }
-  async clear(storeName) { return this.#request(storeName, 'readwrite', (store) => store.clear()); }
+  async put(storeName, value) { assertPersistenceAllowed(`zápis do ${storeName}`); return this.#request(storeName, 'readwrite', (store) => store.put(value)); }
+  async delete(storeName, key) { assertPersistenceAllowed(`mazání z ${storeName}`); return this.#request(storeName, 'readwrite', (store) => store.delete(key)); }
+  async clear(storeName) { assertPersistenceAllowed(`čištění ${storeName}`); return this.#request(storeName, 'readwrite', (store) => store.clear()); }
   async count(storeName) { return this.#request(storeName, 'readonly', (store) => store.count()); }
 
   async importStores(dataByStore, { mode = 'merge', replaceStoreNames = [] } = {}) {
+    assertPersistenceAllowed('import dat');
     if (!this.db) throw new Error('Databáze není otevřená.');
     const entries = Object.entries(dataByStore).filter(([storeName]) => validStoreNames.has(storeName));
     const names = mode === 'replace'
@@ -139,6 +147,7 @@ class IndexedDbDatabase {
     });
   }
 
+  async purgeForSuiteEnd() { this.db?.close(); this.db = null; }
   async close() { this.db?.close(); this.db = null; }
   #request(storeName, mode, createRequest) {
     if (!this.db) throw new Error('Databáze není otevřená.');

@@ -43,7 +43,8 @@ if (/produk|production/.test(status)) throw new Error('Neodsouhlasená verze nes
 await writeFile(path.join(DIST, 'studio-manifest.json'), `${JSON.stringify(parsed, null, 2)}\n`);
 await writeFile(path.join(DIST, 'build-info.json'), `${JSON.stringify({ appId: 'lesson-hub', version, buildTime, source: 'src' }, null, 2)}\n`);
 
-const assetFiles = (await walkFiles(DIST)).filter((file) => file !== 'sw.js' && !file.startsWith('platform/')).sort();
+const PRECACHE_EXCLUDE = new Set(['icons/icon-maskable-512.png']);
+const assetFiles = (await walkFiles(DIST)).filter((file) => file !== 'sw.js' && !file.startsWith('platform/') && !PRECACHE_EXCLUDE.has(file)).sort();
 const assets = ['./', ...assetFiles.map((file) => `./${file}`)];
 const swPath = path.join(DIST, 'sw.js');
 let serviceWorker = await readFile(swPath, 'utf8');

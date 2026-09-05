@@ -64,14 +64,15 @@
     }
   ],
   "id": "/lesson-hub/",
-  "version": "1.2.15",
+  "version": "1.2.16",
   "ghrab_platform": {
     "contract": "ghrab-platform-v1",
-    "version": "1.0.0",
-    "required_range": ">=1.0.0 <2.0.0",
+    "version": "1.1.2",
+    "required_range": ">=1.1.2 <2.0.0",
     "brand_version": "1.0.0",
     "theme_contract": "ghrab-theme-v1",
     "sw_contract": "ghrab-sw-v1",
-    "cache_name": "ghrab-lesson-hub-v1.2.15"
+    "cache_name": "ghrab-lesson-hub-v1.2.16",
+    "suite_session_contract": "ghrab-suite-session-v1"
   }
 }

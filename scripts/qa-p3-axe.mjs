@@ -128,7 +128,7 @@ const axeSource = escapeScript(await readFile(axePath, 'utf8'));
 const platformConfig = {
   appId: consumer.appId,
   appVersion: consumer.appVersion,
-  requiredPlatformRange: consumer.platform.requiredRange || '>=1.1.0 <2.0.0',
+  requiredPlatformRange: consumer.platform.requiredRange || '>=1.1.2 <2.0.0',
   supportedThemeModes: ['light', 'dark', 'system'],
   defaultTheme: 'system',
   autoFooter: false,

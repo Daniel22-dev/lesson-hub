@@ -72,6 +72,15 @@ class AppState {
     eventBus.emit(APP_EVENTS.databaseError, { message: error.message });
   }
 
+  clearForSuiteEnd() {
+    try { this.serverService?.clearSession?.(); } catch {}
+    this.serverSession = null;
+    this.studioImport = null;
+    this.academic = { years: [], subjects: [], currentYear: null, activeGroupCount: 0, hiddenGroupCount: 0, archivedGroupCount: 0 };
+    this.lastError = null;
+    this.isReady = false;
+  }
+
   updateSettings(patch) {
     this.settings = { ...this.settings, ...patch };
     const persisted = saveSettings(this.settings);

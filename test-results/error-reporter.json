@@ -2,19 +2,19 @@
   "schema": "ghrab-error-reporter-test-v1",
   "appId": "lesson-hub",
   "appName": "Lesson Hub",
-  "version": "1.2.15",
-  "createdAt": "2026-09-01T04:46:22.894Z",
+  "version": "1.2.16",
+  "createdAt": "2026-09-05T16:35:26.562Z",
   "browser": {
     "status": "not-ready",
     "reason": "Spravovaná politika URLBlocklist blokuje všechny testovací stránky (/etc/chromium/policies/managed/000_policy_merge.json)."
   },
-  "passed": 53,
+  "passed": 52,
   "failed": 0,
   "results": [
     {
       "name": "Patch verze v package.json",
       "ok": true,
-      "detail": "1.2.15"
+      "detail": "1.2.16"
     },
     {
       "name": "Existuje src/access/error-reporter.js",
@@ -247,27 +247,22 @@
       "detail": ""
     },
     {
-      "name": "src/core/release.js: obsahuje verzi 1.2.15",
+      "name": "src/core/release.js: obsahuje verzi 1.2.16",
       "ok": true,
       "detail": ""
     },
     {
-      "name": "public/manifest.webmanifest: obsahuje verzi 1.2.15",
+      "name": "public/manifest.webmanifest: obsahuje verzi 1.2.16",
       "ok": true,
       "detail": ""
     },
     {
-      "name": "public/sw.js: obsahuje verzi 1.2.15",
+      "name": "public/sw.js: obsahuje verzi 1.2.16",
       "ok": true,
       "detail": ""
     },
     {
-      "name": "README.md: obsahuje verzi 1.2.15",
-      "ok": true,
-      "detail": ""
-    },
-    {
-      "name": "docs/RELEASE-1.2.15-ERROR-REPORTER.md: obsahuje verzi 1.2.15",
+      "name": "README.md: obsahuje verzi 1.2.16",
       "ok": true,
       "detail": ""
     },

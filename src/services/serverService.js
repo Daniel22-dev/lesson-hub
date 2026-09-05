@@ -1,3 +1,5 @@
+import { assertPersistenceAllowed, isPersistenceBlocked } from '../core/persistenceGuard.js';
+
 const CONFIG_KEY = 'lesson-hub-server-config-v1';
 const SESSION_KEY = 'lesson-hub-server-session-v1';
 const DEFAULT_CONFIG = Object.freeze({
@@ -124,6 +126,7 @@ export class ServerService {
 
   saveConfig(patch = {}) {
     this.config = { ...this.config, ...patch };
+    if (isPersistenceBlocked()) return this.config;
     storage('local')?.setItem(CONFIG_KEY, JSON.stringify(this.config));
     return this.config;
   }
@@ -141,6 +144,7 @@ export class ServerService {
   }
 
   saveSession(session, remember = this.config.rememberSession) {
+    assertPersistenceAllowed('uložení serverové relace');
     this.clearSession();
     if (this.schoolProfile) this.memorySession = session;
     else {

@@ -1,6 +1,6 @@
 {
   "schema": "ghrab-platform-release-v1",
-  "platformVersion": "1.1.0",
+  "platformVersion": "1.1.2",
   "contract": "ghrab-platform-v1",
   "brandVersion": "1.0.0",
   "qualityContracts": {
@@ -8,15 +8,15 @@
     "performance": "ghrab-performance-v1",
     "modules": "ghrab-lazy-modules-v1"
   },
-  "createdAt": "2026-08-04T17:30:00.000Z",
+  "createdAt": "2026-09-04T10:45:00.000Z",
   "artifacts": {
     "ghrab-platform.js": {
-      "sha256": "37fd57bf35e1bcb46cdcfe84267275ee9beaea7ea6a34d9a03af0923c9d6e251",
-      "bytes": 55222
+      "sha256": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c",
+      "bytes": 58204
     },
     "ghrab-platform.css": {
-      "sha256": "ccef738c8e6b954c206c9d64214c85a9ee507f3916e279becccb9c674b0ab4dc",
-      "bytes": 5180
+      "sha256": "eb465488df46f3d1672d721094800b0be3eb1278924b7699873a483f130b07ad",
+      "bytes": 5182
     },
     "ghrab-artifact-envelope-v1.schema.json": {
       "sha256": "8edeaaadd72c7bf60285440dd59eb31d0e7139755e1e4642d5ab457816e46d58",

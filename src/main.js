@@ -21,6 +21,8 @@ import { getPage } from './pages/index.js';
 import { registerPwa } from './core/pwa.js';
 import { consumeStudioHandoff } from './core/studioBridge.js';
 import { escapeHtml } from './core/html.js';
+import { isPersistenceBlocked } from './core/persistenceGuard.js';
+import { registerSuiteRuntimeCleanup } from './core/suiteSession.js';
 
 const app = document.querySelector('#app');
 let renderSequence = 0;
@@ -88,6 +90,8 @@ async function renderRoute(context = parseCurrentRoute()) {
 async function bootstrap() {
   try {
     const database = await createDatabase();
+    registerSuiteRuntimeCleanup(async () => database.purgeForSuiteEnd?.());
+    if (isPersistenceBlocked()) return;
     const repositories = createRepositories(database);
     const academicService = new AcademicService(repositories);
     const lessonService = new LessonService(repositories);
@@ -97,17 +101,23 @@ async function bootstrap() {
     const backupService = new BackupService(database, repositories);
     const templateCycleService = new TemplateCycleService(repositories, lessonService);
     const serverService = new ServerService();
+    registerSuiteRuntimeCleanup(() => { serverService.clearSession(); return { ok: true }; });
+    if (isPersistenceBlocked()) return;
     const syncService = new SyncService(repositories, serverService);
     const communicationService = new CommunicationService(repositories, serverService);
     const substitutionService = new SubstitutionService(repositories, serverService, lessonService);
     appState.setDatabase(database, repositories, academicService, lessonService, workService, materialService, searchService, backupService, templateCycleService, syncService, serverService, communicationService, substitutionService);
+    registerSuiteRuntimeCleanup(() => { appState.clearForSuiteEnd(); return { ok: true }; });
+    if (isPersistenceBlocked()) return;
     if (serverService.schoolProfile || serverService.session?.token) {
       try { appState.serverSession = await serverService.restoreSession(); } catch (error) { console.warn('Serverovou relaci se nepodařilo obnovit.', error); }
     }
     await appState.refreshAcademic({ emit: false });
+    if (isPersistenceBlocked()) return;
 
     const imported = await consumeStudioHandoff(repositories);
     if (imported) appState.setStudioImport(imported);
+    if (isPersistenceBlocked()) return;
 
     startRouter(renderRoute);
 

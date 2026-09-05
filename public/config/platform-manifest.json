@@ -1,10 +1,10 @@
 {
   "schema": "ghrab-platform-app-integration-v1",
   "appId": "lesson-hub",
-  "appVersion": "1.2.15",
+  "appVersion": "1.2.16",
   "contract": "ghrab-platform-v1",
-  "requiredPlatformRange": ">=1.0.0 <2.0.0",
-  "platformVersion": "1.0.0",
+  "requiredPlatformRange": ">=1.1.2 <2.0.0",
+  "platformVersion": "1.1.2",
   "brandVersion": "1.0.0",
   "themeContract": "ghrab-theme-v1",
   "swContract": "ghrab-service-worker-v1",
@@ -25,7 +25,7 @@
     ]
   },
   "storagePrefix": "ghrab.lesson-hub.",
-  "cacheName": "ghrab-lesson-hub-v1.2.15",
+  "cacheName": "ghrab-lesson-hub-v1.2.16",
   "capabilities": [
     "artifact-envelope-v1",
     "attachments",
@@ -37,16 +37,17 @@
     "storage-namespace-v1",
     "sw-contract-v1",
     "teacher-memory",
-    "theme-contract-v1"
+    "theme-contract-v1",
+    "suite-session-v1"
   ],
   "artifacts": {
     "ghrab-platform.js": {
-      "sha256": "e5c1c5a77d35c4c198c123532be4e9b06cc77116c2542e7f192650358f6ff860",
-      "bytes": 40408
+      "sha256": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c",
+      "bytes": 58204
     },
     "ghrab-platform.css": {
-      "sha256": "2f697134c1f2950205f4bb66cd3318e1045b971998d083571d12c49208425b5a",
-      "bytes": 3729
+      "sha256": "eb465488df46f3d1672d721094800b0be3eb1278924b7699873a483f130b07ad",
+      "bytes": 5182
     },
     "ghrab-artifact-envelope-v1.schema.json": {
       "sha256": "8edeaaadd72c7bf60285440dd59eb31d0e7139755e1e4642d5ab457816e46d58",
@@ -60,5 +61,10 @@
       "sha256": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770",
       "bytes": 57922
     }
+  },
+  "suiteSession": {
+    "contract": "ghrab-suite-session-v1",
+    "progressKey": "ghrab.lesson-hub.suite-session-progress.v1",
+    "acknowledgementKey": "ghrab.lesson-hub.suite-session-seen.v1"
   }
 }

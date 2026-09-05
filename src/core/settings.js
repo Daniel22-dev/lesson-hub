@@ -1,3 +1,5 @@
+import { isPersistenceBlocked } from './persistenceGuard.js';
+
 const SETTINGS_KEY = 'lesson-hub-ui-settings';
 
 const DEFAULT_SETTINGS = Object.freeze({
@@ -16,6 +18,7 @@ export function loadSettings() {
 }
 
 export function saveSettings(settings) {
+  if (isPersistenceBlocked()) return { ok: false, blocked: true, error: null };
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     return { ok: true, error: null };

@@ -13,16 +13,6 @@ function readJson(key, fallback) {
   }
 }
 
-function writeJson(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (error) {
-    console.warn(`Studio Bridge: zápis ${key} selhal.`, error);
-    return false;
-  }
-}
-
 function remove(key) {
   try {
     localStorage.removeItem(key);

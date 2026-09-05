@@ -1,7 +1,7 @@
-# Lesson Hub 1.2.15
+# Lesson Hub 1.2.16
 
-**Aktuální verze:** 1.2.15  
-**Platforma:** GHRAB Platform 1.1.0 · etapa P3
+**Aktuální verze:** 1.2.16  
+**Platforma:** GHRAB Platform 1.1.2 · etapa P3
 
 
 Lesson Hub je local-first osobní paměť učitele v ekosystému AI Studio GHRAB. Pro běžné pilotní používání **nepotřebuje server**: data ukládá do IndexedDB v prohlížeči a nabízí export, import i lokální body obnovy.
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.15 je chráněná aplikace současného AI Studia GHRAB a používá GHRAB Platform 1.1.0. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.16 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -34,7 +34,7 @@ Workflow nasazení nevydá aplikaci, pokud selže čistá instalace, bezpečnost
 
 ## Stabilizovaná GitHub QA
 
-Verze 1.2.15 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
+Verze 1.2.16 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 
 - funkční kroky `evaluate` se nyní v Node Playwrightu i Python fallbacku skutečně vykonají; dříve se pouze vytvořil objekt funkce, takže se hash trasa nezměnila,
 - headless smoke test používá explicitní lokální QA přístup a čeká na dokončený render požadované trasy.

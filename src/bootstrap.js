@@ -61,6 +61,10 @@ function showBootstrapFailure(error) {
 
 async function start() {
   try {
+    const { installSuiteSessionLifecycle } = await import('./core/suiteSession.js');
+    const suiteLifecycle = await installSuiteSessionLifecycle();
+    if (suiteLifecycle.ended) return;
+
     const deploymentModule = await import('./access/deployment-config.js');
     const deployment = await deploymentModule.loadDeploymentConfig({ appId: APP_ID });
     const urls = deploymentModule.deploymentUrls(deployment);

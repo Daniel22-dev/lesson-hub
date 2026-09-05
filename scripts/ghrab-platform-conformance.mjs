@@ -29,6 +29,7 @@ check(pkg.version === consumer.appVersion, 'package ↔ consumer version', `${pk
 check(consumer.platform.contract === 'ghrab-platform-v1', 'platform contract');
 check(consumer.bridge.contract === 'ghrab-studio-handoff-v2', 'Studio Bridge contract');
 check(consumer.artifact.schema === 'ghrab-artifact-envelope-v1', 'artifact envelope contract');
+check(consumer.suiteSession?.contract === 'ghrab-suite-session-v1', 'suite session consumer contract');
 check(Array.isArray(consumer.artifact.exports), 'artifact exports declared');
 check(Array.isArray(consumer.artifact.imports), 'artifact imports declared');
 check(Array.isArray(consumer.artifact.nativeFormats), 'native export formats declared');
@@ -59,6 +60,9 @@ check(builtIntegration.contract === consumer.platform.contract, 'built platform 
 check(builtIntegration.cacheName === consumer.cache.name, 'built platform cache metadata');
 check(builtIntegration.swContract === 'ghrab-service-worker-v1', 'built service-worker contract');
 check(JSON.stringify(builtIntegration.artifactContracts || {}) === JSON.stringify(consumer.artifact), 'built artifact contracts');
+check(builtIntegration.suiteSession?.contract === 'ghrab-suite-session-v1', 'built suite session contract');
+check(builtIntegration.suiteSession?.acknowledgementKey === consumer.suiteSession?.acknowledgementKey, 'built suite acknowledgement key');
+check(Array.isArray(builtIntegration.capabilities) && builtIntegration.capabilities.includes('suite-session-v1'), 'built suite session capability');
 const builtData = fs.existsSync(path.join(dist, 'config/data-manifest.json')) ? readJson(path.join(dist, 'config/data-manifest.json')) : {};
 check(builtData.storageNamespace?.migrationId === consumer.storageMigration.id, 'data manifest migration id');
 check(builtData.storageNamespace?.prefix === `ghrab.${consumer.appId}.`, 'data manifest canonical prefix');
@@ -103,17 +107,28 @@ if (fs.existsSync(swPath)) {
   const firstActivate = sw.indexOf("addEventListener('activate'");
   const installBody = firstInstall >= 0 && firstActivate > firstInstall ? sw.slice(firstInstall, firstActivate) : '';
   check(!installBody.includes('skipWaiting'), 'no automatic skipWaiting during install');
-  check(sw.includes("request.cache === 'no-store'"), 'service worker no-store bypass');
+  check(
+    !/url\.pathname\.startsWith\(scopePath\)[^\n]*request\.cache\s*===\s*["']no-store["']/.test(sw) &&
+      /request\.cache\s*===\s*["']no-store["'][\s\S]{0,220}respondWith\(networkFirst\(request\)\)/.test(sw),
+    'service worker no-store offline fallback',
+  );
   check(consumer.appId === 'ai-studio' || !/["']\.\/platform\/(?:ghrab-platform-config\.js|ghrab-platform\.js|ghrab-platform\.css|ghrab-platform-manifest-1\.0\.0\.json|ghrab-artifact-envelope-v1\.schema\.json|ghrab-app-registry-v2\.schema\.json)["']/.test(sw), 'service worker no obsolete satellite platform asset');
 }
+const sourceManifest = readJson(path.join(root, 'public', 'manifest.webmanifest'));
+check(sourceManifest.ghrab_platform?.version === consumer.platform.version, 'source PWA platform version', `${sourceManifest.ghrab_platform?.version || 'missing'} / ${consumer.platform.version}`);
+check(sourceManifest.ghrab_platform?.required_range === consumer.platform.requiredRange, 'source PWA required platform range', `${sourceManifest.ghrab_platform?.required_range || 'missing'} / ${consumer.platform.requiredRange}`);
+check(sourceManifest.ghrab_platform?.suite_session_contract === 'ghrab-suite-session-v1', 'source PWA suite session contract');
 const manifestPath = path.join(dist, 'manifest.webmanifest');
 check(fs.existsSync(manifestPath), 'PWA manifest exists');
 if (fs.existsSync(manifestPath)) {
   const manifest = readJson(manifestPath);
   check(manifest.version === consumer.appVersion, 'PWA version');
   check(manifest.ghrab_platform?.contract === consumer.platform.contract, 'PWA platform contract');
+  check(manifest.ghrab_platform?.platform_version === consumer.platform.version, 'built PWA platform version', `${manifest.ghrab_platform?.platform_version || 'missing'} / ${consumer.platform.version}`);
+  check(manifest.ghrab_platform?.required_range === consumer.platform.requiredRange, 'PWA required platform range', `${manifest.ghrab_platform?.required_range || 'missing'} / ${consumer.platform.requiredRange}`);
   check(manifest.ghrab_platform?.cache_name === consumer.cache.name, 'PWA cache metadata');
   check(manifest.ghrab_platform?.app_id === consumer.appId, 'PWA app identity');
+  check(manifest.ghrab_platform?.suite_session_contract === 'ghrab-suite-session-v1', 'built PWA suite session contract');
 }
 
 class FakeStorage {
@@ -167,10 +182,18 @@ try {
   vm.runInNewContext(fs.readFileSync(path.join(vendor, 'ghrab-platform.js'), 'utf8'), context, { filename: 'ghrab-platform.js' });
   const api = context.GHRAB_PLATFORM;
   check(api?.version === consumer.platform.version && api?.contract === consumer.platform.contract, 'runtime identity');
-  check(api.satisfies('1.0.0', consumer.platform.requiredRange) === false, 'runtime previous platform rejected');
-  check(api.satisfies('1.1.0', consumer.platform.requiredRange) === true, 'runtime current accepted');
-  check(api.satisfies('1.2.0', consumer.platform.requiredRange) === true, 'runtime n+1 accepted');
-  check(api.satisfies('2.0.0', consumer.platform.requiredRange) === false, 'runtime major rejected');
+  check(api?.session?.contract === 'ghrab-suite-session-v1' && typeof api?.session?.end === 'function' && typeof api?.session?.onEnd === 'function', 'runtime suite session contract');
+  const platformParts = String(consumer.platform.version).split('.').map(Number);
+  const [platformMajor, platformMinor, platformPatch] = platformParts;
+  const previousPlatform = platformPatch > 0
+    ? `${platformMajor}.${platformMinor}.${platformPatch - 1}`
+    : `${platformMajor}.${Math.max(0, platformMinor - 1)}.0`;
+  const nextMinorPlatform = `${platformMajor}.${platformMinor + 1}.0`;
+  const nextMajorPlatform = `${platformMajor + 1}.0.0`;
+  check(api.satisfies(previousPlatform, consumer.platform.requiredRange) === false, 'runtime previous platform rejected', previousPlatform);
+  check(api.satisfies(consumer.platform.version, consumer.platform.requiredRange) === true, 'runtime current accepted', consumer.platform.version);
+  check(api.satisfies(nextMinorPlatform, consumer.platform.requiredRange) === true, 'runtime n+1 accepted', nextMinorPlatform);
+  check(api.satisfies(nextMajorPlatform, consumer.platform.requiredRange) === false, 'runtime major rejected', nextMajorPlatform);
   check(sampleStore.getItem(legacyKey) === 'original-value', 'storage alias reads migrated value');
   check(sampleStore.getItem(canonicalKey) === 'original-value', 'canonical storage value created');
   sampleStore.setItem(legacyKey, 'updated-value');

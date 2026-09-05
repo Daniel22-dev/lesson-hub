@@ -126,6 +126,7 @@ for (const file of walk(dist).filter((item) => item.toLowerCase().endsWith('.htm
       bridgeMaxBytes: consumer.bridge.maxBytes,
       artifactContract: consumer.artifact.schema,
       quality: consumer.quality,
+      suiteSession: consumer.suiteSession,
     };
     const configText = JSON.stringify(runtimeConfig).replaceAll('<', '\\u003c');
     const css = relativeAsset(file, 'ghrab/ghrab-platform.css');
@@ -168,6 +169,7 @@ if (fs.existsSync(manifestPath)) {
     accessibility_contract: consumer.quality.accessibilityContract,
     performance_contract: consumer.quality.performanceContract,
     module_contract: consumer.quality.moduleContract,
+    suite_session_contract: consumer.suiteSession?.contract || 'ghrab-suite-session-v1',
   };
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 }
@@ -189,6 +191,7 @@ for (const name of ['studio-manifest.json', 'app-manifest.json']) {
     performanceContract: consumer.quality.performanceContract,
     moduleContract: consumer.quality.moduleContract,
     cacheName: consumer.cache.name,
+    suiteSessionContract: consumer.suiteSession?.contract || 'ghrab-suite-session-v1',
   };
   fs.writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`);
 }
@@ -228,7 +231,8 @@ const integrationManifest = {
   artifactContracts: consumer.artifact,
   storagePrefix: `ghrab.${consumer.appId}.`,
   cacheName: consumer.cache.name,
-  capabilities: ['ghrab-platform-v1','canonical-branding','theme-contract-v1','storage-namespace-v1','artifact-envelope-v1','sw-contract-v1','a11y-contract-v1','performance-budget-v1','lazy-modules-v1'],
+  capabilities: ['ghrab-platform-v1','canonical-branding','theme-contract-v1','storage-namespace-v1','artifact-envelope-v1','sw-contract-v1','a11y-contract-v1','performance-budget-v1','lazy-modules-v1','suite-session-v1'],
+  suiteSession: consumer.suiteSession,
   quality: consumer.quality,
   artifacts: release.artifacts,
 };
@@ -261,7 +265,8 @@ fs.writeFileSync(path.join(dist, 'platform-build-info.json'), `${JSON.stringify(
   cacheName: consumer.cache.name,
   processedHtmlFiles: htmlCount,
   qualityContracts: { accessibility: consumer.quality.accessibilityContract, performance: consumer.quality.performanceContract, modules: consumer.quality.moduleContract },
+  suiteSessionContract: consumer.suiteSession?.contract || 'ghrab-suite-session-v1',
   builtAt: new Date().toISOString(),
 }, null, 2)}\n`);
 
-console.log(`[P3] ${consumer.appId} ${consumer.appVersion}: platform ${consumer.platform.version}, HTML ${htmlCount}, cache ${consumer.cache.name}`);
+console.log(`[${consumer.quality?.stage || 'P5'}] ${consumer.appId} ${consumer.appVersion}: platform ${consumer.platform.version}, HTML ${htmlCount}, cache ${consumer.cache.name}`);

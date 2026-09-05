@@ -1,12 +1,14 @@
 {
   "schema": "ghrab-data-manifest-v1",
   "appId": "lesson-hub",
-  "appVersion": "1.2.15",
-  "manifestVersion": 3,
+  "appVersion": "1.2.16",
+  "manifestVersion": 4,
   "dataCategories": [
     "settings",
     "application-content",
-    "diagnostics"
+    "credentials",
+    "diagnostics",
+    "lifecycle"
   ],
   "privacy": {
     "studentContentMayOccur": true,
@@ -17,64 +19,113 @@
   "stores": [
     {
       "kind": "localStorage",
-      "category": "application-data",
+      "category": "application-content",
       "patterns": [
-        "ghrab.lesson-hub.*",
-        "ghrab.lesson-hub.sync.*"
+        "lesson-hub-ui-settings",
+        "ghrab.lesson-hub.ui-settings.v1",
+        "lesson-hub.lesson-draft.v1.*",
+        "ghrab.lesson-hub.lesson-draft.v1.*",
+        "lesson-hub-server-config-v1",
+        "ghrab.lesson-hub.legacy.*",
+        "sync:*",
+        "ghrab.lesson-hub.sync.*",
+        "ghrab.lesson-hub.migration.p2-storage-namespace-v1.backup"
       ],
       "sensitivity": "potentially-personal",
-      "authority": "client",
-      "clearOnEndWork": true
-    },
-    {
-      "kind": "sessionStorage",
-      "category": "session-data",
-      "patterns": [
-        "ghrab.lesson-hub.server-session-v1"
-      ],
-      "sensitivity": "confidential",
-      "authority": "client",
+      "authority": "lesson-hub",
       "clearOnEndWork": true
     },
     {
       "kind": "localStorage",
       "category": "credential",
       "patterns": [
-        "ghrab.lesson-hub.server-session-v1"
+        "lesson-hub-server-session-v1",
+        "ghrab.lesson-hub.server-session.v1"
       ],
       "sensitivity": "secret",
-      "authority": "client-direct-mode-only; school profile purges legacy storage and keeps the secondary Lesson Hub token in memory only",
+      "authority": "lesson-hub-direct-mode-only; school profile uses memory-only secondary session",
       "clearOnEndWork": true
     },
     {
       "kind": "sessionStorage",
       "category": "credential",
       "patterns": [
-        "ghrab.lesson-hub.server-session-v1"
+        "lesson-hub-server-session-v1",
+        "ghrab.lesson-hub.server-session.v1"
       ],
       "sensitivity": "secret",
-      "authority": "client-direct-mode-only; school profile purges legacy storage and keeps the secondary Lesson Hub token in memory only",
+      "authority": "lesson-hub-direct-mode-only",
       "clearOnEndWork": true
     },
     {
       "kind": "indexedDB",
-      "category": "application-data",
+      "category": "application-content",
       "names": [
-        "lesson-hub"
+        "lesson-hub-db"
       ],
+      "stores": "all object stores including backupSnapshots, auditEvents, syncQueue, students, messages and attachments",
       "sensitivity": "potentially-personal",
-      "authority": "client",
+      "authority": "lesson-hub",
       "clearOnEndWork": true
+    },
+    {
+      "kind": "memory",
+      "category": "session-data",
+      "patterns": [
+        "ServerService.memorySession",
+        "ServerService.session",
+        "AppState.serverSession",
+        "AppState.studioImport",
+        "loaded application models"
+      ],
+      "sensitivity": "potentially-confidential",
+      "authority": "lesson-hub runtime",
+      "clearOnEndWork": true
+    },
+    {
+      "kind": "localStorage",
+      "category": "lifecycle",
+      "patterns": [
+        "ghrab.lesson-hub.suite-session-seen.v1",
+        "ghrab.lesson-hub.suite-session-progress.v1",
+        "ghrab.lesson-hub.migration.p2-storage-namespace-v1.done"
+      ],
+      "sensitivity": "non-content-lifecycle",
+      "authority": "platform/lesson-hub lifecycle",
+      "clearOnEndWork": false
+    },
+    {
+      "kind": "localStorage",
+      "category": "suite-lifecycle",
+      "patterns": [
+        "ghrab.platform.suite-session-generation.v1"
+      ],
+      "sensitivity": "non-content-tombstone",
+      "authority": "GHRAB Platform suite coordinator",
+      "clearOnEndWork": false
     },
     {
       "kind": "cacheStorage",
       "category": "application-cache",
       "patterns": [
         "ghrab-lesson-hub-v*",
-        "lesson-hub*"
+        "lesson-hub-pwa-v*"
       ],
       "sensitivity": "non-content-cache",
-      "authority": "client",
+      "authority": "lesson-hub service worker",
+      "clearOnEndWork": false
+    },
+    {
+      "kind": "shared-first-party-storage",
+      "category": "studio-handoff",
+      "patterns": [
+        "ghrab.platform.handoff.v2",
+        "ghrab.handoff.v1",
+        "ghrab.pilot.events.v2",
+        "ghrab.access.permit.v2"
+      ],
+      "sensitivity": "shared-cross-app-state",
+      "authority": "AI Studio/GHRAB Platform; Lesson Hub is consumer, not namespace owner",
       "clearOnEndWork": false
     }
   ],
@@ -93,17 +144,25 @@
     ],
     "nativeFormats": [
       "json"
-    ]
+    ],
+    "downloadedCopies": "user-controlled outside browser cleanup scope"
   },
   "deletion": {
     "supported": true,
     "clientVerified": true,
-    "serverEndpoint": "data/lesson-hub"
+    "serverEndpoint": "data/lesson-hub",
+    "suiteEndScope": "local browser data only; server-authoritative records are not deleted by shared-device logout"
   },
   "sharedDevice": {
     "supported": true,
     "defaultInSchoolProfile": true,
-    "control": "GHRABPlatform.endWork()"
+    "contract": "ghrab-suite-session-v1",
+    "handler": "GHRAB_PLATFORM.session.onEnd(...)",
+    "generationKey": "ghrab.platform.suite-session-generation.v1",
+    "acknowledgementKey": "ghrab.lesson-hub.suite-session-seen.v1",
+    "progressKey": "ghrab.lesson-hub.suite-session-progress.v1",
+    "ackAfterCleanupOnly": true,
+    "failClosed": true
   },
   "storageNamespace": {
     "schema": "ghrab-storage-namespace-v1",

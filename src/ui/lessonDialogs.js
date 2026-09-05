@@ -1,45 +1,23 @@
 import { appState } from '../core/appState.js';
+import { clearLessonDraft, lessonDraftKey, readLessonDraft, saveLessonDraft } from '../core/draftStorage.js';
 import { escapeAttribute, escapeHtml } from '../core/html.js';
 import { LESSON_STATUSES } from '../services/lessonService.js';
 import { openModal } from './modal.js';
 import { navigate } from './router.js';
 import { showToast } from './toast.js';
 
-const DRAFT_PREFIX = 'lesson-hub.lesson-draft.v1.';
-
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function formValue(data, key) {
-  return String(data.get(key) || '').trim();
-}
-
-function draftKey(lessonId = 'new', groupId = '') {
-  return `${DRAFT_PREFIX}${lessonId}.${groupId || 'none'}`;
-}
-
-function readDraft(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+function formDraftKey(lessonId = 'new', groupId = '') {
+  return lessonDraftKey(lessonId, groupId);
 }
 
 function saveDraft(key, form) {
   const payload = Object.fromEntries(new FormData(form));
   payload.savedAt = new Date().toISOString();
-  try {
-    localStorage.setItem(key, JSON.stringify(payload));
-  } catch {
-    // Aplikace pokračuje i při omezeném localStorage; hlavní data ukládá IndexedDB.
-  }
-}
-
-function clearDraft(key) {
-  try { localStorage.removeItem(key); } catch { /* noop */ }
+  return saveLessonDraft(key, payload);
 }
 
 function statusOptions(selected = 'planned') {
@@ -63,8 +41,9 @@ function showFormError(form, error) {
 function bindDraftAutosave(form, key, statusElement) {
   let timer = null;
   const persist = () => {
-    saveDraft(key, form);
-    if (statusElement) statusElement.textContent = `Koncept uložen ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`;
+    const result = saveDraft(key, form);
+    if (statusElement && result?.ok) statusElement.textContent = `Koncept uložen ${new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`;
+    else if (statusElement && result?.blocked) statusElement.textContent = 'Relace byla ukončena; koncept se již neukládá.';
   };
   form.addEventListener('input', () => {
     if (statusElement) statusElement.textContent = 'Ukládám koncept…';
@@ -87,8 +66,8 @@ export async function openLessonDialog({ lesson = null, groupId = '', initialSta
   }
 
   const selectedGroupId = lesson?.groupInstanceId || groupId || groups[0].id;
-  const key = draftKey(lesson?.id || 'new', selectedGroupId);
-  const draft = readDraft(key);
+  const key = formDraftKey(lesson?.id || 'new', selectedGroupId);
+  const draft = readLessonDraft(key);
   const value = (name, fallback = '') => draft?.[name] ?? lesson?.[name] ?? fallback;
   const recovered = Boolean(draft?.savedAt);
 
@@ -172,7 +151,7 @@ export async function openLessonDialog({ lesson = null, groupId = '', initialSta
           const stored = lesson
             ? await appState.lessonService.updateLesson(lesson.id, input)
             : await appState.lessonService.createLesson(input);
-          clearDraft(key);
+          clearLessonDraft(key);
           cleanupAutosave();
           showToast(lesson ? 'Hodina byla upravena.' : 'Hodina byla vytvořena.', 'success');
           close();

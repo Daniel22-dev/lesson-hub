@@ -1,6 +1,6 @@
 const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
 /* GHRAB service-worker contract v1 · update activation is user-controlled. */
-const CACHE_NAME = "ghrab-lesson-hub-v1.2.15";
+const CACHE_NAME = "ghrab-lesson-hub-v1.2.16";
 const CACHE_PREFIXES = ["ghrab-lesson-hub-v", "lesson-hub-pwa-v"];
 const CORE_ASSETS = /*__CORE_ASSETS__*/[
   "./",
@@ -87,10 +87,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   const scopePath = new URL('./', self.location.href).pathname;
-  if (!url.pathname.startsWith(scopePath) || request.cache === 'no-store' || isRuntimeRequest(url, scopePath)) return;
+  if (!url.pathname.startsWith(scopePath) || isRuntimeRequest(url, scopePath)) return;
   if (request.mode === 'navigate') {
     const fallback = url.pathname.includes('/manual/') ? './manual/index.html' : './index.html';
     event.respondWith(networkFirst(request, fallback));
+    return;
+  }
+  // Static metadata explicitly requested with cache: 'no-store' still needs
+  // an application-cache fallback offline. Runtime/API/auth/session/deployment
+  // paths remain excluded above and are never satisfied from Cache Storage.
+  if (request.cache === 'no-store') {
+    event.respondWith(networkFirst(request));
     return;
   }
   if (url.pathname.endsWith('/manifest.webmanifest') || url.pathname.endsWith('/build-info.json')) {
