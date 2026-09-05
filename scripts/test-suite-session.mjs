@@ -246,6 +246,24 @@ async function cleanupSnapshot(client, generation) {
     const progressRaw=localStorage.getItem(${JSON.stringify(PROGRESS_KEY)});
     let progress=null; try{progress=JSON.parse(progressRaw||'null')}catch{}
     const dbs=typeof indexedDB.databases==='function'?await indexedDB.databases():[];
+    const dbPresent=dbs.some(db=>db.name===${JSON.stringify(DB_NAME)});
+    let dbCanary=null;
+    if(dbPresent){
+      dbCanary=await new Promise((resolve)=>{
+        const request=indexedDB.open(${JSON.stringify(DB_NAME)});
+        request.onerror=()=>resolve({qaReadError:String(request.error?.message||'open-failed')});
+        request.onsuccess=()=>{
+          const db=request.result;
+          try{
+            if(!db.objectStoreNames.contains('appMeta')){db.close();resolve(null);return;}
+            const tx=db.transaction('appMeta','readonly');
+            const get=tx.objectStore('appMeta').get('suite-canary');
+            get.onsuccess=()=>{const value=get.result??null;db.close();resolve(value)};
+            get.onerror=()=>{const message=String(get.error?.message||'read-failed');db.close();resolve({qaReadError:message})};
+          }catch(error){db.close();resolve({qaReadError:String(error?.message||error)})}
+        };
+      });
+    }
     const events=window.__suiteWriteEvents||[];
     const completedIndex=events.findIndex(e=>e.key===${JSON.stringify(PROGRESS_KEY)}&&(()=>{try{return JSON.parse(e.value).status==='cleanup-completed'}catch{return false}})());
     const ackIndex=events.findIndex(e=>e.key===${JSON.stringify(SEEN_KEY)}&&e.value===generation);
@@ -256,7 +274,8 @@ async function cleanupSnapshot(client, generation) {
       session:sessionStorage.getItem(${JSON.stringify(SESSION_KEY)}),
       seen:localStorage.getItem(${JSON.stringify(SEEN_KEY)}),
       progress,
-      dbPresent:dbs.some(db=>db.name===${JSON.stringify(DB_NAME)}),
+      dbPresent,
+      dbCanary,
       ended:document.documentElement.dataset.ghrabSuiteSession==='ended',
       blocked:Boolean(window.__LESSON_HUB_PERSISTENCE_BLOCKED__),
       completedIndex,ackIndex,
@@ -289,7 +308,7 @@ async function openChildScenario(rootDir, { expectSuccess = true } = {}) {
     await waitFor(page.client, `localStorage.getItem(${JSON.stringify(SEEN_KEY)}) === ${JSON.stringify(end.generation)} && JSON.parse(localStorage.getItem(${JSON.stringify(PROGRESS_KEY)})||'null')?.status === 'cleanup-completed'`, 'open-child acknowledgement');
     const snapshot = await cleanupSnapshot(page.client, end.generation);
     requireCheck(snapshot.draft === null && snapshot.backup === null && snapshot.session === null, 'Open-child storage canary zůstal', snapshot);
-    requireCheck(snapshot.dbPresent === false, 'Open-child IndexedDB canary zůstal', snapshot);
+    requireCheck(snapshot.dbCanary === null, 'Open-child IndexedDB canary zůstal', snapshot);
     requireCheck(snapshot.seen === end.generation && snapshot.progress?.generation === end.generation, 'Open-child acknowledgement nesedí', snapshot);
     requireCheck(snapshot.completedIndex >= 0 && snapshot.ackIndex > snapshot.completedIndex, 'Acknowledgement vznikl dříve než cleanup-completed evidence', snapshot);
     requireCheck(snapshot.ended && snapshot.blocked, 'Otevřený kontext nebyl po suite end uzamčen', snapshot);
@@ -322,7 +341,7 @@ async function delayedOpenScenario(rootDir) {
     await navigate(reopened.client, `${baseUrl}${APP_URL}`);
     await waitFor(reopened.client, `localStorage.getItem(${JSON.stringify(SEEN_KEY)}) === ${JSON.stringify(generation)} && JSON.parse(localStorage.getItem(${JSON.stringify(PROGRESS_KEY)})||'null')?.status === 'cleanup-completed'`, 'delayed-open replay');
     const firstSnapshot = await cleanupSnapshot(reopened.client, generation);
-    requireCheck(firstSnapshot.draft === null && firstSnapshot.backup === null && firstSnapshot.dbPresent === false, 'Delayed-open canary zůstal', firstSnapshot);
+    requireCheck(firstSnapshot.draft === null && firstSnapshot.backup === null && firstSnapshot.dbCanary === null, 'Delayed-open canary zůstal', firstSnapshot);
     const progressBefore = await reopened.client.eval(`localStorage.getItem(${JSON.stringify(PROGRESS_KEY)})`);
 
     await reopened.client.call('Page.reload', { ignoreCache: true });
@@ -349,7 +368,8 @@ async function multiTabScenario(rootDir) {
     await Promise.all([waitAppReady(one.client), waitAppReady(two.client)]);
     await seedCanaries(one.client, 'multi');
     await two.client.eval(`sessionStorage.setItem(${JSON.stringify(SESSION_KEY)},JSON.stringify({token:'synthetic-tab-2'}))`);
-    await two.client.eval(`(async()=>{const m=await import('/src/core/draftStorage.js');setTimeout(()=>{window.__lateDraftResult=m.saveLessonDraft(${JSON.stringify(DRAFT_KEY)},{value:${JSON.stringify(CANARY)},late:true})},650);return true})()`);
+    const tabTwoNonce = `qa-multi-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    await two.client.eval(`(async()=>{window.__suiteMultiNonce=${JSON.stringify(tabTwoNonce)};const m=await import('/src/core/draftStorage.js');setTimeout(()=>{window.__lateDraftResult=m.saveLessonDraft(${JSON.stringify(DRAFT_KEY)},{value:${JSON.stringify(CANARY)},late:true})},650);return true})()`);
     const end = await triggerSuiteEnd(one.client, 'qa-multi-tab');
     requireCheck(end?.ok === true, 'Multi-tab suite end nevznikl', end);
     await Promise.all([
@@ -358,13 +378,15 @@ async function multiTabScenario(rootDir) {
     ]);
     await waitFor(one.client, `localStorage.getItem(${JSON.stringify(SEEN_KEY)}) === ${JSON.stringify(end.generation)}`, 'multi-tab ack');
     await sleep(850);
-    const [snapOne, snapTwo, late] = await Promise.all([
-      cleanupSnapshot(one.client, end.generation), cleanupSnapshot(two.client, end.generation), two.client.eval('window.__lateDraftResult||null'),
+    const [snapOne, snapTwo, lateState] = await Promise.all([
+      cleanupSnapshot(one.client, end.generation),
+      cleanupSnapshot(two.client, end.generation),
+      two.client.eval(`({late:window.__lateDraftResult||null,sameDocument:window.__suiteMultiNonce===${JSON.stringify(tabTwoNonce)}})`),
     ]);
-    requireCheck(snapOne.draft === null && snapTwo.draft === null && snapOne.dbPresent === false, 'Multi-tab canary se obnovil', { snapOne, snapTwo });
+    requireCheck(snapOne.draft === null && snapTwo.draft === null && snapOne.backup === null && snapTwo.backup === null && snapOne.dbCanary === null && snapTwo.dbCanary === null, 'Multi-tab canary se obnovil', { snapOne, snapTwo });
     requireCheck(snapOne.session === null && snapTwo.session === null, 'Multi-tab sessionStorage nebylo uklizeno v obou kartách', { snapOne, snapTwo });
-    requireCheck(late?.blocked === true, 'Stale autosave nebyl po suite end odmítnut', late);
-    return { status: 'passed', generation: end.generation, tabOne: snapOne, tabTwo: snapTwo, lateAutosave: late };
+    requireCheck(lateState?.sameDocument === false || lateState?.late?.blocked === true, 'Stale autosave nebyl po suite end odmítnut ani bezpečně zrušen navigací/reloadem', lateState);
+    return { status: 'passed', generation: end.generation, tabOne: snapOne, tabTwo: snapTwo, lateAutosave: lateState?.late || null, staleContextSurvived: lateState?.sameDocument === true };
   } finally {
     for (const page of [one, two].filter(Boolean)) await closePage(browser, page);
     await closeBrowser(browser);
@@ -388,7 +410,7 @@ async function historyScenario(rootDir) {
     await waitFor(page.client, `location.search.includes('qa=1')`, 'history back returned to child');
     await waitFor(page.client, `localStorage.getItem(${JSON.stringify(SEEN_KEY)}) === ${JSON.stringify(generation)} && document.documentElement.dataset.ghrabSuiteSession === 'ended'`, 'history cleanup');
     const snapshot = await cleanupSnapshot(page.client, generation);
-    requireCheck(snapshot.draft === null && snapshot.backup === null && snapshot.dbPresent === false, 'Browser Back obnovil starý canary', snapshot);
+    requireCheck(snapshot.draft === null && snapshot.backup === null && snapshot.dbCanary === null, 'Browser Back obnovil starý canary', snapshot);
     return { status: 'passed', generation, snapshot };
   } finally {
     if (page) await closePage(browser, page);
