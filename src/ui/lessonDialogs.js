@@ -10,6 +10,10 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function formValue(data, key) {
+  return String(data.get(key) || '').trim();
+}
+
 function formDraftKey(lessonId = 'new', groupId = '') {
   return lessonDraftKey(lessonId, groupId);
 }

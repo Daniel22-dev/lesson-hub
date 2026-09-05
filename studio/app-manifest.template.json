@@ -109,7 +109,7 @@
     "studioBridge": 2,
     "artifactEnvelope": 1,
     "storagePrefix": "ghrab.lesson-hub.",
-    "cacheName": "ghrab-lesson-hub-v1.2.16",
+    "cacheName": "ghrab-lesson-hub-v1.2.17",
     "suiteSessionContract": "ghrab-suite-session-v1"
   }
 }

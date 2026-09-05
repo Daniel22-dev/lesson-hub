@@ -39,7 +39,7 @@ async def serve_central_route(route):
     elif path.endswith('/AI-Studio-GHRAB/config/support.json'):
         await route.fulfill(status=200, body='{"supportEmail":"balaz@ghrabuvka.cz"}', content_type='application/json')
     elif path.endswith('/AI-Studio-GHRAB/config/apps.generated.json'):
-        await route.fulfill(status=200, body='[{"id":"lesson-hub","version":"1.2.16","name":{"cs":"Lesson Hub","en":"Lesson Hub"}}]', content_type='application/json')
+        await route.fulfill(status=200, body='[{"id":"lesson-hub","version":"1.2.17","name":{"cs":"Lesson Hub","en":"Lesson Hub"}}]', content_type='application/json')
     else:
         await route.continue_()
 

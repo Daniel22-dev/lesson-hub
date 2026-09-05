@@ -137,7 +137,7 @@ async function launchBrowser() {
   const profile = await fsp.mkdtemp(path.join(os.tmpdir(), 'lesson-hub-suite-'));
   const port = 10200 + Math.floor(Math.random() * 1800);
   const chrome = spawn(chromiumPath(), [
-    '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-background-networking', '--no-first-run',
+    '--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-background-networking', '--no-first-run', '--enable-automation',
     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, 'about:blank',
   ], { stdio: 'ignore', detached: true });
   const version = await waitJson(`http://127.0.0.1:${port}/json/version`);
@@ -490,7 +490,7 @@ try {
 }
 
 const report = {
-  schema: 'lesson-hub-suite-session-qa-v1', appId: 'lesson-hub', appVersion: '1.2.16', platformVersion: '1.1.2',
+  schema: 'lesson-hub-suite-session-qa-v1', appId: 'lesson-hub', appVersion: '1.2.17', platformVersion: '1.1.2',
   contract: 'ghrab-suite-session-v1', syntheticDataOnly: true, startedAt, finishedAt: new Date().toISOString(),
   scenarios, status: failed ? 'failed' : 'passed', failure: failed,
 };

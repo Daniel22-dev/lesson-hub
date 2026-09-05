@@ -16,7 +16,7 @@ import { OperationsManager } from './lib/operations.mjs';
 import { canEditPeriod, canViewPeriod, createItem, createPeriod, createPlan, listSubstitutionBundles, publicItem, publicPeriod, publicPlan, updateItemByOwner, updateItemProgress, updatePeriod, updatePlan } from './lib/substitution.mjs';
 import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from './lib/untrustedData.mjs';
 
-export const SERVER_VERSION = '1.2.16';
+export const SERVER_VERSION = '1.2.17';
 export const API_CONTRACT = 'lesson-hub-api-v1';
 export const SYNC_CONTRACT = 'lesson-hub-sync-v1';
 export const RESOURCE_NAMES = Object.freeze([

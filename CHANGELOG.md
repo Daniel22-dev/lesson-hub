@@ -1,3 +1,9 @@
+## 1.2.17 — Platform 1.1.2 CI remediation (2026-09-05)
+
+- opravena kritická regrese editoru hodin: `lessonDialogs.js` znovu definuje bezpečný helper `formValue()`, takže vytvoření/úprava hodiny ani rychlý zápis nekončí `ReferenceError`;
+- suite-session browser harness spuštěný přes raw CDP explicitně používá Chromium automation mode, aby na loopback `?qa=1` splnil existující dvojitou podmínku lokálního QA access guardu (`trusted local origin` + `navigator.webdriver`);
+- produkční access guard, suite-session cleanup ani storage ownership se touto opravou neuvolňují; Platforma zůstává přesně 1.1.2.
+
 ## 1.2.12 — 2026-08-27
 
 

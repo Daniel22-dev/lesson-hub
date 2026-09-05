@@ -53,7 +53,7 @@ async def fulfill_route(route):
         await route.fulfill(status=200, body='{"supportEmail":"balaz@ghrabuvka.cz"}', content_type='application/json')
         return
     if path.endswith('/AI-Studio-GHRAB/config/apps.generated.json'):
-        await route.fulfill(status=200, body='[{"id":"lesson-hub","version":"1.2.16","name":{"cs":"Lesson Hub","en":"Lesson Hub"}}]', content_type='application/json')
+        await route.fulfill(status=200, body='[{"id":"lesson-hub","version":"1.2.17","name":{"cs":"Lesson Hub","en":"Lesson Hub"}}]', content_type='application/json')
         return
     if url.hostname == 'lesson-hub.test':
         relative = path.lstrip('/') or 'index.html'
