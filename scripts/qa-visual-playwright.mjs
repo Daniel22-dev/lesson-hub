@@ -511,30 +511,38 @@ async function runVisualCase(scenario, viewport) {
       }
       await setLocalDocument(page, serveRoot, scenario.url, baseUrl);
       await waitForAppReady(page, scenario);
-      for (const step of scenario.steps || []) {
-        if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
-        if (step.action === "click") {
-          await clickForQa(page, step.selector, step.timeout || 5000);
-        }
-        if (step.action === "clickIfVisible") {
-          const target = page.locator(step.selector).first();
-          if ((await target.count()) && (await target.isVisible())) {
+      for (const [stepIndex, step] of (scenario.steps || []).entries()) {
+        try {
+          if (step.action === "wait") await page.waitForTimeout(step.ms || 500);
+          if (step.action === "click") {
             await clickForQa(page, step.selector, step.timeout || 5000);
           }
-        }
-        if (step.action === "fill") {
-          await page
-            .locator(step.selector)
-            .first()
-            .fill(step.value || "");
-        }
-        if (step.action === "select") {
-          await page.locator(step.selector).first().selectOption(step.value);
-        }
-        if (step.action === "press") await page.keyboard.press(step.key);
-        if (step.action === "evaluate") await executeEvaluateStep(page, step.script);
-        if (["click", "clickIfVisible", "select", "press", "evaluate"].includes(step.action)) {
-          await settleAppAfterAction(page, step.timeout || 10000);
+          if (step.action === "clickIfVisible") {
+            const target = page.locator(step.selector).first();
+            if ((await target.count()) && (await target.isVisible())) {
+              await clickForQa(page, step.selector, step.timeout || 5000);
+            }
+          }
+          if (step.action === "fill") {
+            await page
+              .locator(step.selector)
+              .first()
+              .fill(step.value || "");
+          }
+          if (step.action === "select") {
+            await page.locator(step.selector).first().selectOption(step.value);
+          }
+          if (step.action === "press") await page.keyboard.press(step.key);
+          if (step.action === "evaluate") await executeEvaluateStep(page, step.script);
+          if (["click", "clickIfVisible", "select", "press", "evaluate"].includes(step.action)) {
+            await settleAppAfterAction(page, step.timeout || 10000);
+          }
+        } catch (error) {
+          const target = step.selector ? ` selector=${step.selector}` : "";
+          throw new Error(
+            `Visual step ${stepIndex + 1}/${scenario.steps.length} ${step.action}${target} failed: ${error?.message || error}`,
+            { cause: error },
+          );
         }
       }
       // Dialog builders can be async (for example task/reminder options from IndexedDB),
