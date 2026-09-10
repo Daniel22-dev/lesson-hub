@@ -1,0 +1,21 @@
+
+> lesson-hub@1.2.22 qa:garp25:sbom-coverage
+> node scripts/qa-garp25-sbom-coverage.mjs
+
+{
+  "status": "FAIL",
+  "developmentSbom": "security/sbom/lesson-hub-1.2.22-development.cdx.json",
+  "deploymentSbom": "security/sbom/lesson-hub-1.2.22-deployment.cdx.json",
+  "lockPackages": 5,
+  "installedPackages": [],
+  "deployedVendoredComponents": 2,
+  "errors": [
+    "installed-tree:node_modules-missing",
+    "installed-missing-required:node_modules/axe-core",
+    "installed-missing-required:node_modules/playwright",
+    "installed-missing-required:node_modules/playwright-core",
+    "installed-missing-required:node_modules/pngjs",
+    "deployment:hash:ghrab:platform:1.1.2",
+    "deployment:hash:ghrab:error-reporter:1.1.2"
+  ]
+}

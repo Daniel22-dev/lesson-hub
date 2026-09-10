@@ -1,0 +1,30 @@
+{
+  "schema": "lesson-hub-sca-environment-status-v1",
+  "appVersion": "1.2.22",
+  "status": "NOT_TESTED_COMPLETE",
+  "currentSnapshotSourcePackageSha256": "36e741c954f1174b6b635a558b7b3f5debe344699d3db4471edcd506163186f7",
+  "attempts": [
+    {
+      "check": "npm ci --ignore-scripts",
+      "status": "NOT_TESTED_COMPLETE",
+      "reason": "bounded clean-install attempt did not complete; no installed-tree evidence was accepted"
+    },
+    {
+      "check": "npm audit",
+      "status": "NOT_TESTED_COMPLETE",
+      "reason": "not run as current-snapshot SCA because clean install was not established"
+    },
+    {
+      "check": "installed-tree SBOM coverage",
+      "status": "NOT_TESTED_COMPLETE",
+      "reason": "node_modules unavailable in exact fresh install context"
+    }
+  ],
+  "historicalEvidence": {
+    "version": "1.2.21",
+    "source": "Claude independent delta review round 4",
+    "result": "PASS: npm ci, npm ls, npm audit 0 vulnerabilities, SBOM coverage",
+    "inheritTo1.2.22": false
+  },
+  "requiredFollowUp": "Claude must run fresh npm ci/npm ls/npm audit and SBOM coverage on exact 1.2.22 build input."
+}

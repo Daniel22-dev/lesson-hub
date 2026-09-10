@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.17
+# Lesson Hub 1.2.22
 
-**Aktuální verze:** 1.2.17  
+**Aktuální verze:** 1.2.22  
 **Platforma:** GHRAB Platform 1.1.2 · etapa P3
 
 
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.17 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.22 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -34,12 +34,12 @@ Workflow nasazení nevydá aplikaci, pokud selže čistá instalace, bezpečnost
 
 ## Stabilizovaná GitHub QA
 
-Verze 1.2.17 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
+Verze 1.2.22 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 
 - funkční kroky `evaluate` se nyní v Node Playwrightu i Python fallbacku skutečně vykonají; dříve se pouze vytvořil objekt funkce, takže se hash trasa nezměnila,
 - headless smoke test používá explicitní lokální QA přístup a čeká na dokončený render požadované trasy.
 
-Zachovány zůstávají předchozí opravy hashových cest, dynamického dnešního data, vizuálního reportéru, čekání na asynchronní render a bezpečnostní override `brace-expansion` 5.0.8. Kritická brána navíc při selhání vypíše konkrétní nález přímo do logu GitHub Actions.
+Zachovány zůstávají předchozí opravy hashových cest, dynamického dnešního data, vizuálního reportéru a čekání na asynchronní render. Lockfile zůstává minimální a QA v 1.2.22 navíc odmítá userinfo, query, fragment, percent-encoding i alternativní port v `resolved` URL. Kanonický secret scanner zachycuje i lowercase nekotovaná tajemství v YAML/INI/.properties/Compose/env formátech.
 
 ## Bezpečné používání lokální verze
 
@@ -62,7 +62,13 @@ npm run server:start
 
 Heslo se nepředává v argumentu příkazu. Podrobnosti jsou v `server/README.md` a `docs/SERVEROVE-NASAZENI-1.2.0.md`.
 
+Pokud je zapnuta centrální GHRAB gateway, `LESSON_HUB_GHRAB_UPSTREAM_SECRET` generujte CSPRNG (doporučeně `openssl rand -hex 32`); shape kontrola je pouze fail-closed guard, ne měření skutečné entropie. Gateway hlavička nesmí přidělit `owner/admin`, SSO účty jsou pouze `teacher/substitute`, používají kanonický ASCII e-mail a jsou gateway-only bez lokálního hesla. Offboarding SSO znamená účet zakázat. Reverse proxy/gateway musí před vložením vlastních `x-ghrab-*` hlaviček odstranit stejnojmenné klientské hlavičky.
+
 Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při startu i v provozním centru zobrazí výrazné varování, dokud není nastaveno `LESSON_HUB_BACKUP_ENABLED=true`.
+
+## GARP 2.5.1 SHIELD-PREP
+
+Verze 1.2.22 navazuje na PREP release-integrity/supply-chain evidenci z 1.2.18 a fail-closed ochranu service workeru pro bezpečnostně kritické assety. Stav **není school-server production approval**: browser/served DAST, online advisory SCA, produkční key custody a SHIELD-LIVE zůstávají oddělenými podmínkami. Protokoly a strojově čitelné podklady jsou v `security/`.
 
 ## Kontroly
 

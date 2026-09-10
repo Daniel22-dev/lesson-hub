@@ -1,0 +1,668 @@
+.ghrab-error-reporter {
+  --ghrab-surface: #071727;
+  --ghrab-surface-strong: #03101d;
+  --ghrab-surface-soft: rgba(255, 255, 255, 0.035);
+  --ghrab-surface-input: #030d18;
+  --ghrab-surface-card: rgba(1, 9, 16, 0.88);
+  --ghrab-overlay: rgba(0, 5, 12, 0.78);
+  --ghrab-text: #effaff;
+  --ghrab-text-soft: #d9edf7;
+  --ghrab-muted: #aac4d2;
+  --ghrab-accent: #61ddf7;
+  --ghrab-accent-strong: #2e91da;
+  --ghrab-accent-text: #02111f;
+  --ghrab-border: rgba(111, 226, 255, 0.28);
+  --ghrab-border-soft: rgba(116, 225, 255, 0.15);
+  --ghrab-success: #8ef0c1;
+  --ghrab-success-bg: rgba(80, 224, 167, 0.09);
+  --ghrab-success-border: rgba(80, 224, 167, 0.24);
+  --ghrab-warning: #ffd18d;
+  --ghrab-warning-bg: rgba(255, 181, 72, 0.09);
+  --ghrab-danger: #ff9ea6;
+  --ghrab-danger-soft: #ffc2c7;
+  --ghrab-shadow: 0 34px 110px rgba(0, 0, 0, 0.64);
+  --ghrab-shadow-soft: 0 14px 42px rgba(0, 0, 0, 0.42);
+  --ghrab-reporter-right: 18px;
+  --ghrab-reporter-bottom: 18px;
+  --ghrab-capture-right: 18px;
+  --ghrab-capture-bottom: 92px;
+  position: relative;
+  z-index: 2147483000;
+  color-scheme: dark;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.ghrab-error-reporter[data-theme="light"] {
+  --ghrab-surface: #ffffff;
+  --ghrab-surface-strong: #f5f8fb;
+  --ghrab-surface-soft: rgba(20, 52, 73, 0.045);
+  --ghrab-surface-input: #f8fafc;
+  --ghrab-surface-card: #f5f8fb;
+  --ghrab-overlay: rgba(24, 38, 50, 0.5);
+  --ghrab-text: #142332;
+  --ghrab-text-soft: #263d50;
+  --ghrab-muted: #586d7d;
+  --ghrab-accent: #087b9b;
+  --ghrab-accent-strong: #126caa;
+  --ghrab-accent-text: #ffffff;
+  --ghrab-border: rgba(22, 91, 126, 0.3);
+  --ghrab-border-soft: rgba(30, 74, 101, 0.17);
+  --ghrab-success: #126b4d;
+  --ghrab-success-bg: #e9f8f1;
+  --ghrab-success-border: #9bd9bf;
+  --ghrab-warning: #87510a;
+  --ghrab-warning-bg: #fff5df;
+  --ghrab-danger: #a72735;
+  --ghrab-danger-soft: #9d2631;
+  --ghrab-shadow: 0 30px 90px rgba(20, 44, 61, 0.28);
+  --ghrab-shadow-soft: 0 14px 38px rgba(20, 44, 61, 0.2);
+  color-scheme: light;
+}
+
+.ghrab-error-reporter,
+.ghrab-error-reporter * {
+  box-sizing: border-box;
+}
+
+.ghrab-error-reporter .ghrab-report-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border: 1px solid var(--ghrab-border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: var(--ghrab-surface-strong);
+  color: var(--ghrab-text);
+  font: 800 13px/1.2 inherit;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.ghrab-error-reporter .ghrab-report-button:hover:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+  border-color: var(--ghrab-accent);
+}
+
+.ghrab-error-reporter .ghrab-report-button:focus-visible,
+.ghrab-error-reporter .ghrab-report-guide:focus-visible,
+.ghrab-error-reporter textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ghrab-accent) 32%, transparent);
+  outline-offset: 2px;
+}
+
+.ghrab-error-reporter .ghrab-report-button:disabled,
+.ghrab-error-reporter .ghrab-report-button[aria-disabled="true"] {
+  opacity: 0.46;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ghrab-error-reporter .ghrab-report-button[hidden] {
+  display: none !important;
+}
+
+.ghrab-error-reporter .ghrab-report-button.primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--ghrab-accent), var(--ghrab-accent-strong));
+  color: var(--ghrab-accent-text);
+}
+
+.ghrab-error-reporter .ghrab-report-button.secondary {
+  background: var(--ghrab-surface-strong);
+}
+
+.ghrab-error-reporter .ghrab-report-button.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+.ghrab-error-reporter .ghrab-report-button.icon {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 24px;
+}
+
+.ghrab-error-reporter .ghrab-report-button.small {
+  min-height: 34px;
+  padding: 7px 9px;
+  font-size: 11px;
+  box-shadow: none;
+}
+
+.ghrab-error-reporter .ghrab-report-button.danger {
+  border-color: color-mix(in srgb, var(--ghrab-danger) 45%, transparent);
+  color: var(--ghrab-danger-soft);
+}
+
+.ghrab-error-reporter .ghrab-report-button.launcher {
+  position: fixed;
+  right: max(var(--ghrab-reporter-right), calc(env(safe-area-inset-right) + 10px));
+  bottom: max(var(--ghrab-reporter-bottom), calc(env(safe-area-inset-bottom) + 12px));
+  z-index: 2147483001;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 9px 15px 9px 9px;
+  background: var(--ghrab-surface);
+  color: var(--ghrab-text);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--ghrab-shadow-soft);
+}
+
+.ghrab-error-reporter[data-theme="light"] .ghrab-report-button.launcher {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.ghrab-error-reporter .ghrab-report-button.launcher span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffbd57, #ed5c67);
+  color: #17130d;
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.ghrab-error-reporter .ghrab-report-backdrop,
+.ghrab-error-reporter .ghrab-redaction-backdrop,
+.ghrab-error-reporter .ghrab-discard-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483002;
+  display: grid;
+  place-items: center;
+  padding:
+    max(20px, env(safe-area-inset-top))
+    max(20px, env(safe-area-inset-right))
+    max(20px, env(safe-area-inset-bottom))
+    max(20px, env(safe-area-inset-left));
+  background: var(--ghrab-overlay);
+  backdrop-filter: blur(9px);
+}
+
+.ghrab-error-reporter .ghrab-report-backdrop[hidden],
+.ghrab-error-reporter .ghrab-redaction-backdrop[hidden],
+.ghrab-error-reporter .ghrab-discard-backdrop[hidden],
+.ghrab-error-reporter .ghrab-capture-bar[hidden] {
+  display: none !important;
+}
+
+.ghrab-error-reporter .ghrab-report-panel {
+  width: min(880px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--ghrab-border);
+  border-radius: 24px;
+  background: linear-gradient(155deg, var(--ghrab-surface) 0%, var(--ghrab-surface-strong) 100%);
+  color: var(--ghrab-text);
+  box-shadow: var(--ghrab-shadow);
+  padding: 24px;
+}
+
+.ghrab-error-reporter .ghrab-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 1px solid var(--ghrab-border-soft);
+  padding-bottom: 16px;
+}
+
+.ghrab-error-reporter .ghrab-report-header h2 {
+  margin: 4px 0 0;
+  color: var(--ghrab-text);
+  font-size: clamp(22px, 4vw, 32px);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.ghrab-error-reporter .ghrab-report-eyebrow {
+  margin: 0;
+  color: var(--ghrab-accent);
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.2em;
+}
+
+.ghrab-error-reporter .ghrab-report-app-line {
+  margin: 14px 0;
+  color: var(--ghrab-text-soft);
+  font-weight: 800;
+}
+
+.ghrab-error-reporter .ghrab-report-privacy {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 0;
+  padding: 13px 15px;
+  border-left: 4px solid #e79b26;
+  border-radius: 0 12px 12px 0;
+  background: var(--ghrab-warning-bg);
+  color: var(--ghrab-text);
+  font-size: 13px;
+  line-height: 1.46;
+}
+
+.ghrab-error-reporter .ghrab-report-section {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--ghrab-border-soft);
+  border-radius: 17px;
+  background: var(--ghrab-surface-soft);
+}
+
+.ghrab-error-reporter .ghrab-report-section h3 {
+  margin: 0 0 8px;
+  color: var(--ghrab-text);
+  font-size: 17px;
+}
+
+.ghrab-error-reporter .ghrab-report-help,
+.ghrab-error-reporter .ghrab-report-status {
+  margin: 6px 0 12px;
+  color: var(--ghrab-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ghrab-error-reporter .ghrab-report-status[data-type="ok"] {
+  color: var(--ghrab-success);
+}
+
+.ghrab-error-reporter .ghrab-report-status[data-type="warn"] {
+  color: var(--ghrab-warning);
+}
+
+.ghrab-error-reporter .ghrab-report-status[data-type="error"] {
+  color: var(--ghrab-danger);
+}
+
+.ghrab-error-reporter .ghrab-report-actions {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ghrab-error-reporter .ghrab-report-actions label {
+  display: inline-flex;
+}
+
+.ghrab-error-reporter .ghrab-report-field {
+  display: grid;
+  gap: 7px;
+  margin-top: 13px;
+  color: var(--ghrab-text-soft);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ghrab-error-reporter .ghrab-report-field textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  border: 1px solid var(--ghrab-border);
+  border-radius: 12px;
+  background: var(--ghrab-surface-input);
+  color: var(--ghrab-text);
+  padding: 12px;
+  font: 14px/1.5 inherit;
+  outline: none;
+}
+
+.ghrab-error-reporter .ghrab-report-field textarea::placeholder {
+  color: color-mix(in srgb, var(--ghrab-muted) 84%, transparent);
+}
+
+.ghrab-error-reporter .ghrab-report-field textarea:focus {
+  border-color: var(--ghrab-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ghrab-accent) 13%, transparent);
+}
+
+.ghrab-error-reporter .ghrab-screenshot-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.ghrab-error-reporter .ghrab-screenshot-card {
+  overflow: hidden;
+  border: 1px solid var(--ghrab-border-soft);
+  border-radius: 13px;
+  background: var(--ghrab-surface-card);
+}
+
+.ghrab-error-reporter .ghrab-screenshot-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: contain;
+  background: #01060a;
+}
+
+.ghrab-error-reporter .ghrab-screenshot-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  padding: 9px;
+  color: var(--ghrab-text);
+}
+
+.ghrab-error-reporter .ghrab-screenshot-meta strong {
+  font-size: 12px;
+}
+
+.ghrab-error-reporter .ghrab-screenshot-tools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ghrab-error-reporter .ghrab-screenshot-empty {
+  grid-column: 1/-1;
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--ghrab-border);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--ghrab-muted);
+  font-size: 13px;
+}
+
+.ghrab-error-reporter .ghrab-report-final {
+  display: grid;
+  gap: 5px;
+  margin-top: 13px;
+  padding: 12px 14px;
+  border: 1px solid var(--ghrab-success-border);
+  border-radius: 12px;
+  background: var(--ghrab-success-bg);
+  color: var(--ghrab-text);
+  font-size: 13px;
+}
+
+.ghrab-error-reporter .ghrab-report-final[hidden] {
+  display: none !important;
+}
+
+.ghrab-error-reporter .ghrab-report-mail-step {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ghrab-success-border);
+}
+
+.ghrab-error-reporter .ghrab-report-mail-step[hidden] {
+  display: none !important;
+}
+
+.ghrab-error-reporter .ghrab-report-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.ghrab-error-reporter .ghrab-report-guide {
+  color: var(--ghrab-accent);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ghrab-error-reporter .ghrab-capture-video,
+.ghrab-capture-video {
+  display: block !important;
+  position: fixed !important;
+  left: -10000px !important;
+  top: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  max-width: 1px !important;
+  max-height: 1px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.ghrab-error-reporter.ghrab-capture-hidden {
+  visibility: hidden !important;
+}
+
+.ghrab-error-reporter .ghrab-discard-backdrop {
+  z-index: 2147483005;
+}
+
+.ghrab-error-reporter .ghrab-discard-dialog {
+  width: min(560px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--ghrab-warning) 45%, transparent);
+  border-radius: 20px;
+  background: var(--ghrab-surface);
+  color: var(--ghrab-text);
+  box-shadow: var(--ghrab-shadow);
+}
+
+.ghrab-error-reporter .ghrab-discard-dialog h3,
+.ghrab-error-reporter .ghrab-discard-dialog p {
+  margin: 0;
+}
+
+.ghrab-error-reporter .ghrab-discard-dialog p {
+  color: var(--ghrab-muted);
+  line-height: 1.5;
+}
+
+.ghrab-error-reporter .ghrab-mail-fallback-actions {
+  margin-top: 8px;
+}
+
+.ghrab-error-reporter .ghrab-capture-bar {
+  position: fixed;
+  right: max(var(--ghrab-capture-right), calc(env(safe-area-inset-right) + 10px));
+  bottom: max(var(--ghrab-capture-bottom), calc(env(safe-area-inset-bottom) + 92px));
+  z-index: 2147483004;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: min(380px, calc(100vw - 36px));
+  padding: 10px;
+  border: 1px solid var(--ghrab-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ghrab-surface) 96%, transparent);
+  color: var(--ghrab-text);
+  box-shadow: var(--ghrab-shadow-soft);
+  backdrop-filter: blur(16px);
+}
+
+.ghrab-error-reporter .ghrab-capture-bar-state {
+  grid-column: 1/-1;
+  display: grid;
+  gap: 2px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.ghrab-error-reporter .ghrab-capture-bar-state strong {
+  color: var(--ghrab-text);
+  font-size: 12px;
+}
+
+.ghrab-error-reporter .ghrab-capture-bar-state small {
+  color: var(--ghrab-muted);
+  font-size: 11px;
+}
+
+.ghrab-error-reporter .ghrab-capture-bar .ghrab-report-button {
+  width: 100%;
+  padding: 9px 8px;
+}
+
+.ghrab-error-reporter .ghrab-capture-bar .ghrab-report-button:last-child {
+  grid-column: 1/-1;
+}
+
+.ghrab-error-reporter.ghrab-capture-mode .ghrab-report-button.launcher {
+  display: none !important;
+}
+
+.ghrab-error-reporter .ghrab-redaction-panel {
+  width: min(1100px, 100%);
+  max-height: calc(100dvh - 28px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--ghrab-border);
+  border-radius: 20px;
+  background: var(--ghrab-surface-strong);
+  color: var(--ghrab-text);
+  box-shadow: var(--ghrab-shadow);
+}
+
+.ghrab-error-reporter .ghrab-redaction-head {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.ghrab-error-reporter .ghrab-redaction-canvas-wrap {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #000;
+  padding: 8px;
+}
+
+.ghrab-error-reporter .ghrab-redaction-canvas-wrap canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 68dvh;
+  width: auto;
+  height: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+html.ghrab-report-open {
+  overflow: hidden !important;
+}
+
+@media (max-width: 720px) {
+  .ghrab-error-reporter {
+    --ghrab-reporter-right: 8px;
+    --ghrab-capture-right: 8px;
+  }
+
+  .ghrab-error-reporter .ghrab-report-button.launcher strong {
+    display: none;
+  }
+
+  .ghrab-error-reporter .ghrab-report-button.launcher {
+    min-width: 48px;
+    padding: 8px;
+  }
+
+  .ghrab-error-reporter .ghrab-report-backdrop,
+  .ghrab-error-reporter .ghrab-discard-backdrop,
+  .ghrab-error-reporter .ghrab-redaction-backdrop {
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+
+  .ghrab-error-reporter .ghrab-capture-bar {
+    bottom: max(var(--ghrab-capture-bottom), calc(env(safe-area-inset-bottom) + 84px));
+    width: min(360px, calc(100vw - 16px));
+    padding: 8px;
+  }
+
+  .ghrab-error-reporter .ghrab-report-panel {
+    padding: 16px;
+    border-radius: 18px;
+    max-height: calc(100dvh - 16px);
+  }
+
+  .ghrab-error-reporter .ghrab-screenshot-list {
+    grid-template-columns: 1fr;
+  }
+
+  .ghrab-error-reporter .ghrab-report-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ghrab-error-reporter .ghrab-report-actions {
+    align-items: stretch;
+  }
+
+  .ghrab-error-reporter .ghrab-report-actions > .ghrab-report-button,
+  .ghrab-error-reporter .ghrab-report-actions > label {
+    flex: 1 1 45%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 430px) {
+  .ghrab-error-reporter .ghrab-capture-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .ghrab-error-reporter .ghrab-capture-bar-state,
+  .ghrab-error-reporter .ghrab-capture-bar .ghrab-report-button:last-child {
+    grid-column: 1;
+  }
+
+  .ghrab-error-reporter .ghrab-screenshot-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghrab-error-reporter .ghrab-report-button {
+    transition: none;
+  }
+}
+
+@media print {
+  .ghrab-error-reporter {
+    display: none !important;
+  }
+}

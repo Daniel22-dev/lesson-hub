@@ -1,0 +1,6 @@
+{
+  "status": "UNVERIFIED",
+  "errors": [
+    "unknown-keyId:lesson-hub-prep-20260910-r6"
+  ]
+}

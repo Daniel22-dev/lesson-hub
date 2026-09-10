@@ -1,3 +1,53 @@
+## 1.2.22 — GARP 2.5.1 SHIELD-PREP regular hardening after Claude round 4 (2026-09-10)
+
+- N29: canonical source/deployment secret scan detects unquoted lowercase secret assignments in YAML/INI/.properties/Compose/env formats while excluding obvious placeholders and environment references.
+- N26 LOW: scanner adds bounded static folding for obvious split private-key literals, String.fromCharCode token literals and btoa Basic-auth literals.
+- N27: workflow policy rejects PowerShell iwr/Invoke-WebRequest piped to iex/Invoke-Expression.
+- N28: lock gate rejects noncanonical alternate ports in registry resolved URLs.
+- source-tree manifest evidence now records historical Git baseCommit explicitly while exact source identity remains the frozen ZIP SHA-256.
+- No pedagogical/client runtime behavior changed. PREP remains distinct from LIVE.
+
+## 1.2.21 — GARP 2.5.1 SHIELD-PREP regular hardening after Claude round 3 (2026-09-10)
+
+- N20: canonical secret scanning now recursively inspects bounded base64/base64url and hex encodings and ZIP/JAR containers; unsupported/ambiguous archives fail closed. Canonical selftest includes recoverable double-base64 PEM, hex PKCS#8 DER and ZIP-contained private-key controls.
+- N21: workflow policy blocks remote process substitution (`<(curl|wget)`), sourcing process substitution and `eval` in workflow run blocks, closing the two independent review bypasses.
+- N22: lock audit rejects userinfo, query, fragment and percent-encoded package paths in `resolved` URLs; regression matrix covers all four cases.
+- N23: gateway-secret policy explicitly requires CSPRNG generation and rejects obvious repeated patterns; shape checks remain only a deployment guard, not an entropy proof.
+- N24: GHRAB SSO email identities must be canonical ASCII addresses; plus-tag, trailing-dot and Unicode/confusable variants are rejected instead of creating duplicate SSO identities.
+- N25: GHRAB SSO accounts are gateway-only and cannot receive a local password; offboarding is performed by disabling the SSO account.
+- QA hygiene: the legacy heuristic `qa:security` treats only the canonical GARP selftest as an explicit secret fixture; it remains WARN on 30 localStorage test-harness observations and is not represented as full SAST PASS.
+- N6, N8, N9, N12 and LH-D01 remain explicit PREP/LIVE debts. No pedagogical, AI-provider, client storage or client network capability is added.
+
+## 1.2.20 — GARP 2.5.1 SHIELD-PREP regular hardening after Claude round 2 (2026-09-10)
+
+- N15: upstream gateway secrets must use a high-entropy 256-bit shape; SSO identities cannot be promoted to `owner`/`admin`, legacy privileged SSO records fail closed on upstream authentication, and SSO/local e-mail collisions are rejected.
+- N16: source and deployment secret scanning now share one canonical GARP rule engine; the B01-B15 bypass class is covered by canonical selftest and no private-key material is allowlisted.
+- N17: lock QA verifies package.json/root-lock equivalence, full registry package paths, SHA-512 integrity and absence of extraneous entries; class regressions cover L3/L4/L6.
+- N18: GitHub workflow policy is parsed structurally; top-level permissions are exact read-only, write scopes are restricted to the deploy job, `pull_request_target` and remote download-to-shell execution are rejected, and action/runner/Node pinning remains enforced.
+- N19: frozen source identity is bound by sourcePackageSha256; the historical Git commit is recorded only as `baseCommit`, not as a claim that checkout(baseCommit) equals the 1.2.20 source snapshot.
+- Claude 1.2.19 independent SCA evidence is recorded as historical evidence; 1.2.20 still requires its own fresh SCA run for promotion beyond PREP.
+- N6, N8, N9 and N12 remain explicit PREP/LIVE debts and are not silently promoted.
+- Pedagogical workflows, AI scope and client data formats are unchanged.
+
+## 1.2.19 — GARP 2.5.1 SHIELD-PREP remediation po Claude DELTA auditu (2026-09-10)
+
+- serverová gateway konfigurace je fail-closed pro nastavený prázdný, krátký nebo placeholder upstream secret; nový regresní test reprodukuje a blokuje původní PoC;
+- nepodepsaná `x-ghrab-user-roles` hlavička už nemůže vytvořit `owner`/`admin`; privilegované role zůstávají pouze serverově spravované a upstream expiry je bounded;
+- lockfile je čistě přegenerován z deklarovaných závislostí, bez extraneous stromu a falešného `type-check@0.6.0`; `qa:lock` kontroluje dosažitelnost i verzi resolved tarballu;
+- CycloneDX evidence je rozdělena na development SBOM a deployment SBOM; vývojové npm balíčky jsou `excluded`, deployment SBOM zahrnuje vendorovanou GHRAB Platform 1.1.2 a GHRAB Error Reporter 1.1.2;
+- secret scan již nepovoluje testově pojmenované soubory v nasazovaných `src/` cestách a detekuje JWK private `d`, encrypted/DSA/PGP private-key formy; deployment leak scanner obsahuje stejné relevantní kontroly;
+- GitHub Pages `pages: write` a `id-token: write` jsou omezeny pouze na deploy job; QA job má jen `contents: read`;
+- otevřené N6/N8/N9 jsou vedeny jako explicitní PREP/LIVE dluhy; provenance používá skutečné časy a základní commit, PREP registry nevymýšlí schválení 1.2.17;
+- pedagogická logika, AI schopnosti a datové formáty se tímto opravným kolem nemění.
+
+## 1.2.18 — GARP 2.5.1 SHIELD-PREP (2026-09-10)
+
+- service worker zachovává bezpečnostně kritické platformní, deployment a release-integrity assety mimo Cache Storage a obsluhuje je pouze přes `networkOnlyNoStore()`;
+- build fail-closed filtruje stejné kritické assety z aplikačního i platformního precache seznamu;
+- přidána GARP 2.5.1 assurance/tooling vrstva, CycloneDX SBOM, kontrola pinned inputs, secret scan se syntetickou citlivostní kontrolou a fail-closed SW mutační sada;
+- GARP změny nerozšiřují pedagogické funkce, AI schopnosti ani síťové destinace; zachovávají Platform 1.1.2 a suite-session/storage hardening z 1.2.17;
+- produkční school-server/LIVE schválení tímto PREP kandidátem nevzniká; serverové DAST, provozní TLS/headers, key custody, externí watchdog a další LIVE kontroly zůstávají oddělené.
+
 ## 1.2.17 — Platform 1.1.2 CI remediation (2026-09-05)
 
 - opravena kritická regrese editoru hodin: `lessonDialogs.js` znovu definuje bezpečný helper `formValue()`, takže vytvoření/úprava hodiny ani rychlý zápis nekončí `ReferenceError`;

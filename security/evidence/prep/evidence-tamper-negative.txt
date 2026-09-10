@@ -1,0 +1,9 @@
+{
+  "status": "FAIL",
+  "errors": [
+    "size:prep/build-input-identity.txt",
+    "sha256:prep/build-input-identity.txt"
+  ]
+}
+
+EXPECTED_FAIL_RC=1

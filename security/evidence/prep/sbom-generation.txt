@@ -1,0 +1,17 @@
+
+> lesson-hub@1.2.22 qa:garp25:sbom
+> node scripts/generate-cyclonedx-sbom.mjs
+
+{
+  "status": "PASS",
+  "development": {
+    "output": "security/sbom/lesson-hub-1.2.22-development.cdx.json",
+    "components": 5,
+    "dependencies": 6
+  },
+  "deployment": {
+    "output": "security/sbom/lesson-hub-1.2.22-deployment.cdx.json",
+    "components": 2,
+    "dependencies": 3
+  }
+}

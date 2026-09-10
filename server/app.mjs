@@ -5,7 +5,7 @@ import path from 'node:path';
 import { URL } from 'node:url';
 import { loadServerConfig } from './lib/config.mjs';
 import { createStore } from './lib/storeFactory.mjs';
-import { constantTimeTokenEqual, createSessionToken, hashPasswordAsync, normalizeEmail, safeUser, tokenDigest, verifyPasswordAsync } from './lib/security.mjs';
+import { canonicalizeSsoEmail, constantTimeTokenEqual, createSessionToken, hashPasswordAsync, normalizeEmail, safeUser, tokenDigest, verifyPasswordAsync } from './lib/security.mjs';
 import { canAccessRecord, isShareableResource, normalizeRole, normalizeVisibility, requirePermission } from './lib/permissions.mjs';
 import { normalizeOpenedStore } from './lib/storeNormalization.mjs';
 import { binary, json, noContent, readJson, requestIp } from './lib/http.mjs';
@@ -16,7 +16,7 @@ import { OperationsManager } from './lib/operations.mjs';
 import { canEditPeriod, canViewPeriod, createItem, createPeriod, createPlan, listSubstitutionBundles, publicItem, publicPeriod, publicPlan, updateItemByOwner, updateItemProgress, updatePeriod, updatePlan } from './lib/substitution.mjs';
 import { assertSafeUntrustedIdentifier, assertSafeUntrustedRecord } from './lib/untrustedData.mjs';
 
-export const SERVER_VERSION = '1.2.17';
+export const SERVER_VERSION = '1.2.22';
 export const API_CONTRACT = 'lesson-hub-api-v1';
 export const SYNC_CONTRACT = 'lesson-hub-sync-v1';
 export const RESOURCE_NAMES = Object.freeze([
@@ -202,27 +202,44 @@ async function authenticate(request, store, config) {
   const upstreamSecret = String(request.headers['x-ghrab-upstream-secret'] || '');
   if (config.upstreamAuthSecret && upstreamSecret && constantTimeTokenEqual(upstreamSecret, config.upstreamAuthSecret)) {
     const decode = (value) => { try { return decodeURIComponent(String(value || '')); } catch { return String(value || ''); } };
-    const externalId = decode(request.headers['x-ghrab-user-id']).trim();
-    if (!externalId) throw httpError(401, 'Centrální identita chybí.', 'ghrab_identity_missing');
+    const externalIdRaw = decode(request.headers['x-ghrab-user-id']).trim();
+    if (!externalIdRaw) throw httpError(401, 'Centrální identita chybí.', 'ghrab_identity_missing');
+    const externalIdIsEmail = externalIdRaw.includes('@');
+    const canonicalSsoEmail = externalIdIsEmail ? canonicalizeSsoEmail(externalIdRaw) : null;
+    if (externalIdIsEmail && !canonicalSsoEmail) throw httpError(400, 'Centrální e-mailová identita není v povoleném kanonickém tvaru.', 'ghrab_identity_email_noncanonical');
+    const externalId = canonicalSsoEmail || externalIdRaw.normalize('NFKC');
     const roles = String(request.headers['x-ghrab-user-roles'] || 'teacher').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean);
-    const role = roles.includes('admin') || roles.includes('owner') ? 'admin' : roles.includes('substitute') ? 'substitute' : 'teacher';
+    // The shared gateway secret authenticates the upstream caller, but an unsigned role header
+    // must never mint owner/admin rights. Privileged roles are assigned only by server-side administration.
+    const gatewayRole = roles.includes('substitute') ? 'substitute' : 'teacher';
     const id = `ghrab_${tokenDigest(externalId).slice(0, 24)}`;
-    const email = externalId.includes('@') ? normalizeEmail(externalId) : `${id}@ghrab.local`;
+    const email = canonicalSsoEmail || `${id}@ghrab.local`;
     const displayName = decode(request.headers['x-ghrab-user-name']).trim() || externalId;
-    let user = store.data.users.find((item) => item.id === id || (item.authSource === 'ghrab-sso' && item.externalIdHash === tokenDigest(externalId)));
+    let user = store.data.users.find((item) => item.authSource === 'ghrab-sso' && (item.id === id || item.externalIdHash === tokenDigest(externalId)));
     let changed = false;
     if (!user) {
-      user = { id, email, displayName, role, status: 'active', passwordHash: '', authSource: 'ghrab-sso', externalIdHash: tokenDigest(externalId), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() };
+      const emailConflict = store.data.users.find((item) => normalizeEmail(item.email) === email);
+      if (emailConflict) throw httpError(409, 'Central identity conflicts with an existing local account.', 'ghrab_identity_email_conflict');
+      user = { id, email, displayName, role: gatewayRole, status: 'active', passwordHash: '', authSource: 'ghrab-sso', externalIdHash: tokenDigest(externalId), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() };
       store.data.users.push(user); changed = true;
     } else {
+      if (['owner', 'admin'].includes(user.role)) {
+        throw httpError(403, 'Privileged server roles cannot authenticate through the shared upstream secret.', 'ghrab_privileged_sso_forbidden');
+      }
       if (user.displayName !== displayName) { user.displayName = displayName; changed = true; }
-      if (user.role !== role && user.role !== 'owner') { user.role = role; changed = true; }
+      if (user.role !== gatewayRole) { user.role = gatewayRole; changed = true; }
       if (user.status !== 'active') throw httpError(401, 'Uživatelský účet není aktivní.', 'user_inactive');
       if (changed) user.updatedAt = new Date().toISOString();
       user.lastLoginAt = new Date().toISOString();
     }
     if (changed) await store.save();
-    const expiresAt = String(request.headers['x-ghrab-session-expires-at'] || new Date(Date.now() + 10 * 60 * 1000).toISOString());
+    const nowMs = Date.now();
+    const rawExpiresAt = String(request.headers['x-ghrab-session-expires-at'] || '').trim();
+    const expiresMs = rawExpiresAt ? Date.parse(rawExpiresAt) : nowMs + 10 * 60 * 1000;
+    if (!Number.isFinite(expiresMs) || expiresMs <= nowMs || expiresMs > nowMs + 15 * 60 * 1000) {
+      throw httpError(401, 'Platnost centrální relace je neplatná.', 'ghrab_session_expiry_invalid');
+    }
+    const expiresAt = new Date(expiresMs).toISOString();
     return { user, session: { id: `ghrab:${id}`, userId: id, expiresAt, lastSeenAt: new Date().toISOString(), upstream: true }, tokenDigest: null, upstream: true };
   }
   const header = String(request.headers.authorization || '');
@@ -361,7 +378,7 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
         const accountKey = `account:${email}`;
         ipLimiter.assert(ipKey);
         accountLimiter.assert(accountKey);
-        const user = store.data.users.find((item) => item.email === email && item.status === 'active');
+        const user = store.data.users.find((item) => item.email === email && item.status === 'active' && item.authSource !== 'ghrab-sso');
         if (!user || !(await verifyPasswordAsync(body.password, user.passwordHash))) {
           audit(store, { action: 'auth-login-failed', entityType: 'user', entityId: user?.id || null, metadata: { accountMatched: Boolean(user) }, ip });
           await store.save();
@@ -468,13 +485,20 @@ export async function createLessonHubServer({ config = loadServerConfig(), store
           if (!target) throw httpError(404, 'Uživatel nebyl nalezen.', 'user_missing');
           const body = await readJson(request, config.bodyLimitBytes);
           if (target.role === 'owner' && user.role !== 'owner') throw httpError(403, 'Účet vlastníka může měnit pouze vlastník.', 'owner_account_forbidden');
-          if (body.role != null && normalizeRole(body.role) === 'owner' && user.role !== 'owner') throw httpError(403, 'Roli vlastníka může přidělit pouze vlastník.', 'owner_role_forbidden');
+          const requestedTargetRole = body.role != null ? normalizeRole(body.role) : null;
+          if (requestedTargetRole === 'owner' && user.role !== 'owner') throw httpError(403, 'Roli vlastníka může přidělit pouze vlastník.', 'owner_role_forbidden');
+          if (target.authSource === 'ghrab-sso' && ['owner', 'admin'].includes(requestedTargetRole)) {
+            throw httpError(400, 'Central SSO accounts cannot be promoted to privileged server roles.', 'ghrab_sso_privileged_role_forbidden');
+          }
           if (body.status === 'disabled' && target.id === user.id) throw httpError(400, 'Nelze zakázat vlastní aktivní relaci.', 'self_disable_forbidden');
           if (body.status === 'disabled' && target.role === 'owner' && store.data.users.filter((item) => item.role === 'owner' && item.status === 'active').length <= 1) throw httpError(400, 'Nelze zakázat posledního aktivního vlastníka.', 'last_owner_forbidden');
           if (body.displayName != null) target.displayName = String(body.displayName).trim();
           if (body.role != null) target.role = normalizeRole(body.role);
           if (body.status != null) target.status = body.status === 'disabled' ? 'disabled' : 'active';
           const passwordChanged = Boolean(body.password);
+          if (passwordChanged && target.authSource === 'ghrab-sso') {
+            throw httpError(400, 'Central SSO accounts cannot be given a local password. Disable the SSO account when offboarding.', 'ghrab_sso_local_password_forbidden');
+          }
           if (passwordChanged) target.passwordHash = await hashPasswordAsync(body.password);
           if (passwordChanged || target.status === 'disabled') {
             store.data.sessions = store.data.sessions.filter((session) => session.userId !== target.id);

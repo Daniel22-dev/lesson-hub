@@ -1,0 +1,34 @@
+{
+  "schema": "ghrab-build-provenance-v1",
+  "subject": {
+    "name": "lesson-hub-1.2.22-GARP2.5-SHIELD-DEPLOYMENT.zip",
+    "sha256": "ca235cb3dfb1024c46b8bcf47b1744a48de93fd35374f730b43eb8b146a8cbd3"
+  },
+  "source": {
+    "repository": "https://github.com/daniel22-dev/lesson-hub",
+    "revision": null,
+    "baseCommit": "5dc8db114561c0d3696e71003eb1a1d71c7e846c",
+    "sourcePackageSha256": "36e741c954f1174b6b635a558b7b3f5debe344699d3db4471edcd506163186f7"
+  },
+  "builder": {
+    "id": "local-untrusted-builder",
+    "workflow": null,
+    "entrypoint": "SOURCE_DATE_EPOCH=1789069800 npm run build:school-server"
+  },
+  "invocation": {
+    "startedAt": "2026-09-10T19:47:52.398Z",
+    "finishedAt": "2026-09-10T19:47:54.399Z",
+    "lockfileSha256": "7dbbcec8968d1b09db0c5918666b14b7043f61a05e11d1f938a11a4e8ed21e6c",
+    "parameters": {
+      "profile": "school-server"
+    }
+  },
+  "releaseIntegrity": {
+    "artifactDigest": "e5ce91495df816fdb7be76e33f773bb5bdcb95fb419349236acc9219c593a387"
+  },
+  "assurance": {
+    "slsaReference": "v1.2",
+    "claimedSlsaLevel": null,
+    "note": "Custom GARP provenance is not by itself a SLSA level attestation."
+  }
+}

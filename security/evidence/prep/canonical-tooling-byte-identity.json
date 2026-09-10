@@ -1,0 +1,111 @@
+{
+  "schema": "ghrab-canonical-tooling-byte-identity-v1",
+  "version": "1.2.22",
+  "canonicalPackageSha256": "5be01e9aa1998a26c3817c0cc70e386fe27dd697498a43159012c2bfdf984038",
+  "checked": 17,
+  "allByteIdentical": true,
+  "files": [
+    {
+      "file": "check-sw-security-freeze.mjs",
+      "canonicalSha256": "0f41f92a5ef0df59384d95875bfd3c3258a2d7a5deab369a61f4a0f314507c98",
+      "appSha256": "0f41f92a5ef0df59384d95875bfd3c3258a2d7a5deab369a61f4a0f314507c98",
+      "byteIdentical": true
+    },
+    {
+      "file": "check-vendored-consistency.mjs",
+      "canonicalSha256": "1dc6856173b8fa006b8a646f4cba49274c5abbf803c30d0489e07598cbaba8d8",
+      "appSha256": "1dc6856173b8fa006b8a646f4cba49274c5abbf803c30d0489e07598cbaba8d8",
+      "byteIdentical": true
+    },
+    {
+      "file": "create-build-provenance.mjs",
+      "canonicalSha256": "c19a55d5663a75f7ec98f8d27776bad6f0effc241cbb33c50457456960afa31c",
+      "appSha256": "c19a55d5663a75f7ec98f8d27776bad6f0effc241cbb33c50457456960afa31c",
+      "byteIdentical": true
+    },
+    {
+      "file": "create-evidence-manifest.mjs",
+      "canonicalSha256": "cb75f70118624f8bdaf81209c7f2c5ad9a189d219a3d5b1c4b02af5f5e9599ff",
+      "appSha256": "cb75f70118624f8bdaf81209c7f2c5ad9a189d219a3d5b1c4b02af5f5e9599ff",
+      "byteIdentical": true
+    },
+    {
+      "file": "create-release-integrity.mjs",
+      "canonicalSha256": "f463a0de089bfd50e9bc0c2f8cc859df3debff6af6a0cae4c555d1814cbc43a6",
+      "appSha256": "f463a0de089bfd50e9bc0c2f8cc859df3debff6af6a0cae4c555d1814cbc43a6",
+      "byteIdentical": true
+    },
+    {
+      "file": "release-gate.mjs",
+      "canonicalSha256": "74b3618557791e9ddf392140240212a057fedb3639116c315d28d057acd990c4",
+      "appSha256": "74b3618557791e9ddf392140240212a057fedb3639116c315d28d057acd990c4",
+      "byteIdentical": true
+    },
+    {
+      "file": "scan-deployment-leaks.mjs",
+      "canonicalSha256": "8a9b8f695ec236155c4668197dff3ae81a3336540b1e39264c0ce42214143ad3",
+      "appSha256": "8a9b8f695ec236155c4668197dff3ae81a3336540b1e39264c0ce42214143ad3",
+      "byteIdentical": true
+    },
+    {
+      "file": "scan-source-secrets.mjs",
+      "canonicalSha256": "d49304bf2dc957274f7671f8bc12616721155c3908c0ef16b2ce9f5af845949e",
+      "appSha256": "d49304bf2dc957274f7671f8bc12616721155c3908c0ef16b2ce9f5af845949e",
+      "byteIdentical": true
+    },
+    {
+      "file": "secret-scan-common.mjs",
+      "canonicalSha256": "298c16c65fc907d673eb5aa3e2d8a2210246b93e002d73a7fe1c172d47f2f4f0",
+      "appSha256": "298c16c65fc907d673eb5aa3e2d8a2210246b93e002d73a7fe1c172d47f2f4f0",
+      "byteIdentical": true
+    },
+    {
+      "file": "selftest-garp251.mjs",
+      "canonicalSha256": "62948acb8291bd17c467481a4ec31bbbcdac7a8b69c99be202c92f6a55cd35c8",
+      "appSha256": "62948acb8291bd17c467481a4ec31bbbcdac7a8b69c99be202c92f6a55cd35c8",
+      "byteIdentical": true
+    },
+    {
+      "file": "sign-release-integrity.mjs",
+      "canonicalSha256": "4c5e15f4f26c98b68670efd8a86e4a6d438b2f206d1515c705c8727cb19e9473",
+      "appSha256": "4c5e15f4f26c98b68670efd8a86e4a6d438b2f206d1515c705c8727cb19e9473",
+      "byteIdentical": true
+    },
+    {
+      "file": "verify-ai-assurance-fingerprint.mjs",
+      "canonicalSha256": "7bd9ea7864284b750a367db2ad385d4c3ee303654913b62a1439a21fde046436",
+      "appSha256": "7bd9ea7864284b750a367db2ad385d4c3ee303654913b62a1439a21fde046436",
+      "byteIdentical": true
+    },
+    {
+      "file": "verify-build-provenance.mjs",
+      "canonicalSha256": "093690c7e13cbb82628f8bd8fec3a80eb28e42acb8b25038080d74dc51154c6f",
+      "appSha256": "093690c7e13cbb82628f8bd8fec3a80eb28e42acb8b25038080d74dc51154c6f",
+      "byteIdentical": true
+    },
+    {
+      "file": "verify-evidence-manifest.mjs",
+      "canonicalSha256": "3064419e662a8c6800f5b7c15bdc0e3086ddd2b7fcdf50b01f2ef20b2948d686",
+      "appSha256": "3064419e662a8c6800f5b7c15bdc0e3086ddd2b7fcdf50b01f2ef20b2948d686",
+      "byteIdentical": true
+    },
+    {
+      "file": "verify-release-integrity.mjs",
+      "canonicalSha256": "083b5d809c6b4711b5175fdb637de360a3a8a37ad421d451835f70df9c0e5a95",
+      "appSha256": "083b5d809c6b4711b5175fdb637de360a3a8a37ad421d451835f70df9c0e5a95",
+      "byteIdentical": true
+    },
+    {
+      "file": "verify-release-registry.mjs",
+      "canonicalSha256": "df91033d686e658a4604ae5dea926b8338d420381aeb0d1d1d0812f31235ae98",
+      "appSha256": "df91033d686e658a4604ae5dea926b8338d420381aeb0d1d1d0812f31235ae98",
+      "byteIdentical": true
+    },
+    {
+      "file": "verify-release-signature.mjs",
+      "canonicalSha256": "1d49f9f54638723db3beeed572d5b1a82c105ef1d7f29d41522b79de4478ef27",
+      "appSha256": "1d49f9f54638723db3beeed572d5b1a82c105ef1d7f29d41522b79de4478ef27",
+      "byteIdentical": true
+    }
+  ]
+}

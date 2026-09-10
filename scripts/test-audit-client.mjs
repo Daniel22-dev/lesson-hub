@@ -242,12 +242,15 @@ assert.match(mainSource, /dataset\.renderedRoute/, 'Aplikace musí zveřejnit do
 assert.match(criticalRunnerSource, /dataset\.renderedRoute === expectedRoute/, 'Kritická QA musí čekat na render aktuální hash trasy.');
 assert.match(pythonBrowserCommonSource, /dataset\.renderedRoute === expectedRoute/, 'Python fallback musí čekat na render aktuální hash trasy.');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.equal(packageJson.overrides?.['brace-expansion'], '5.0.9', 'Bezpečnostní override brace-expansion musí zůstat na opravené verzi.');
-assert.equal(packageJson.overrides?.undici, '7.29.0', 'Bezpečnostní override undici musí zůstat na opravené verzi.');
+assert.equal(Object.hasOwn(packageJson, 'overrides'), false, 'Nepoužívané bezpečnostní overrides nesmí maskovat extraneous lockfile strom.');
 const packageLock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
-const braceExpansionVersion = packageLock.packages?.['node_modules/brace-expansion']?.version;
-const undiciVersion = packageLock.packages?.['node_modules/undici']?.version;
-assert.equal(braceExpansionVersion, '5.0.9', 'Lockfile musí obsahovat opravený brace-expansion 5.0.9.');
-assert.equal(undiciVersion, '7.29.0', 'Lockfile musí obsahovat opravený undici 7.29.0.');
+const lockNames = Object.keys(packageLock.packages || {}).filter((key) => key.startsWith('node_modules/'));
+assert.deepEqual(lockNames.sort(), [
+  'node_modules/axe-core',
+  'node_modules/fsevents',
+  'node_modules/playwright',
+  'node_modules/playwright-core',
+  'node_modules/pngjs',
+], 'Lockfile musí obsahovat jen dosažitelný strom deklarovaných devDependencies.');
 
 console.log('Auditní klientské regrese prošly: lokálně omezený QA přístup, validace nedůvěryhodných importů a synchronizace, hashové QA cesty, evaluate kroky, headless připravenost, vizuální reportér, render race pojistka, XSS detektor, amortizace auditu, SHA-256, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.');

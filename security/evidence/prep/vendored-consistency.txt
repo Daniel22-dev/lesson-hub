@@ -1,0 +1,17 @@
+
+> lesson-hub@1.2.22 qa:garp25:vendored
+> node security/garp25/tools/check-vendored-consistency.mjs security/vendored-consistency.json
+
+{
+  "status": "PASS",
+  "canonicalRoot": "../vendor/ghrab-platform-1.1.2",
+  "components": [
+    {
+      "id": "platform",
+      "sha256": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c"
+    }
+  ],
+  "checkedCopies": 2,
+  "drift": 0,
+  "findings": []
+}

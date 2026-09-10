@@ -19,6 +19,13 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 if (pkg.version !== consumer.appVersion) throw new Error(`P3 postprocessor: package ${pkg.version} != consumer ${consumer.appVersion}.`);
 
 const sha256 = (buffer) => crypto.createHash('sha256').update(buffer).digest('hex');
+function deterministicNowIso() {
+  const raw = String(process.env.SOURCE_DATE_EPOCH || '').trim();
+  if (!raw) return new Date().toISOString();
+  const seconds = Number(raw);
+  if (!Number.isSafeInteger(seconds) || seconds < 0) throw new Error('SOURCE_DATE_EPOCH musí být nezáporné celé číslo sekund.');
+  return new Date(seconds * 1000).toISOString();
+}
 const posix = (value) => value.split(path.sep).join('/');
 function walk(dir) {
   const out = [];
@@ -200,7 +207,7 @@ const swPath = path.join(dist, 'sw.js');
 if (fs.existsSync(swPath)) {
   let sw = fs.readFileSync(swPath, 'utf8');
   sw = sw.replace(/\n\/\* GHRAB_PLATFORM_P3_START \*\/[\s\S]*?\/\* GHRAB_PLATFORM_P3_END \*\/\n?/g, '\n');
-  const platformAssets = [
+  const platformAssetsRaw = [
     './ghrab/ghrab-platform.js',
     './ghrab/ghrab-platform.css',
     './ghrab/ghrab-artifact-envelope-v1.schema.json',
@@ -209,6 +216,18 @@ if (fs.existsSync(swPath)) {
     './assets/brand/school-logo.png',
     './ghrab-platform.consumer.json',
   ];
+  const criticalListPath = path.join(root, 'security', 'security-critical-assets.json');
+  const securityCritical = fs.existsSync(criticalListPath) ? JSON.parse(fs.readFileSync(criticalListPath, 'utf8')) : [];
+  if (!Array.isArray(securityCritical) || !securityCritical.length) throw new Error('security/security-critical-assets.json musí být neprázdný JSON array');
+  const normSecurityPath = value => String(value || '').replace(/^\.\//, '').replace(/^\//, '');
+  const isSecurityCriticalAsset = value => {
+    const v = normSecurityPath(value);
+    return securityCritical.some(item => {
+      const c = normSecurityPath(item);
+      return c && (v.includes(c) || c.includes(v));
+    });
+  };
+  const platformAssets = platformAssetsRaw.filter(asset => !isSecurityCriticalAsset(asset));
   const hasUpdateProtocol = sw.includes('GHRAB_SKIP_WAITING');
   sw += `\n/* GHRAB_PLATFORM_P3_START */\nconst GHRAB_PLATFORM_P3_ASSETS=${JSON.stringify(platformAssets)};\nself.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(${JSON.stringify(consumer.cache.name)});const results=await Promise.allSettled(GHRAB_PLATFORM_P3_ASSETS.map(asset=>cache.add(asset)));const failed=results.filter(item=>item.status==='rejected');if(failed.length)throw new Error('GHRAB Platform P3 precache selhal: '+failed.length);})()));\n${hasUpdateProtocol ? '' : "self.addEventListener('message',event=>{if(event.data?.type==='GHRAB_SKIP_WAITING')self.skipWaiting();});\n"}/* GHRAB_PLATFORM_P3_END */\n`;
   fs.writeFileSync(swPath, sw);
@@ -266,7 +285,7 @@ fs.writeFileSync(path.join(dist, 'platform-build-info.json'), `${JSON.stringify(
   processedHtmlFiles: htmlCount,
   qualityContracts: { accessibility: consumer.quality.accessibilityContract, performance: consumer.quality.performanceContract, modules: consumer.quality.moduleContract },
   suiteSessionContract: consumer.suiteSession?.contract || 'ghrab-suite-session-v1',
-  builtAt: new Date().toISOString(),
+  builtAt: deterministicNowIso(),
 }, null, 2)}\n`);
 
 console.log(`[${consumer.quality?.stage || 'P5'}] ${consumer.appId} ${consumer.appVersion}: platform ${consumer.platform.version}, HTML ${htmlCount}, cache ${consumer.cache.name}`);

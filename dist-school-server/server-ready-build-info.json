@@ -1,0 +1,20 @@
+{
+  "schema": "ghrab-server-ready-build-v1",
+  "app": "lesson-hub",
+  "appId": "lesson-hub",
+  "version": "1.2.22",
+  "phase": "P3",
+  "profile": "school-server",
+  "builtAt": "2026-09-10T19:50:00.000Z",
+  "activeAuthMode": "server-session",
+  "activeAiTransport": "not-applicable",
+  "telemetryMode": "server",
+  "appBaseUrl": "/apps/lesson-hub/",
+  "apiBaseUrl": "/api/v1/",
+  "containsSecrets": false,
+  "localProviderKeysAllowed": false,
+  "serverSessionReady": true,
+  "schoolGatewayReady": null,
+  "aiCoreVersion": null,
+  "contractVersion": null
+}

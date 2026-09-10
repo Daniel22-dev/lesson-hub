@@ -1,0 +1,14 @@
+{
+  "dist": {
+    "r1Digest": "2150ba26b9c7df21392a0f997c1be34da93440fafcc561c57e0e1a9ce3a6f1a4",
+    "r2Digest": "2150ba26b9c7df21392a0f997c1be34da93440fafcc561c57e0e1a9ce3a6f1a4",
+    "files": 110,
+    "byteIdentical": true
+  },
+  "dist-school-server": {
+    "r1Digest": "02fea3d4124d567b6098f0c00725128d6c416d8a19184a69e612ec3e014abd6a",
+    "r2Digest": "02fea3d4124d567b6098f0c00725128d6c416d8a19184a69e612ec3e014abd6a",
+    "files": 110,
+    "byteIdentical": true
+  }
+}

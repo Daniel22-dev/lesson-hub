@@ -21,6 +21,13 @@ function walk(dir) {
 function readJson(file) { return JSON.parse(fs.readFileSync(file, "utf8")); }
 function writeJson(file, value) { fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`); }
 function trailingSlash(value) { return String(value || "/").replace(/\/+$/, "") + "/"; }
+function deterministicNowIso() {
+  const raw = String(process.env.SOURCE_DATE_EPOCH || '').trim();
+  if (!raw) return new Date().toISOString();
+  const seconds = Number(raw);
+  if (!Number.isSafeInteger(seconds) || seconds < 0) throw new Error('SOURCE_DATE_EPOCH musí být nezáporné celé číslo sekund.');
+  return new Date(seconds * 1000).toISOString();
+}
 
 let files = walk(targetDist);
 const schoolProfiles = files.filter((file) => file.endsWith(`${path.sep}config${path.sep}deployment.school-server.json`));
@@ -72,7 +79,7 @@ writeJson(path.join(targetDist, "server-ready-build-info.json"), {
   version: pkg.version,
   phase: "P3",
   profile: "school-server",
-  builtAt: new Date().toISOString(),
+  builtAt: deterministicNowIso(),
   activeAuthMode: deployment.authMode,
   activeAiTransport: deployment.aiTransport,
   telemetryMode: deployment.telemetryMode,

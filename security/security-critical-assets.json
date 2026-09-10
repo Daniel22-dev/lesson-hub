@@ -1,0 +1,15 @@
+[
+  "app-guard",
+  "access-control",
+  "ghrab/ghrab-platform.js",
+  "src/access/deployment-config.js",
+  "revoked-access.json",
+  "runtime-config.js",
+  "src/config/deployment.json",
+  "src/config/deployment.school-server-p0.json",
+  "src/config/deployment.school-server.example.json",
+  "src/config/deployment.school-server.json",
+  "release-integrity.json",
+  "release-integrity.sig",
+  "integrity-status.json"
+]

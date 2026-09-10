@@ -1,0 +1,428 @@
+GARP 2.5.1 SHIELD — NEZÁVISLÁ DELTA KONTROLA, KOLO 4 (prompt E, role B, Claude)
+LESSON HUB 1.2.21
+Datum: 10. 9. 2026
+Určení: Daniel + případné další kolo (ChatGPT/Codex). Claude neopravoval.
+
+======================================================================
+0. VERDIKT
+======================================================================
+
+1.2.21 může zůstat aktuální PREP stav. Mimořádné opravné kolo není nutné.
+
+Pět nálezů z minulého kola je vyřešeno a nezávisle reprodukováno:
+- N20 (secret scanner): sdílené jádro nově rekurzivně dekóduje base64/base64url
+  i hex, rozpoznává PKCS#8/PKCS#1/SEC1 DER a čte ZIP/JAR i gzip s fail-closed
+  pro nečitelné archivy. C07, C09, C10 i 15 z mých 16 nových tvrdších variant
+  je zachyceno. Jediný průchod (D15) je rozdělený řetězcový literál, který
+  staticky složit nelze — obecný limit, ne claimed-closed třída.
+- N21 (workflow): checker odmítá source <(curl), . <(wget), bash <(curl), eval
+  i folded/literal blokové varianty.
+- N22 (lockfile): qa:lock v3 odmítá userinfo, query, fragment i percent-encoding
+  v resolved URL.
+- N23 (secret entropie): odmítá opakované vzory i ryze vzestupné sekvence;
+  dokumentace nově doporučuje CSPRNG.
+- N24 (identita): kanonizace e-mailu (NFKC, odmítnutí plus-tagu, koncové tečky,
+  ne-ASCII, confusable) drží.
+- N25 (offboarding): SSO účet nelze opatřit lokálním heslem ani povýšit; disabled
+  účet selže přes bránu i lokálně.
+
+RI-PREP řetězec drží: podpis, inventář, artifactDigest i dvojí rebuild z I sedí
+bajtově s deploymentem C a shodují se s očekávanými hodnotami z předání.
+
+Nový CRITICAL/HIGH ani důkazní chyba nejsou. Reziduální nálezy pro další běžné
+kolo: jeden střední a tři nízké.
+- N29 (STŘEDNÍ): tajemství zapsané bez uvozovek pod klíčem s malými písmeny
+  (YAML, INI, .properties, compose env seznam, lowercase env) projde tiše oběma
+  scannery. Tuto třídu jsem viděl už v kole 3 (C13, C16), ale v protokolu 1.2.20
+  jsem ji chybně neohlásil — viz oddíl 15;
+- N26 (nízká): obecné limity statické analýzy — rozdělený řetězcový literál DER
+  (D15), String.fromCharCode (C12), btoa("user:heslo") (C17);
+- N27 (nízká): workflow checker nehlídá PowerShell iwr|iex (dnes nedosažitelné,
+  runner je pinned Linux a žádný krok nemá shell: pwsh);
+- N28 (nízká): qa:lock nehlídá alternativní port v resolved URL.
+
+N6, N8, N9, N12 a LH-D01 zůstávají otevřené a nepovyšuji je.
+
+Brány:
+SECURITY AMBER · PRIVACY AMBER · RED TEAM AMBER · RELEASE INTEGRITY (PREP) GREEN ·
+SHIELD ASSURANCE (PREP) AMBER · OVERALL AMBER.
+Reálná studentská data: NE. School-server production: NE.
+
+======================================================================
+1. VSTUPY A OTISKY
+======================================================================
+
+Review bundle CLAUDE-REVIEW-BUNDLE-lesson-hub-1_2_21-KOLO-4.zip:
+  SHA-256 5c99ad07fadcec279d738c7cdcdf2bbf6873cf7a7b8d809b51b7f472d0dac047
+  interní SHA256SUMS: 11/11 OK.
+
+Přepočteno a shodné s předáním:
+  A0 GARP TOOLING R2                 3c95f0b4…af31 (historický)
+  A1 N16/N19 hotfix                  27b4d1bb…e979 (historický)
+  A2 N16/N20 hotfix (kanonický)      966f8b7f…644d
+  B  kandidát 1.2.21                 6a816d5a…3ff6
+  C  deployment 1.2.21               ce2232a0…a98b
+  E  kandidát 1.2.20                 e4115137…a520
+  F  deployment 1.2.20               685b02fc…8f59
+  G  můj audit 1.2.20                10127d64…f6c0 (bajtově shodný s mým výstupem)
+  I  build-input 1.2.21              27342934…bfe7 (280 souborů)
+
+Prostředí: Node 22.22.2, npm 10.9.7, Python 3.12.
+Chromium není k dispozici, browser suite a DAST jsou NOT TESTED.
+Prompt E (z A2, beze změny) použit jako autoritativní instrukce.
+
+======================================================================
+2. A2 — KANONICKÝ TOOLING
+======================================================================
+
+- SHA256SUMS: 92/92 OK (autor uvádí 92).
+- Selftest: 89/89 PASS (autor uvádí 89; reprodukováno).
+- A2/TOOLS vs B/security/garp25/tools: 17/17 bajtově shodných. PASS.
+- A1 → A2: přepracované secret-scan-common.mjs (rekurzivní dekódování + čtení
+  archivů), scan-source-secrets.mjs (allowlist rozšířen o cesty uvnitř archivů
+  přes oddělovač „::“, findings po jednotlivých cestách) a selftest (+C07/C09/C10).
+- N20 zůstává ekosystémová třída: oprava je v kanonickém sdíleném jádru, ne jen
+  v kopii aplikace.
+
+======================================================================
+3. PŘESNÝ DIFF 1.2.20 (E) → 1.2.21 (B)
+======================================================================
+
+- 93 změněných, žádný přidaný/odebraný soubor v source-manifest scope
+  (jen SBOMy se přejmenovaly na 1.2.21).
+- 61 souborů mění jen verzi (včetně public/sw.js, index.html, celého src/,
+  server/index.mjs a build-výstupů v dist/).
+- Věcné běhové změny: pouze server/app.mjs, server/lib/config.mjs
+  a server/lib/security.mjs (N23–N25).
+- Ostatní věcné: qa:lock v3 (N22), workflow checker (N21), sdílené jádro
+  scanneru + selftest (N20), .env.example (CSPRNG guidance), bezpečnostní
+  dokumenty, testy.
+
+Klient, service worker ani pedagogická logika se věcně nemění. Nová síťová/AI/
+úložná hranice nevzniká. AGENTIC: NE, AI-enabled: NE. Klasifikace autora odpovídá
+realitě. PASS.
+
+Poznámka: B obsahuje dist/ a dist-school-server/ (I je neobsahuje — ověřeno).
+Jsou to build-výstupy, v source-tree manifestu vyloučené a shodné s mým
+rebuildem. Bez dopadu; do zdrojového ZIPu ale nepatří.
+
+======================================================================
+4. DISPOSITION N20–N25
+======================================================================
+
+N20 — CLOSE jako třída (v rozumném statickém obalu), reziduum N26
+  Reprodukce tří dříve otevřených:
+  - C07 (dvojnásobný base64 PEM) → zachyceno (encoded-private-key);
+  - C09 (hex PKCS#8 DER) → zachyceno;
+  - C10 (ZIP se stored PEM) → zachyceno (private-key-pem + zip-private-key).
+  16 mých nových variant, oba scannery:
+  - triple base64, base64url×2, hex(base64(DER)), base64(hex(DER)) → zachyceno;
+  - ZIP deflate, JAR, ZIP s více vnořenými adresáři, nested ZIP,
+    ZIP→base64→JS, gzip(DER), gzip(ZIP) → zachyceno;
+  - RSA PKCS#1 DER base64, SEC1 EC DER hex, PEM v escapovaném JSON → zachyceno;
+  - ZIP s nastaveným encrypted flagem → fail-closed (zpracuje jako obsahující
+    klíč / archive-unscannable).
+  Jediný průchod: D15 (DER base64 rozdělený do dvou řetězců spojených .join)
+  → viz N26.
+  DoS kontroly ověřeny: over-limit ZIP entry → archive-unscannable (FAIL),
+  hloubka kódování omezena na 4, fingerprint dedup; 150 KB base64 blob se scanuje
+  za 0,4 s.
+  Allowlist: privátní klíč v archivu v test-like cestě je stále nahlášen jako
+  finding (ne synthetic). Ověřeno.
+
+  Explicitní class verdict: N20 je uzavřen jako třída pro kódované a archivované
+  formy PRIVÁTNÍCH KLÍČŮ. Zbývá obecný limit (rozdělený literál), který žádný
+  rozumný statický scanner bez interpretace JS nezachytí — LOW N26.
+  Pro TAJEMSTVÍ (ne klíče) ale zůstává otevřená třída N29: nekotovaná hodnota
+  pod klíčem s malými písmeny (YAML/INI/.properties/compose/env) — 6 variant
+  projde tiše oběma scannery (C13, C16, E01–E04). Kotovaný TOML (E05) zachycen.
+
+N21 — CLOSE, reziduum N27
+  - curl|bash → FAIL (remote-download-piped-to-shell);
+  - source <(curl), . <(wget), bash <(curl) → FAIL (remote-process-substitution);
+  - eval "…" i eval $(curl …) → FAIL (eval-forbidden-in-workflow-run);
+  - folded (> ) i literal (| ) blok s curl|bash/source<(curl) → FAIL;
+  - pull_request_target → FAIL;
+  - top-level write-all → FAIL.
+  Jediný průchod: PowerShell iwr|iex (N27) — nedosažitelný, runner je
+  ubuntu-24.04 a žádný krok nemá shell: pwsh.
+
+N22 — CLOSE, reziduum N28
+  qa:lock v3:
+  - userinfo, query, fragment, percent-encoded cesta (i mixed) → FAIL;
+  - http, host-suffix registry.npmjs.org.evil.com, sha1 downgrade → FAIL;
+  - L3/L4/L6 z minulých kol → FAIL.
+  Průchody: alternativní port :8443 (N28) a dot-segment (ten WHATWG URL
+  normalizuje na kanonickou cestu, není nález).
+
+N23 — CLOSE
+  Start secretu:
+  - absent → gateway vypnut;
+  - blank, placeholder, 31 znaků → odmítnut;
+  - opakované vzory „ab“×32, „0f“×32, base64url „Ab3d“×11, „a“×64,
+    vzestupná sekvence 0123…×4 → odmítnut;
+  - CSPRNG 64-hex i base64url 32 B → přijat.
+  .env.example nově uvádí „openssl rand -hex 32“. Politika je tvarová
+  (viz N23-INFO z minula), ale zjevně predikovatelné secrety padají.
+
+N24 — CLOSE
+  canonicalizeSsoEmail (přímé volání):
+  - UPPER, whitespace → stejná identita „ucitel@example.test“;
+  - plus-tag, koncová tečka, dvojité @, cyrilské „а“ v doméně, zero-width,
+    ryze ne-ASCII local → REJECT (na HTTP 400 ghrab_identity_email_noncanonical);
+  - fullwidth „ｕ/ｗ“ a ligatura „ﬁ“ → NFKC je složí na ASCII identitu.
+    To je správné sjednocení (nevznikne druhý účet), ne confusable obchvat.
+  Kolize s lokálním účtem (owner@example.test) → 409, žádný duplicitní účet
+  (počet zůstává 1). Opakování variant téže identity → jeden účet.
+
+N25 — CLOSE
+  - owner PATCH SSO účtu password → 400 (ghrab_sso_local_password_forbidden);
+  - SSO účet lokální login heslem → 401;
+  - owner PATCH SSO na admin (i „Admin“) → účet zůstává teacher;
+  - owner PATCH SSO status=disabled → 200; disabled SSO přes bránu → 401.
+  Login endpoint navíc nově vylučuje authSource=ghrab-sso z heslového přihlášení.
+
+======================================================================
+5. FRESH 1.2.21 SCA / SBOM
+======================================================================
+
+Na exact I/B:
+- npm ci --ignore-scripts: 4 balíčky, exit 0. PASS.
+- npm ls --all: čistý, 0 extraneous/invalid. PASS.
+- npm audit online, 10. 9. 2026: 0 zranitelností nad 5 závislostmi;
+  totéž --package-lock-only. PASS.
+- qa:lock v3: passed.
+- DEV SBOM: 5 komponent, scope „excluded“, graf (6), hashe = lockfile
+  integrity (5/5). PASS.
+- DEPLOY SBOM: Platform 1.1.2 + Error Reporter 1.1.2, SHA-256 sedí na C.
+- SBOM coverage proti nainstalovanému stromu: PASS.
+
+Historický SCA PASS z 1.2.20 jsem nepoužil. Lockfile balíčků je identický
+s 1.2.20 (liší se jen verze projektu). Tento fresh běh lze po zapsání opravářem
+povýšit.
+
+======================================================================
+6. DETERMINISTICKÝ REBUILD
+======================================================================
+
+Z I, SOURCE_DATE_EPOCH=1789062728, dva nezávislé běhy:
+- public dist:    R1 = R2 = 110 souborů, digest 79d930a9…;
+- school-server:  R1 = R2 = 110 souborů, digest d0349d8d…, bajtově shodné s C.
+
+Source-tree manifest 1.2.21 (280 souborů) = I bez odchylky, treeDigest
+618c0a67… sedí s předáním. Soubory jen v B jsou výhradně vyloučené generované
+soubory a build-výstupy.
+PASS.
+
+======================================================================
+7. RELEASE INTEGRITY / GATE
+======================================================================
+
+- Podpis Ed25519 (keyId lesson-hub-prep-20260910-r5, active, do 2026-11-10)
+  ověřen vlastním kódem; pozměněný bajt → neplatný. PASS.
+- Inventář 110, artifactDigest d0349d8d97a6ee422d4e62723760443165e987e7d9c792952b755b8f783dd61f
+  nezávisle přepočten a shodný s očekávaným z předání. Schéma
+  ghrab-release-integrity-v2. sbomSha256 = deployment SBOM. PASS.
+- sourceCommit = null, sourcePackageSha256 = I (27342934…). PASS.
+- Provenance: revision = null, baseCommit = 5dc8db1, subject = C ZIP
+  (ce2232a0…). PASS.
+- Trust root: pouze veřejný klíč. PASS.
+- Registr: PREP fixture, historie jen 1.2.15, poznámka vylučuje schválení
+  1.2.17–1.2.20; nepodepsaný (N9 OPEN). PASS PREP.
+- Evidence manifest: 45 + 9 PASS; změna souboru → FAIL. PASS.
+- Selftest v B: 89/89 PASS.
+- Jednotná brána (můj běh):
+  - profil prep: GREEN, 7 kroků PASS;
+  - profil school: RED na build-provenance (local-untrusted-builder) — správná
+    negativní kontrola.
+- control-class regrese: 17/17 PASS.
+
+RI/SHNC negativní kontroly:
+  RISIM-01 (1 bajt) → TAMPERED.
+  RISIM-02 (manifest+sig 1.2.20) → TAMPERED + unknown-keyId.
+  RISIM-04 (trust root r4) → UNVERIFIED.
+  RISIM-05 (chybí podpis) → UNVERIFIED.
+  RISIM-06 (index.html z 1.2.20) → TAMPERED.
+  SHNC-16 (revokovaný klíč) → UNVERIFIED.
+  registry mismatch → DENIED (digest+keyId+verze).
+  deployment leak (PEM v C) → FAIL.
+  evidence tamper (vložený i změněný soubor) → FAIL.
+Žádný nový fail-open. N9 (koherentní přepis nepodepsaného registru) zůstává
+známý LIVE dluh.
+
+======================================================================
+8. npm test
+======================================================================
+
+Node část PASS: check, core, server, gateway-hardening (PASS, 20 asercí, nově
+pokrývá N24 kanonizaci/kolizi a N25 offboarding), wave10, wave11, integration,
+audit-server, audit-client, school-profile, capacity, build, platform 118/118,
+suite-session-node, async-security.
+Browser suite: FAIL u mě (fail-closed, Chromium není). U autora NOT TESTED.
+
+======================================================================
+9. SWEEP KLÍČŮ A PII (A2, B, C, I)
+======================================================================
+
+- Privátní klíče: žádné mimo scannery a dokumentaci. Hledáno i novými vzory
+  (DER-base64 P-256/Ed25519, JWK s d).
+- Disposable PREP klíč není v B, C ani I. Zničení doloženo prohlášením
+  (KEY_DESTROYED); absence v artefaktech ověřena.
+- PII: jen balaz@ghrabuvka.cz (41×, veřejný kontakt). Řetězec
+  „pw@registry.npmjs.org“ pochází z kopie mého vlastního protokolu kola 3
+  přiložené v evidenci, není to reálný údaj. Žádná RČ, IBAN ani telefonní čísla.
+PASS.
+
+======================================================================
+10. NOVÉ NÁLEZY
+======================================================================
+
+N26 — NÍZKÁ (obecné limity statické analýzy)
+Scanner nesloží tajemství ani klíč, který vzniká až za běhu:
+- D15: privátní klíč DER base64 rozdělený do více literálů spojených .join("");
+- C12: token složený přes String.fromCharCode(…);
+- C17: heslo v btoa("user:heslo") pro hlavičku Authorization: Basic.
+Dopad: teoretický únik, který by musel projít code review; bez interpretace JS
+ho žádný rozumný statický scanner spolehlivě nezachytí. Doporučení: ponechat
+jako známý limit; pro C17 lze přidat kontextové pravidlo „Basic“ + btoa/
+base64 literál s dvojtečkou jako AMBER.
+
+N29 — STŘEDNÍ (účinnost SH-APP-11: tajemství v konfiguračních formátech)
+Pravidlo assignedBare vyžaduje klíč VELKÝMI písmeny (…PASSWORD, …SECRET) a
+assignedQuoted vyžaduje uvozovky. Nekotovaná hodnota pod klíčem s malými písmeny
+proto projde tiše OBĚMA scannery (source i deployment), ověřeno na 1.2.21:
+  C13  YAML            smtp_password: <28 znaků>
+  C16  env v .txt      upstream_secret=<43 znaků>, api_key=<32 znaků>
+  E01  YAML vnořený    smtp:\n  password: <28 znaků>
+  E02  INI             [mail]\npassword = <28 znaků>
+  E03  compose env     environment:\n  - smtp_password=<28 znaků>
+  E04  .properties     db.password=<28 znaků>
+  (E05 TOML s uvozovkami zachycen — kontrola.)
+Je to stejná třída jako B12 (nekotovaný env styl), kterou N16 deklaroval jako
+uzavřenou — zavřena byla jen pro VELKÁ písmena.
+Dopad: realistický únik SMTP hesla nebo gateway secretu v YAML/compose souboru
+(Revize 5 počítá s Docker Compose a Lesson Hub má SMTP konfiguraci).
+Doporučení (v kanonickém jádře A2, ať jde o ekosystémovou opravu):
+- assignedBare rozšířit na klíče bez ohledu na velikost písmen
+  (password|passwd|secret|token|api[_-]?key|client[_-]?secret, i s tečkou
+  nebo podtržítkem v názvu), včetně YAML „klíč: hodnota“, INI „klíč = hodnota“
+  a compose seznamu „- klíč=hodnota“;
+- vyloučit zjevné nesecret hodnoty (true/false, čísla, ${PROMĚNNÁ}, <placeholder>,
+  REPLACE_WITH…) kvůli falešným poplachům;
+- přidat C13, C16 a E01–E04 do selftestu jako negativní kontroly.
+
+N27 — NÍZKÁ (workflow, nedosažitelné)
+qa-garp25-pinned-inputs nehlídá PowerShell vzor „Invoke-WebRequest … | iex“
+(iwr|iex). V tomto workflow nedosažitelné: runner je ubuntu-24.04 a žádný krok
+nedeklaruje shell: pwsh. Doporučení: pro robustnost přidat iwr/iex/Invoke-
+Expression do zakázaných vzorů, kdyby v budoucnu přibyl Windows runner.
+
+N28 — NÍZKÁ (qa:lock, nekanonické)
+qa:lock v3 nekontroluje alternativní port v resolved URL
+(registry.npmjs.org:8443/…). Hostname zůstává správný, ale :port přesměruje
+stahování na jiný port. Dnes bez dopadu (integrity chrání obsah). Doporučení:
+odmítnout neprázdný url.port ≠ 443.
+
+Poznámka (INFO): source-tree-manifest.json má baseCommit: null, zatímco
+provenance správně nese baseCommit 5dc8db1. Drobná nekonzistence metadat;
+doporučuji sjednotit, aby manifest také uváděl baseCommit.
+
+======================================================================
+11. AKTUALIZOVANÝ REGISTR DLUHŮ
+======================================================================
+
+Uzavřeno v 1.2.21: N20 (jako třída), N21, N22, N23, N24, N25.
+
+Otevřené / nové:
+LH-D38 | N29 tajemství pod lowercase klíčem bez uvozovek      | OPEN MEDIUM
+LH-D35 | N26 obecné limity (split literál, fromCharCode, btoa) | OPEN LOW
+LH-D36 | N27 PowerShell iwr|iex ve workflow (nedosažitelné)   | OPEN LOW
+LH-D37 | N28 qa:lock alternativní port                        | OPEN LOW
+LH-D01 / SIM-01 shared-origin                                 | OPEN (nepovyšuji)
+LH-D27 / N6 nepodepsaný suite cleanup                         | OPEN (nepovyšuji)
+LH-D29 / N8 Pages mimo podepsaný RI řetězec                   | OPEN (nepovyšuji)
+LH-D30 / N9 nepodepsaný produkční registr                     | OPEN (nepovyšuji)
+N12 budoucí Integrity Service / SW path design                | OPEN (nepovyšuji)
+
+Dřívější LH-D31 (N20) a LH-D32 (N21) uzavřeny; LH-D33 (N22) uzavřen kromě portu
+(N28); LH-D34 (N24) uzavřen.
+
+======================================================================
+12. NEPOVÝŠENO (bez nové evidence)
+======================================================================
+
+Browser suite, served DAST, TLS/reverse proxy/security headers, produkční
+podepsaná identita gateway/mTLS, key custody, builder/CI trust, watchdog,
+RI-LIVE, SHIELD-LIVE, N6/N8/N9/N12 a širší LH-D01/SIM-01.
+
+======================================================================
+13. BRÁNY
+======================================================================
+
+SECURITY GATE:            AMBER — N29 (střední) + LOW rezidua; nový HIGH/CRITICAL
+                          není, N15/N20/N21 uzavřeny.
+PRIVACY GATE:             AMBER — LH-D01/SIM-01, N6.
+RED TEAM GATE:            AMBER — browser a DAST NOT TESTED.
+RELEASE INTEGRITY (PREP): GREEN — nezávisle reprodukováno, digest = očekávaný.
+RI-LIVE:                  NOT TESTED.
+SHIELD ASSURANCE (PREP):  AMBER
+                          SH-APP-09 SBOM: PASS
+                          SH-APP-11 secret scanning: PARTIAL — privátní klíče
+                            v kódovaných/archivních formách PASS; tajemství pod
+                            lowercase klíčem bez uvozovek otevřeno (N29)
+                          SH-SC-03 workflow policy: PASS (reziduum N27 LOW,
+                            nedosažitelné)
+                          SH-SC-04 / SCA: PASS s mou fresh evidencí (oddíl 5)
+                          N17/N22 lockfile gate: PASS (reziduum N28 LOW)
+SHIELD-LIVE:              NOT TESTED.
+OVERALL:                  AMBER.
+
+Reálná studentská data: NE.
+School-server production: NE.
+
+======================================================================
+14. ZÁVĚR
+======================================================================
+
+1.2.21 (B 6a816d5a…3ff6, C ce2232a0…a98b) MŮŽE zůstat aktuální PREP stav.
+Mimořádné opravné kolo není nutné.
+
+Do dalšího běžného kola (1.2.22):
+- N29 (střední) — přes kanonické jádro A2, ať jde o ekosystémovou opravu;
+- N26, N27, N28 a sjednocení baseCommit v source manifestu — LOW.
+N6, N8, N9, N12 a LH-D01 zůstávají v registru dluhů.
+
+Zbývající otevřené položky jsou N29, LOW rezidua a vědomé LIVE dluhy (podepsaný
+registr, mTLS/JWS identita, sdílený origin, Pages mimo podpis), které se
+z principu řeší až při skutečném nasazení na školní server.
+
+======================================================================
+15. OPRAVA MÉHO PROTOKOLU 1.2.20 (kolo 3)
+======================================================================
+
+Při přípravě tohoto kola jsem zjistil chyby ve vlastním protokolu 1.2.20
+(SHA 10127d64…f6c0). Opravuji je výslovně:
+
+1. Počet zachycených variant: uvedl jsem „17 nových variant … 12 zachyceno“.
+   Správně bylo zachyceno 10 ze 17. Tiše prošlo 7 variant:
+   - C07, C09, C10 (privátní klíče) — ohlášeno jako N20, dnes uzavřeno;
+   - C13 (YAML) a C16 (lowercase env) — tajemství stejné třídy jako B12;
+     NEOHLÁSIL jsem je, ačkoli výstup testu je ukazoval. Dnes N29;
+   - C12 (fromCharCode) a C17 (btoa basic auth) — obecné limity; neohlášeno,
+     dnes součást N26.
+   Následek: N16 jsem v kole 3 uzavřel jako třídu, přestože pro tajemství pod
+   lowercase klíčem třída uzavřená nebyla. Verdikt „1.2.20 smí být PREP stav“
+   by se tím nezměnil (jde o MEDIUM), ale opravář tuto třídu kvůli mně neopravoval.
+2. Časový údaj „npm audit … ~12:20 UTC“ jsem v kole 3 neměl podložený výstupem
+   (čas běhu jsem nezaznamenal). Platí jen datum 10. 9. 2026.
+3. Věta „B (i I) nově obsahuje dist/ a dist-school-server/“ byla chybná:
+   build-input I tyto adresáře neobsahuje (ověřeno v kole 3 i 4), obsahuje je
+   jen kandidát B. Stejnou chybu jsem původně zopakoval i v konceptu tohoto
+   protokolu; opraveno v oddílu 3.
+4. V N23 jsem hex „deadbeef×8“ nazval „legitimní“ secret. Není — jde o zjevný
+   vzor; jeho odmítnutí je správné.
+
+Doporučuji tyto opravy zapsat do evidence k 1.2.20, aby registr dluhů odpovídal
+skutečnosti.
+
+KONEC PROTOKOLU

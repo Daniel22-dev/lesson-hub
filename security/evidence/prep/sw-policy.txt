@@ -1,0 +1,93 @@
+
+> lesson-hub@1.2.22 qa:garp25:sw
+> node scripts/qa-garp25-sw-policy.mjs
+
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "id": "baseline",
+      "pass": true,
+      "exit": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"serviceWorker\": \"/mnt/data/lh122_rebuild_r2/lesson-hub-main/dist-school-server/sw.js\",\n  \"criticalListSource\": \"/mnt/data/lh122_rebuild_r2/lesson-hub-main/security/security-critical-assets.json\",\n  \"precachedEntries\": 102,\n  \"precacheSources\": [\n    {\n      \"source\": \"addAll:expression\",\n      \"entries\": [\n        \"./\",\n        \"./assets/brand/school-logo.png\",\n        \"./build-info.json\",\n        \"./config/brand-manifest.json\",\n        \"./config/data-manifest.json\",\n        \"./config/platform-manifest.json\",\n        \"./config/release-acceptance.json\",\n        \"./ghrab"
+    },
+    {
+      "id": "SHNC-SW-01-PRECACHE-CRITICAL",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-02-GUARD-REMOVED",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-03-GUARD-NEGATED",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-04-NO-RESPONDWITH",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-05-PRE-GUARD-RESPOND",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-06-SINK-NO-NOSTORE",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-07-SINK-CACHE-WRITE",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-08-PRE-GUARD-EFFECT",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-09-MULTIPLE-FETCH-HANDLERS",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-10-PRE-GUARD-ASYNC",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-11-CRITICAL-SIDE-EFFECT",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-12-POST-GUARD-METADATA",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    },
+    {
+      "id": "SHNC-SW-13-CRITICAL-DEFERRED-EFFECT",
+      "pass": true,
+      "exit": 1,
+      "detectedCritical": true
+    }
+  ]
+}

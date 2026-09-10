@@ -1,0 +1,23 @@
+{
+  "status": "TAMPERED",
+  "errors": [
+    "sha256:build-info.json",
+    "sha256:config/data-manifest.json",
+    "sha256:config/platform-manifest.json",
+    "sha256:config/release-acceptance.json",
+    "sha256:ghrab-platform.consumer.json",
+    "sha256:index.html",
+    "sha256:manifest.webmanifest",
+    "sha256:manual/index.html",
+    "sha256:manual/manual.js",
+    "sha256:platform-build-info.json",
+    "sha256:server-ready-build-info.json",
+    "sha256:src/access/error-reporter-adapter.js",
+    "sha256:src/config/data-manifest.json",
+    "sha256:src/config/release-acceptance.json",
+    "sha256:src/config/security-headers.json",
+    "sha256:src/core/release.js",
+    "sha256:studio-manifest.json",
+    "sha256:sw.js"
+  ]
+}

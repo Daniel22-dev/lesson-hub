@@ -1,0 +1,111 @@
+
+> lesson-hub@1.2.22 qa:garp25:control-regressions
+> node scripts/test-garp25-control-classes.mjs
+
+{
+  "status": "PASS",
+  "schema": "lesson-hub-garp25-control-class-regressions-v3",
+  "checks": 20,
+  "results": [
+    {
+      "id": "N17-clean",
+      "ok": true,
+      "status": 0
+    },
+    {
+      "id": "N17-L3-cross-scope-tarball",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N17-L4-root-lock-only",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N17-L6-sha1-integrity",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N22-query",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N22-fragment",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N22-userinfo",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N22-percent-name",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N28-alternate-port",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N18-clean",
+      "ok": true,
+      "status": 0
+    },
+    {
+      "id": "N18-top-write-all",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N18-missing-top-permissions",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N18-qa-write-all",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N18-qa-contents-actions-write",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N18-pull-request-target",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N18-remote-pipe-shell",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N21-source-process-substitution",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N21-eval",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N27-powershell-iwr-iex",
+      "ok": true,
+      "status": 1
+    },
+    {
+      "id": "N27-powershell-long-form",
+      "ok": true,
+      "status": 1
+    }
+  ]
+}

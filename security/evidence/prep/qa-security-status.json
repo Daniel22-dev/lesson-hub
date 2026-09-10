@@ -1,0 +1,10 @@
+{
+  "schema": "lesson-hub-qa-security-status-v1",
+  "version": "1.2.22",
+  "status": "WARN",
+  "findings": 30,
+  "classification": "known LOCAL_STORAGE_NO_EVIDENCE findings in test harnesses",
+  "productionRuntimeFindingClaim": false,
+  "fullSastPassClaim": false,
+  "note": "Legacy heuristic QA is retained as WARN; canonical secret scanner separately reports 0 production secret findings."
+}

@@ -1,0 +1,5 @@
+
+> lesson-hub@1.2.22 qa:security
+> node scripts/qa-security.mjs
+
+SECURITY WARN: 30 nálezů

@@ -1,0 +1,62 @@
+{
+  "schema": "ghrab-shield-status-v1",
+  "appId": "lesson-hub",
+  "version": "1.2.22",
+  "generatedAt": "2026-09-10T19:52:26.891960Z",
+  "overall": "AMBER",
+  "securityGate": "AMBER",
+  "privacyGate": "AMBER",
+  "redTeamGate": "AMBER",
+  "releaseIntegrityPrep": "GREEN",
+  "releaseIntegrityLive": "NOT TESTED",
+  "shieldPrep": "AMBER",
+  "shieldLive": "NOT TESTED",
+  "aiEnabled": false,
+  "agentic": false,
+  "realStudentDataAllowed": false,
+  "schoolServerProductionAllowed": false,
+  "currentRound": {
+    "predecessor": "1.2.21 accepted PREP",
+    "n29": "LOCAL CLOSE PENDING INDEPENDENT ROLE-B CONFIRMATION - lowercase/unquoted configuration secrets covered canonically",
+    "n26": "LOCAL CLOSE PENDING INDEPENDENT ROLE-B CONFIRMATION - bounded literal reconstruction canaries added; dynamic runtime construction remains a documented static-analysis limit",
+    "n27": "LOCAL CLOSE PENDING INDEPENDENT ROLE-B CONFIRMATION - PowerShell iwr/Invoke-WebRequest and iex/Invoke-Expression rejected",
+    "n28": "LOCAL CLOSE PENDING INDEPENDENT ROLE-B CONFIRMATION - noncanonical registry ports rejected",
+    "sourceManifestBaseCommit": "ALIGNED"
+  },
+  "evidence": {
+    "sourcePackageSha256": "36e741c954f1174b6b635a558b7b3f5debe344699d3db4471edcd506163186f7",
+    "deploymentPackageSha256": "ca235cb3dfb1024c46b8bcf47b1744a48de93fd35374f730b43eb8b146a8cbd3",
+    "artifactDigest": "e5ce91495df816fdb7be76e33f773bb5bdcb95fb419349236acc9219c593a387",
+    "sourceTreeFiles": 284,
+    "runtimeFiles": 110,
+    "canonicalToolingSelftest": "PASS 98/98",
+    "canonicalToolingIdentity": "PASS 17/17",
+    "controlClassRegressions": "PASS 20/20",
+    "npmTest": "PASS with browser suite NOT TESTED due managed Chromium URLBlocklist",
+    "quality": "PASS 31/31",
+    "sourceSecretScan": "PASS; 0 production findings; synthetic test fixtures separately reported",
+    "qaSecurity": "WARN 30; no full-SAST PASS claim",
+    "deterministicRebuild": "PASS public 110/110 and school-server 110/110",
+    "riNegativeControls": "PASS: 9/9 malicious mutations rejected",
+    "currentSnapshotSCA": "NOT_TESTED_COMPLETE - npm registry EAI_AGAIN",
+    "releaseGatePrep": "GREEN 8/8",
+    "schoolGateNegativeControl": "RED on local-untrusted-builder as expected",
+    "evidenceManifest": "PASS 52 evidence files + 9 external files"
+  },
+  "openDebt": [
+    "LH-D01 / SIM-01 shared-origin",
+    "LH-D27 / N6 suite-cleanup availability/data-loss risk",
+    "LH-D29 / N8 GitHub Pages outside signed school-server RI chain",
+    "LH-D30 / N9 unauthenticated PREP registry / LIVE registry governance",
+    "N12 future Integrity Service / service-worker path design",
+    "browser suite and served DAST/TLS/security headers",
+    "production gateway signed identity or mTLS",
+    "production key custody and trusted builder/watchdog"
+  ],
+  "productionBoundary": {
+    "githubPagesIntegrityScope": "OUTSIDE_SIGNED_SCHOOL_SERVER_RI_PREP",
+    "backendIncludedInSignedDeploymentZip": false,
+    "note": "The signed deployment artifact is the established dist-school-server frontend PREP artifact. Full future server/container deployment requires a new RI/SHIELD run over the actual deployed package."
+  },
+  "knownUnresolvedHighCriticalInCandidateCode": false
+}

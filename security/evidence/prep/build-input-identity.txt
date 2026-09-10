@@ -1,0 +1,6 @@
+LESSON HUB 1.2.22 exact build input
+sourcePackageSha256=36e741c954f1174b6b635a558b7b3f5debe344699d3db4471edcd506163186f7
+sourceTreeDigest=1ed3d1d5c02530d7058da900656e4e3e9185807e099abadab0ec3a7228734d0f
+baseCommit=5dc8db114561c0d3696e71003eb1a1d71c7e846c
+sourceCommit=null
+SOURCE_DATE_EPOCH=1789069800

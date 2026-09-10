@@ -4,7 +4,19 @@ import { promisify } from 'node:util';
 const scryptAsync = promisify(scrypt);
 
 export function normalizeEmail(value) {
-  return String(value || '').trim().toLocaleLowerCase('cs');
+  return String(value || '').trim().normalize('NFKC').toLocaleLowerCase('cs');
+}
+
+export function canonicalizeSsoEmail(value) {
+  const raw = String(value || '').trim().normalize('NFKC');
+  if (!raw || !raw.includes('@') || /[^\x21-\x7e]/.test(raw)) return null;
+  const at = raw.lastIndexOf('@');
+  const local = raw.slice(0, at);
+  const domain = raw.slice(at + 1);
+  if (!local || !domain || local.includes('+') || domain.endsWith('.') || domain.includes('..')) return null;
+  if (!/^[A-Za-z0-9.!#$%&'*\/=?^_`{|}~-]+$/.test(local)) return null;
+  if (!/^[A-Za-z0-9.-]+$/.test(domain) || !domain.includes('.')) return null;
+  return `${local.toLowerCase()}@${domain.toLowerCase()}`;
 }
 
 function passwordError(message) {

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ghrabuvka.cz/schemas/ghrab-artifact-envelope-v1.schema.json",
+  "title": "GHRAB artifact envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schemaVersion", "artifactType", "appId", "appVersion", "createdAt", "sensitivity", "contentManifest", "payload", "checksum"],
+  "properties": {
+    "schema": { "const": "ghrab-artifact-envelope-v1" },
+    "schemaVersion": { "const": 1 },
+    "artifactType": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "appId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$" },
+    "appVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+].*)?$" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "sensitivity": { "enum": ["public", "internal", "personal", "sensitive"] },
+    "contentManifest": { "type": "array", "items": { "type": "object" } },
+    "payload": true,
+    "checksum": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": { "const": "SHA-256" },
+        "value": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    }
+  }
+}

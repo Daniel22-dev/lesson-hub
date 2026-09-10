@@ -1,0 +1,321 @@
+
+> lesson-hub@1.2.22 qa:quality
+> node scripts/qa-p3-quality.mjs
+
+{
+  "schema": "ghrab-p3-quality-result-v1",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.22",
+  "contracts": {
+    "accessibility": "ghrab-a11y-v1",
+    "performance": "ghrab-performance-v1",
+    "modules": "ghrab-lazy-modules-v1"
+  },
+  "metrics": {
+    "schema": "ghrab-performance-report-v1",
+    "appId": "lesson-hub",
+    "appVersion": "1.2.22",
+    "platformVersion": "1.1.2",
+    "measuredAt": "2026-09-10T19:46:13.878Z",
+    "distBytes": 1178445,
+    "jsBytes": 810851,
+    "cssBytes": 148889,
+    "htmlBytes": 8512,
+    "fileCount": 112,
+    "fullHtmlCount": 2,
+    "entryHtmlBytes": 4599,
+    "entryCriticalBytes": 209809,
+    "largestInlineScriptBytes": 2313,
+    "precacheBytes": 1061939,
+    "precacheAssetCount": 101,
+    "largestFileBytes": 120426,
+    "largestFilePath": "src/styles.css",
+    "duplicateLargeBytes": 35338
+  },
+  "budget": {
+    "distBytes": 1180000,
+    "entryHtmlBytes": 10000,
+    "entryCriticalBytes": 220000,
+    "largestInlineScriptBytes": 5000,
+    "precacheBytes": 1145000,
+    "largestFileBytes": 130000,
+    "duplicateLargeBytes": 40000
+  },
+  "precacheAssets": [
+    "assets/brand/school-logo.png",
+    "build-info.json",
+    "config/brand-manifest.json",
+    "config/data-manifest.json",
+    "config/platform-manifest.json",
+    "config/release-acceptance.json",
+    "ghrab-platform.consumer.json",
+    "ghrab/ghrab-app-registry-v2.schema.json",
+    "ghrab/ghrab-artifact-envelope-v1.schema.json",
+    "ghrab/ghrab-platform-manifest-1.1.2.json",
+    "ghrab/ghrab-platform.css",
+    "icons/apple-touch-icon.png",
+    "icons/icon-128.png",
+    "icons/icon-192.png",
+    "icons/icon-32.png",
+    "icons/icon-48.png",
+    "icons/icon-512.png",
+    "icons/icon-72.png",
+    "icons/icon-96.png",
+    "index.html",
+    "manifest.webmanifest",
+    "manual/bootstrap.js",
+    "manual/index.html",
+    "manual/manual.js",
+    "manual/styles.css",
+    "src/access/access-gate.css",
+    "src/access/error-reporter-adapter.js",
+    "src/access/error-reporter.css",
+    "src/access/error-reporter.js",
+    "src/access/reporter-bootstrap.js",
+    "src/assets/README.md",
+    "src/assets/brand/app-icon.svg",
+    "src/bootstrap.js",
+    "src/config/data-manifest.json",
+    "src/config/release-acceptance.json",
+    "src/config/security-headers.json",
+    "src/core/access.js",
+    "src/core/appState.js",
+    "src/core/config.js",
+    "src/core/constants.js",
+    "src/core/database.js",
+    "src/core/diagnostics.js",
+    "src/core/draftStorage.js",
+    "src/core/eventBus.js",
+    "src/core/html.js",
+    "src/core/migrations.js",
+    "src/core/persistenceGuard.js",
+    "src/core/pwa.js",
+    "src/core/release.js",
+    "src/core/schema.js",
+    "src/core/settings.js",
+    "src/core/studioBridge.js",
+    "src/core/suiteSession.js",
+    "src/core/telemetry.js",
+    "src/core/untrustedData.js",
+    "src/main.js",
+    "src/pages/academic.js",
+    "src/pages/communication.js",
+    "src/pages/data.js",
+    "src/pages/diagnostics.js",
+    "src/pages/groups.js",
+    "src/pages/index.js",
+    "src/pages/materials.js",
+    "src/pages/more.js",
+    "src/pages/overview.js",
+    "src/pages/plan.js",
+    "src/pages/search.js",
+    "src/pages/server.js",
+    "src/pages/settings.js",
+    "src/pages/shared.js",
+    "src/pages/substitution.js",
+    "src/pages/templates.js",
+    "src/pages/work.js",
+    "src/repositories/BaseRepository.js",
+    "src/repositories/repositoryFactory.js",
+    "src/server/dataGateway.js",
+    "src/services/academicService.js",
+    "src/services/backupService.js",
+    "src/services/communicationService.js",
+    "src/services/lessonService.js",
+    "src/services/materialService.js",
+    "src/services/searchService.js",
+    "src/services/serverService.js",
+    "src/services/substitutionService.js",
+    "src/services/syncService.js",
+    "src/services/templateCycleService.js",
+    "src/services/workService.js",
+    "src/styles.css",
+    "src/ui/academicDialogs.js",
+    "src/ui/communicationDialogs.js",
+    "src/ui/icons.js",
+    "src/ui/layout.js",
+    "src/ui/lessonDialogs.js",
+    "src/ui/materialDialogs.js",
+    "src/ui/modal.js",
+    "src/ui/router.js",
+    "src/ui/substitutionDialogs.js",
+    "src/ui/templateDialogs.js",
+    "src/ui/toast.js",
+    "src/ui/workDialogs.js",
+    "studio-manifest.json"
+  ],
+  "duplicateGroups": [
+    [
+      "config/data-manifest.json",
+      "src/config/data-manifest.json"
+    ],
+    [
+      "icons/icon-512.png",
+      "icons/icon-maskable-512.png"
+    ]
+  ],
+  "checks": [
+    {
+      "id": "dist.exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.version",
+      "ok": true,
+      "detail": "1.1.2"
+    },
+    {
+      "id": "contract.a11y",
+      "ok": true,
+      "detail": "ghrab-a11y-v1"
+    },
+    {
+      "id": "contract.performance",
+      "ok": true,
+      "detail": "ghrab-performance-v1"
+    },
+    {
+      "id": "contract.modules",
+      "ok": true,
+      "detail": "ghrab-lazy-modules-v1"
+    },
+    {
+      "id": "platform.runtime",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "platform.styles",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.reduced-motion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.focus-visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.skip-link",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.html-documents",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "id": "a11y.lang:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "a11y.lang:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.viewport:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.zoom:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.title:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.main:manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "a11y.runtime:manual/index.html",
+      "ok": true,
+      "detail": "platform=1; engine=0"
+    },
+    {
+      "id": "budget.distBytes",
+      "ok": true,
+      "detail": "1178445 <= 1180000"
+    },
+    {
+      "id": "budget.entryHtmlBytes",
+      "ok": true,
+      "detail": "4599 <= 10000"
+    },
+    {
+      "id": "budget.entryCriticalBytes",
+      "ok": true,
+      "detail": "209809 <= 220000"
+    },
+    {
+      "id": "budget.largestInlineScriptBytes",
+      "ok": true,
+      "detail": "2313 <= 5000"
+    },
+    {
+      "id": "budget.precacheBytes",
+      "ok": true,
+      "detail": "1061939 <= 1145000"
+    },
+    {
+      "id": "budget.largestFileBytes",
+      "ok": true,
+      "detail": "120426 <= 130000"
+    },
+    {
+      "id": "budget.duplicateLargeBytes",
+      "ok": true,
+      "detail": "35338 <= 40000"
+    },
+    {
+      "id": "budget.minimum-count",
+      "ok": true,
+      "detail": "7"
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "total": 31,
+    "passed": 31,
+    "failed": 0,
+    "warnings": 0
+  }
+}

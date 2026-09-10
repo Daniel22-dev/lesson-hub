@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "root": "/mnt/data/lh122_deployment_stage",
+  "info": [
+    "binary-no-private-key-detected:assets/brand/school-logo.png",
+    "binary-no-private-key-detected:icons/apple-touch-icon.png",
+    "binary-no-private-key-detected:icons/icon-128.png",
+    "binary-no-private-key-detected:icons/icon-192.png",
+    "binary-no-private-key-detected:icons/icon-32.png",
+    "binary-no-private-key-detected:icons/icon-48.png",
+    "binary-no-private-key-detected:icons/icon-512.png",
+    "binary-no-private-key-detected:icons/icon-72.png",
+    "binary-no-private-key-detected:icons/icon-96.png",
+    "binary-no-private-key-detected:icons/icon-maskable-512.png"
+  ]
+}

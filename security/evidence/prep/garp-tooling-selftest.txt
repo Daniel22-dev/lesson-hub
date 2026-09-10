@@ -1,0 +1,10 @@
+
+> lesson-hub@1.2.22 qa:garp25:tooling
+> node security/garp25/tools/selftest-garp251.mjs
+
+{
+  "status": "PASS",
+  "checks": 98,
+  "passed": 98,
+  "failed": []
+}

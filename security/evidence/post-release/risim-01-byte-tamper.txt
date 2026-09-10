@@ -1,0 +1,7 @@
+{
+  "status": "TAMPERED",
+  "errors": [
+    "size:index.html",
+    "sha256:index.html"
+  ]
+}

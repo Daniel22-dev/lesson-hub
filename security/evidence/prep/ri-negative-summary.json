@@ -1,0 +1,19 @@
+{
+  "schema": "lesson-hub-ri-negative-summary-v1",
+  "version": "1.2.22",
+  "status": "PASS",
+  "checks": 9,
+  "allExpectedFail": true,
+  "items": [
+    "RISIM-01 byte tamper",
+    "RISIM-02 manifest substitution",
+    "RISIM-04 wrong trust root",
+    "RISIM-05 missing signature",
+    "RISIM-06 mixed 1.2.21/1.2.22",
+    "SHNC-16 revoked key",
+    "RISIM-08 registry mismatch",
+    "N29 lowercase unquoted YAML secret",
+    "RISIM-10 PEM deployment leak"
+  ],
+  "note": "All mutations were performed on disposable copies; no mutation was returned to candidate or deployment."
+}

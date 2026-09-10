@@ -1,0 +1,91 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.7",
+  "serialNumber": "urn:uuid:ba2942fa-dfc0-4043-bb16-356d27ef5723",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-09-10T19:40:04.411Z",
+    "component": {
+      "bom-ref": "pkg:npm/lesson-hub@1.2.22",
+      "type": "application",
+      "name": "lesson-hub",
+      "version": "1.2.22",
+      "purl": "pkg:npm/lesson-hub@1.2.22"
+    },
+    "properties": [
+      {
+        "name": "ghrab:scope",
+        "value": "dist-school-server deployment"
+      },
+      {
+        "name": "ghrab:note",
+        "value": "Static school-server frontend deployment; npm devDependencies are not deployed."
+      }
+    ]
+  },
+  "components": [
+    {
+      "bom-ref": "ghrab:platform:1.1.2",
+      "type": "library",
+      "name": "GHRAB Platform",
+      "version": "1.1.2",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c"
+        }
+      ],
+      "properties": [
+        {
+          "name": "ghrab:deploymentPath",
+          "value": "ghrab/ghrab-platform.js"
+        },
+        {
+          "name": "ghrab:vendored",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "bom-ref": "ghrab:error-reporter:1.1.2",
+      "type": "library",
+      "name": "GHRAB Error Reporter",
+      "version": "1.1.2",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "db0a22f9934d3dd62db4a1ca3c7dcbbde509eea1db1f5b209765684da6aec1ec"
+        }
+      ],
+      "properties": [
+        {
+          "name": "ghrab:deploymentPath",
+          "value": "src/access/error-reporter.js"
+        },
+        {
+          "name": "ghrab:vendored",
+          "value": "true"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/lesson-hub@1.2.22",
+      "dependsOn": [
+        "ghrab:error-reporter:1.1.2",
+        "ghrab:platform:1.1.2"
+      ]
+    },
+    {
+      "ref": "ghrab:platform:1.1.2",
+      "dependsOn": []
+    },
+    {
+      "ref": "ghrab:error-reporter:1.1.2",
+      "dependsOn": []
+    }
+  ]
+}

@@ -6,7 +6,14 @@ const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
 const pkg = JSON.parse(await readFile(path.join(ROOT, 'package.json'), 'utf8'));
 const version = String(pkg.version || '').trim();
-const buildTime = new Date().toISOString();
+function deterministicNowIso() {
+  const raw = String(process.env.SOURCE_DATE_EPOCH || '').trim();
+  if (!raw) return new Date().toISOString();
+  const seconds = Number(raw);
+  if (!Number.isSafeInteger(seconds) || seconds < 0) throw new Error('SOURCE_DATE_EPOCH musí být nezáporné celé číslo sekund.');
+  return new Date(seconds * 1000).toISOString();
+}
+const buildTime = deterministicNowIso();
 
 async function walkFiles(root, current = root) {
   const result = [];
@@ -44,7 +51,25 @@ await writeFile(path.join(DIST, 'studio-manifest.json'), `${JSON.stringify(parse
 await writeFile(path.join(DIST, 'build-info.json'), `${JSON.stringify({ appId: 'lesson-hub', version, buildTime, source: 'src' }, null, 2)}\n`);
 
 const PRECACHE_EXCLUDE = new Set(['icons/icon-maskable-512.png']);
-const assetFiles = (await walkFiles(DIST)).filter((file) => file !== 'sw.js' && !file.startsWith('platform/') && !PRECACHE_EXCLUDE.has(file)).sort();
+const criticalListPath = path.join(ROOT, 'security', 'security-critical-assets.json');
+const securityCritical = JSON.parse(await readFile(criticalListPath, 'utf8'));
+if (!Array.isArray(securityCritical) || !securityCritical.length || securityCritical.some((item) => typeof item !== 'string' || !item.trim())) {
+  throw new Error('security/security-critical-assets.json musí být neprázdný JSON array stringů.');
+}
+const normaliseSecurityPath = (value) => String(value || '').replace(/^\.\//, '').replace(/^\//, '');
+const isSecurityCriticalAsset = (value) => {
+  const file = normaliseSecurityPath(value);
+  return securityCritical.some((item) => {
+    const critical = normaliseSecurityPath(item);
+    return critical && (file.includes(critical) || critical.includes(file));
+  });
+};
+const assetFiles = (await walkFiles(DIST)).filter((file) =>
+  file !== 'sw.js' &&
+  !file.startsWith('platform/') &&
+  !PRECACHE_EXCLUDE.has(file) &&
+  !isSecurityCriticalAsset(file)
+).sort();
 const assets = ['./', ...assetFiles.map((file) => `./${file}`)];
 const swPath = path.join(DIST, 'sw.js');
 let serviceWorker = await readFile(swPath, 'utf8');

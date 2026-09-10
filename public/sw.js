@@ -1,6 +1,6 @@
 const GHRAB_SW_CONTRACT='ghrab-service-worker-v1';
 /* GHRAB service-worker contract v1 · update activation is user-controlled. */
-const CACHE_NAME = "ghrab-lesson-hub-v1.2.17";
+const CACHE_NAME = "ghrab-lesson-hub-v1.2.22";
 const CACHE_PREFIXES = ["ghrab-lesson-hub-v", "lesson-hub-pwa-v"];
 const CORE_ASSETS = /*__CORE_ASSETS__*/[
   "./",
@@ -63,6 +63,27 @@ async function networkFirst(request, fallbackUrl = '') {
   }
 }
 
+async function networkOnlyNoStore(request) {
+  return fetch(request, { cache: 'no-store' });
+}
+
+function isSecurityCriticalRequest(url, scopePath) {
+  const relative = url.pathname.slice(scopePath.length);
+  return relative === 'runtime-config.js' ||
+    relative === 'src/access/deployment-config.js' ||
+    relative === 'ghrab/ghrab-platform.js' ||
+    relative === 'release-integrity.json' ||
+    relative === 'release-integrity.sig' ||
+    relative === 'integrity-status.json' ||
+    relative.endsWith('/config/deployment.json') ||
+    relative.endsWith('/config/deployment.school-server-p0.json') ||
+    relative.endsWith('/config/deployment.school-server.example.json') ||
+    relative.endsWith('/config/deployment.school-server.json') ||
+    relative.endsWith('/app-guard.js') ||
+    relative.endsWith('/access-control.js') ||
+    relative.endsWith('/revoked-access.json');
+}
+
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
@@ -87,17 +108,21 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   const scopePath = new URL('./', self.location.href).pathname;
-  if (!url.pathname.startsWith(scopePath) || isRuntimeRequest(url, scopePath)) return;
+  if (!url.pathname.startsWith(scopePath)) return;
+  if (isSecurityCriticalRequest(url, scopePath)) {
+    event.respondWith(networkOnlyNoStore(request));
+    return;
+  }
+  if (isRuntimeRequest(url, scopePath)) return;
+  // Non-critical static metadata requested with no-store keeps the established
+  // offline fallback. Security-critical paths have already returned network-only above.
+  if (request.cache === 'no-store') {
+    event.respondWith(networkFirst(request));
+    return;
+  }
   if (request.mode === 'navigate') {
     const fallback = url.pathname.includes('/manual/') ? './manual/index.html' : './index.html';
     event.respondWith(networkFirst(request, fallback));
-    return;
-  }
-  // Static metadata explicitly requested with cache: 'no-store' still needs
-  // an application-cache fallback offline. Runtime/API/auth/session/deployment
-  // paths remain excluded above and are never satisfied from Cache Storage.
-  if (request.cache === 'no-store') {
-    event.respondWith(networkFirst(request));
     return;
   }
   if (url.pathname.endsWith('/manifest.webmanifest') || url.pathname.endsWith('/build-info.json')) {

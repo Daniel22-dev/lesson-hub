@@ -1,0 +1,22 @@
+{
+  "schema": "ghrab-release-registry-v1",
+  "environment": "PREP",
+  "apps": [
+    {
+      "appId": "lesson-hub",
+      "status": "approved",
+      "approvedVersion": "1.2.22",
+      "artifactDigest": "e5ce91495df816fdb7be76e33f773bb5bdcb95fb419349236acc9219c593a387",
+      "keyId": "lesson-hub-prep-20260910-r6",
+      "approvedAt": "2026-09-10T19:47:53Z",
+      "history": [
+        {
+          "version": "1.2.15",
+          "approvedAt": "2026-09-01T00:00:00Z",
+          "basis": "last authoritative GARP 2.3 code baseline"
+        }
+      ]
+    }
+  ],
+  "note": "Synthetic/local PREP verifier fixture for 1.2.22 mechanical verification. Not independent approval or production registry. 1.2.21 is independently accepted PREP predecessor only; this fixture does not invent production approval for 1.2.17-1.2.21."
+}

@@ -1,0 +1,96 @@
+
+> lesson-hub@1.2.22 qa:xss
+> node scripts/qa-p5-xss-sinks.mjs
+
+{
+  "schema": "ghrab-p5-xss-sink-audit-v1",
+  "appId": "lesson-hub",
+  "counts": {
+    "innerHTML": 15,
+    "insertAdjacentHTML": 2,
+    "outerHTML": 0,
+    "documentWrite": 0,
+    "eval": 0,
+    "newFunction": 0
+  },
+  "baseline": {
+    "innerHTML": 15,
+    "insertAdjacentHTML": 2,
+    "outerHTML": 0,
+    "documentWrite": 0,
+    "eval": 0,
+    "newFunction": 0
+  },
+  "csp": {
+    "unsafeInlineScript": false,
+    "unsafeInlineStyle": true
+  },
+  "evidence": [
+    {
+      "file": "src/access/error-reporter.js",
+      "kind": "innerHTML",
+      "count": 2
+    },
+    {
+      "file": "src/bootstrap.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "src/core/access.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "src/main.js",
+      "kind": "innerHTML",
+      "count": 3
+    },
+    {
+      "file": "src/pages/communication.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "src/pages/data.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "src/pages/diagnostics.js",
+      "kind": "insertAdjacentHTML",
+      "count": 2
+    },
+    {
+      "file": "src/ui/academicDialogs.js",
+      "kind": "innerHTML",
+      "count": 2
+    },
+    {
+      "file": "src/ui/lessonDialogs.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "src/ui/modal.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "public/manual/bootstrap.js",
+      "kind": "innerHTML",
+      "count": 1
+    },
+    {
+      "file": "public/manual/manual.js",
+      "kind": "innerHTML",
+      "count": 1
+    }
+  ],
+  "limitations": [
+    "This is a regression inventory, not proof that every HTML sink is safe.",
+    "Current inline-script architecture may still require unsafe-inline until CSP refactoring."
+  ],
+  "failures": [],
+  "status": "passed"
+}

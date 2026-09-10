@@ -1,0 +1,21 @@
+
+> lesson-hub@1.2.22 qa:garp25:pinned
+> node scripts/qa-garp25-pinned-inputs.mjs
+
+{
+  "status": "PASS",
+  "schema": "ghrab-github-workflow-supply-chain-v2",
+  "workflowFiles": 5,
+  "workflowUses": 16,
+  "lockPackages": 5,
+  "missingIntegrity": 0,
+  "guarantees": [
+    "explicit-top-level-read-only",
+    "write-only-in-deploy",
+    "no-pull_request_target",
+    "no-remote-execution-patterns",
+    "sha-pinned-actions",
+    "fixed-runner-and-node"
+  ],
+  "findings": []
+}

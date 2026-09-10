@@ -1,0 +1,317 @@
+{
+  "schema": "ghrab-security-evidence-manifest-v2",
+  "appId": "lesson-hub",
+  "version": "1.2.22",
+  "sourceRevision": null,
+  "sourcePackageSha256": "36e741c954f1174b6b635a558b7b3f5debe344699d3db4471edcd506163186f7",
+  "createdAt": "2026-09-10T19:51:35.970Z",
+  "files": [
+    {
+      "path": "artifacts/lesson-hub-1.2.22-GARP2.5-BUILD-INPUT-SOURCE.zip",
+      "size": 874464,
+      "sha256": "36e741c954f1174b6b635a558b7b3f5debe344699d3db4471edcd506163186f7"
+    },
+    {
+      "path": "post-release/n29-lowercase-secret-leak.txt",
+      "size": 710,
+      "sha256": "ae7b4bb58b81d30a73f08cf7797a8c3ef4633aa772c61bf9ceb297a74b92ff84"
+    },
+    {
+      "path": "post-release/risim-01-byte-tamper.txt",
+      "size": 93,
+      "sha256": "9952cb8709145ffc671d1f5d3617e55c6ff9b10ad2689132d74445abf9c5905a"
+    },
+    {
+      "path": "post-release/risim-02-manifest-substitution.txt",
+      "size": 732,
+      "sha256": "ed964d984aa347c1d698bb7c2a551a552e29f7a92452e0736c0f25f56f8995b7"
+    },
+    {
+      "path": "post-release/risim-04-wrong-trust-root.txt",
+      "size": 96,
+      "sha256": "b1be688a271c9bc53b58faaf291dff747159a36dc96884bf5566292e254b848d"
+    },
+    {
+      "path": "post-release/risim-05-missing-signature.txt",
+      "size": 75,
+      "sha256": "20c8aa9a13741ed4bc4ee753794e70b6718ee0519df722cb0005e75a71acbb58"
+    },
+    {
+      "path": "post-release/risim-06-mixed-version.txt",
+      "size": 70,
+      "sha256": "51c2c89504909039b17a02210c124a659fb6b0b7f27ac8bb19728a5f666399b1"
+    },
+    {
+      "path": "post-release/risim-08-registry-mismatch.txt",
+      "size": 74,
+      "sha256": "b8f5621347707fe5f9e93da230c19ba22dd1ddb9870b639825f40262671a83fd"
+    },
+    {
+      "path": "post-release/risim-10-deployment-leak.txt",
+      "size": 733,
+      "sha256": "1d4c2ce617bd2b8b50a100f683321a86745801768ea2af7b2a86a06941e00e23"
+    },
+    {
+      "path": "post-release/shnc-16-revoked-key.txt",
+      "size": 73,
+      "sha256": "68d74cde87d097730726a5e94838fb36af348e29f64affa78f1f2d107b8597a1"
+    },
+    {
+      "path": "prep/build-input-identity.txt",
+      "size": 302,
+      "sha256": "114556ab093c993a392b8c5d012d984103f98722414ef2d93b2075fe54667faa"
+    },
+    {
+      "path": "prep/build-input-sha256.txt",
+      "size": 125,
+      "sha256": "d5a90e064af3db12261e491b1d3f2e1a1450327eac5240ebe5066d40a84a8785"
+    },
+    {
+      "path": "prep/canonical-tooling-byte-identity.json",
+      "size": 4749,
+      "sha256": "637ca90a318ca2e87f490a3e4b983581a1726e0a9f85ebb070163755da76969c"
+    },
+    {
+      "path": "prep/canonical-tooling-package.txt",
+      "size": 222,
+      "sha256": "ae96e327ab0859638f59a713e79de91f9a59d5fde53b2a56bd13fd75d08752fe"
+    },
+    {
+      "path": "prep/canonical-tooling-selftest-independent.txt",
+      "size": 71,
+      "sha256": "64c98a134b084e0bc5b34439e91874086dcda6034024180b798c3564389d457e"
+    },
+    {
+      "path": "prep/canonical-tooling-sha256sum.txt",
+      "size": 3799,
+      "sha256": "9f722dc0644cb26e2dc4010fb62a990d533e2794b4deb2c8f99100a91afd5ec0"
+    },
+    {
+      "path": "prep/claude-1.2.21-delta-review.txt",
+      "size": 22826,
+      "sha256": "3ca2add086b56ae5416272cc90a6e1668e5bd870ed5e83cfdf6ef153f3df6e5c"
+    },
+    {
+      "path": "prep/claude-1.2.21-sca-reproduction.json",
+      "size": 392,
+      "sha256": "d196ce8f4d4c19e8d6cb88cd20e3c1b5cef3786087876067e9cbbcaaa3b1c157"
+    },
+    {
+      "path": "prep/control-regressions.txt",
+      "size": 1890,
+      "sha256": "eac76012f6811ebe938a186730d1742d2a40ade439cc9532233e84f5e9775c20"
+    },
+    {
+      "path": "prep/create-build-provenance.json",
+      "size": 204,
+      "sha256": "b5b6586a2296e6add72dd0cad4852ba48709757afc6477fe0314aa35de7fea4e"
+    },
+    {
+      "path": "prep/create-release-integrity.json",
+      "size": 198,
+      "sha256": "fb92946db08423e89fc2878d187013800e4ae3ef300cec88811fca83e52f16ae"
+    },
+    {
+      "path": "prep/deployment-leak-scan-clean.json",
+      "size": 678,
+      "sha256": "bcbdd9d2d8ef9fa593bb540882dbad92f5c90f946dca718b99a4243d209a4c1b"
+    },
+    {
+      "path": "prep/evidence-tamper-negative.txt",
+      "size": 147,
+      "sha256": "29c3d838ce588f9dac553ea15b9b7f5ad434467f201485636941b42389578b20"
+    },
+    {
+      "path": "prep/garp-tooling-selftest.txt",
+      "size": 161,
+      "sha256": "0c345c17da7f60a5d37c7c8ce1c8bc0b168f85ba655c3e74fddb4e67918ed5ee"
+    },
+    {
+      "path": "prep/key-destruction-declaration.txt",
+      "size": 184,
+      "sha256": "dee93c1a58fafee7947029ee2617822d768938609dd8a5b8181ff9e5bdc04c39"
+    },
+    {
+      "path": "prep/lock-gate.txt",
+      "size": 521,
+      "sha256": "5b97302dc1cbf556b95975fb55888da56367285be147578a6d94e6f9c401c943"
+    },
+    {
+      "path": "prep/npm-registry-ping.txt",
+      "size": 363,
+      "sha256": "0f5707c41628e931aa1b7ea9688edb2c22b8887e8143861d62856868bc166b4b"
+    },
+    {
+      "path": "prep/npm-test-full.txt",
+      "size": 18705,
+      "sha256": "f6d076d680f9adf781ed5c1cf1e0dbfbc33a368f62188bc282ef7fa9c0ea6de1"
+    },
+    {
+      "path": "prep/platform-conformance.txt",
+      "size": 12215,
+      "sha256": "4069eefc8239976d7c65a63b12b8fc38fb668aaac7285cd18ea413b061acc5c4"
+    },
+    {
+      "path": "prep/private-key-literal-sweep.txt",
+      "size": 138,
+      "sha256": "034d055d214f744f5bc6e8ea575c589db5524b09722718e4e795379e1bebe36c"
+    },
+    {
+      "path": "prep/qa-security-status.json",
+      "size": 394,
+      "sha256": "5ebfca6f3e0d454ed66973b966a52204008727b136e0cb03afddd497e1c2b378"
+    },
+    {
+      "path": "prep/qa-security.txt",
+      "size": 92,
+      "sha256": "278b2f6e13072e4b0cfb40e7dc2f335ee9474dee213b2db2d902c3b85a92e032"
+    },
+    {
+      "path": "prep/quality-gate.txt",
+      "size": 7574,
+      "sha256": "5be9056efe5287dc8de9d461f6eb7741cf98ad2fd12158ceab1e450a711765fc"
+    },
+    {
+      "path": "prep/rebuild-equivalence.json",
+      "size": 475,
+      "sha256": "8db50f7058be54e6e5b8bd780aebeb57a62215308a07363ae1c261406705a899"
+    },
+    {
+      "path": "prep/ri-negative-summary.json",
+      "size": 579,
+      "sha256": "73ee120eb5ef80c15937b687650a662a3c77114fc10f62b089b6d3fa640580b2"
+    },
+    {
+      "path": "prep/sbom-coverage-status.json",
+      "size": 503,
+      "sha256": "c6a8dab753ccf658b9f7dad236543c69e3f7468cb8c6e0ebb6ef85acbb0142ac"
+    },
+    {
+      "path": "prep/sbom-coverage.txt",
+      "size": 732,
+      "sha256": "42341c22b94e241331cbfcdd940571c1a2319b2e3b40eec57688833a030a9bef"
+    },
+    {
+      "path": "prep/sbom-generation.txt",
+      "size": 375,
+      "sha256": "369155f992b304856c3f13d7c15e566399dfe5df9ba3d6c9cdcf3259cb266c77"
+    },
+    {
+      "path": "prep/sca-environment-status.json",
+      "size": 1131,
+      "sha256": "4af70dd489d34eacf83729661413a180b6f2a281131da0f17fd2c317430b628a"
+    },
+    {
+      "path": "prep/sign-release-integrity.json",
+      "size": 102,
+      "sha256": "470890945a08697ae8017bc851730ce7900cbfb2fab056249766a895f35bc9c9"
+    },
+    {
+      "path": "prep/source-delta-1.2.21-to-1.2.22.json",
+      "size": 1759,
+      "sha256": "18962a478b08e6ec88199e480eee2f869d89bbd25c3d4919f7044fcc4cd5e407"
+    },
+    {
+      "path": "prep/source-secret-scan-assembled.json",
+      "size": 4759,
+      "sha256": "dd619eef9369b990eca1d49d428a70ef43f1dee200edc0f924bf894c3ee7aa49"
+    },
+    {
+      "path": "prep/source-secret-scan.txt",
+      "size": 2107,
+      "sha256": "474c13abec08de5b6fb68e8b2e98dd30fbac888b5a7ed41f38141e1951e4c882"
+    },
+    {
+      "path": "prep/source-tree-manifest.json",
+      "size": 46435,
+      "sha256": "27a3fbaf8076af59e336624d3d65fb9cb2b62af733c178c39ba682cdc2963d40"
+    },
+    {
+      "path": "prep/sw-policy.txt",
+      "size": 2486,
+      "sha256": "bf3070447fc9a948f1939cf25d9f9f00aec648538048593314109b8ad0bbfec4"
+    },
+    {
+      "path": "prep/vendored-consistency.txt",
+      "size": 408,
+      "sha256": "5f5356f1d1c62a629f2d6dde3ad47d691dc725dff1669df5707a18d54979925b"
+    },
+    {
+      "path": "prep/verify-build-provenance.json",
+      "size": 337,
+      "sha256": "2a743c044f53ee7971591333047d2eb0cb0894afb628b873c8d8bd93830d8aec"
+    },
+    {
+      "path": "prep/verify-release-integrity.json",
+      "size": 131,
+      "sha256": "5b76d73713e86add407b5860a3fc1a596156f99973397a6ed039d5d82db2bffb"
+    },
+    {
+      "path": "prep/verify-release-registry.json",
+      "size": 205,
+      "sha256": "204e00587270676922d9d9913741e5f54170fc957708735ede109427be2dd9e1"
+    },
+    {
+      "path": "prep/verify-release-signature.json",
+      "size": 120,
+      "sha256": "da906ba9d082282f37c4184dec57f227623e04d0e8f3412fef996c8d36cf8ffe"
+    },
+    {
+      "path": "prep/workflow-policy.txt",
+      "size": 473,
+      "sha256": "b39fc048f22c726a4352cc64cbba11702579065eabd94e3d7bb6fca77b87c80c"
+    },
+    {
+      "path": "prep/xss-gate.txt",
+      "size": 1933,
+      "sha256": "5b3372e700d2b019c03d741b20ecfd79336eddc59b1f188e79f2bdba57edb5e9"
+    }
+  ],
+  "externalFiles": [
+    {
+      "path": "security/build-provenance.json",
+      "size": 1167,
+      "sha256": "b82c8414a8505236c2c311378b9472a4eb0e1a9c344656500e04bb2cb02c4222"
+    },
+    {
+      "path": "security/release/release-integrity.json",
+      "size": 18222,
+      "sha256": "33053243cb808eed008a1d8ebf1692b94ce944245d03b896c4281bf82e3e1f21"
+    },
+    {
+      "path": "security/release/release-integrity.sig",
+      "size": 89,
+      "sha256": "7f67bbd89fad8a8dc4d85019810161d2fe22a74efe94294fd65f7a3ed4f5141a"
+    },
+    {
+      "path": "security/release/release-registry.PREP.json",
+      "size": 821,
+      "sha256": "de25e86081aedb6a909cd872d353750ad77713242ae5a523db4ef8ba07d1bc89"
+    },
+    {
+      "path": "security/release/trust-root.PREP.json",
+      "size": 616,
+      "sha256": "faba0a15bda9617b7c064466600f248c0c5295eaedf9e5829c772668cac74831"
+    },
+    {
+      "path": "security/sbom/lesson-hub-1.2.22-deployment.cdx.json",
+      "size": 2130,
+      "sha256": "abfd9e59f6aa872c6b166cac9e55ddcef695c4d9c2385a5028e52579139a1dd7"
+    },
+    {
+      "path": "security/sbom/lesson-hub-1.2.22-development.cdx.json",
+      "size": 4712,
+      "sha256": "79de37bb16cb66d8516c8f10f3ba0422d201cbf2ec9be9708e49a93fc5c5a76b"
+    },
+    {
+      "path": "security/security-critical-assets.json",
+      "size": 415,
+      "sha256": "e8b77bd9b1118b25f92c3b183491fffe16a5c7afe49ce73ff99c072f54faab2f"
+    },
+    {
+      "path": "security/vendored-consistency.json",
+      "size": 630,
+      "sha256": "fd2333e01e182d52466b0fbeddb0f8de6d880902c41e777c9c802839116e6418"
+    }
+  ]
+}

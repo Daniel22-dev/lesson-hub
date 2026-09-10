@@ -1,4 +1,4 @@
-# Lesson Hub Server 1.2.3
+# Lesson Hub Server 1.2.22
 
 Server používá pouze standardní knihovny Node.js 22. Poskytuje účty, role, relace, auditní historii, obecné REST zdroje, obousměrnou synchronizaci, binární přílohy, skutečné zpracování naplánovaných zpráv a režim zastupování.
 
@@ -23,6 +23,12 @@ Výchozí adresa je `http://127.0.0.1:8787`. Pro síťové nebo produkční nasa
 - `LESSON_HUB_ATTACHMENT_LIMIT`
 - `LESSON_HUB_LOGIN_WINDOW_MS`
 - `LESSON_HUB_LOGIN_ATTEMPTS`
+
+## Centrální GHRAB gateway
+
+Gateway integrace je volitelná. Pokud `LESSON_HUB_GHRAB_UPSTREAM_SECRET` není nastaven, používá server vlastní bearer relace. Pokud je proměnná nastavena, hodnota musí mít 256bitový high-entropy tvar: přesně 64 hex znaků nebo 43–86 base64url znaků s dostatečnou rozmanitostí. Slabá, prázdná nebo placeholder hodnota zastaví start.
+
+Gateway musí před vložením vlastních `x-ghrab-*` hlaviček odstranit stejnojmenné hlavičky z klientského požadavku. Hlavička role smí vytvořit jen `teacher` nebo `substitute`. SSO účet nelze povýšit na `owner`/`admin`; historický privilegovaný SSO záznam se přes upstream odmítne. Privilegované role jsou pouze pro lokální účty. Expirace upstream relace je fail-closed a bounded. Pro budoucí produkční hardening je doporučena podepsaná identita nebo mTLS.
 
 ## Poštovní brána
 

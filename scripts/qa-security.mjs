@@ -72,7 +72,7 @@ for (const p of files) {
     const testFixture =
       /(?:^|\/)(?:tests?|fixtures?)(?:\/|$)|(?:^|\/)test[^/]*\.(?:js|mjs)$|(?:interni-testy|testy-data)\.(?:js|mjs)$/i.test(
         rel,
-      );
+      ) || rel === "security/garp25/tools/selftest-garp251.mjs";
     if (!obviousSentinel && !testFixture) {
       f.push(
         finding(

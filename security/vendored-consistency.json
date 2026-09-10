@@ -1,0 +1,25 @@
+{
+  "schema": "ghrab-vendored-consistency-v1",
+  "scope": "Lesson Hub app-local platform copy consistency; ecosystem-wide cross-repository consistency remains SHIELD-LIVE/CI evidence.",
+  "canonicalRoot": "../vendor/ghrab-platform-1.1.2",
+  "components": [
+    {
+      "id": "platform",
+      "canonical": "ghrab-platform.js",
+      "severity": "CRITICAL",
+      "required": true
+    }
+  ],
+  "consumers": [
+    {
+      "appId": "lesson-hub",
+      "root": "..",
+      "copies": {
+        "platform": [
+          "dist/ghrab/ghrab-platform.js",
+          "dist-school-server/ghrab/ghrab-platform.js"
+        ]
+      }
+    }
+  ]
+}

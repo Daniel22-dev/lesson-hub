@@ -1,0 +1,17 @@
+{
+  "schema": "ghrab-platform-build-v1",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.22",
+  "platformVersion": "1.1.2",
+  "platformContract": "ghrab-platform-v1",
+  "brandVersion": "1.0.0",
+  "cacheName": "ghrab-lesson-hub-v1.2.22",
+  "processedHtmlFiles": 2,
+  "qualityContracts": {
+    "accessibility": "ghrab-a11y-v1",
+    "performance": "ghrab-performance-v1",
+    "modules": "ghrab-lazy-modules-v1"
+  },
+  "suiteSessionContract": "ghrab-suite-session-v1",
+  "builtAt": "2026-09-10T19:50:00.000Z"
+}

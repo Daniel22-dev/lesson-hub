@@ -1,0 +1,6 @@
+{
+  "status": "UNVERIFIED",
+  "errors": [
+    "key-status:revoked"
+  ]
+}

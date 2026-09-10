@@ -1,0 +1,6 @@
+{
+  "status": "UNVERIFIED",
+  "errors": [
+    "signature-unreadable"
+  ]
+}

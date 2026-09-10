@@ -1,0 +1,9 @@
+{
+  "schema": "lesson-hub-third-party-sca-evidence-v1",
+  "source": "Claude independent delta review round 4",
+  "version": "1.2.21",
+  "result": "PASS",
+  "details": ["npm ci --ignore-scripts PASS", "npm ls clean", "npm audit 0 vulnerabilities", "SBOM coverage PASS"],
+  "inheritTo1.2.22": false,
+  "note": "Historical evidence is preserved but is not used as current-snapshot SCA proof."
+}

@@ -10,7 +10,7 @@ const dir = await mkdtemp(path.join(os.tmpdir(), 'lesson-hub-server-'));
 const dataFile = path.join(dir, 'server.json');
 const config = {
   host: '127.0.0.1', port: 0, dataFile, allowedOrigins: ['http://localhost:4173'],
-  upstreamAuthSecret: 'trusted-ghrab-upstream-secret', sessionHours: 1, bodyLimitBytes: 12 * 1024 * 1024, attachmentLimitBytes: 8 * 1024 * 1024, attachmentsDir: path.join(dir, 'attachments'), loginWindowMs: 60_000, loginAttempts: 5,
+  upstreamAuthSecret: 'd394aca9c490f20f066b26ef6c265b4270da933926e7965d5f4748aed1f7e836', sessionHours: 1, bodyLimitBytes: 12 * 1024 * 1024, attachmentLimitBytes: 8 * 1024 * 1024, attachmentsDir: path.join(dir, 'attachments'), loginWindowMs: 60_000, loginAttempts: 5,
 };
 const { server, store } = await createLessonHubServer({ config });
 const now = new Date().toISOString();
@@ -32,7 +32,7 @@ async function request(route, options = {}) {
 try {
   const health = await request('/health');
   assert.equal(health.response.status, 200);
-  assert.equal(health.payload.version, '1.2.17');
+  assert.equal(health.payload.version, '1.2.22');
 
   const login = await request('/v1/auth/login', { method: 'POST', body: JSON.stringify({ email: ['owner', 'example.test'].join('@'), password: 'ServerTest1234' }) });
   assert.equal(login.response.status, 200);
@@ -41,7 +41,7 @@ try {
   const me = await request('/v1/auth/me', { headers: auth });
   assert.equal(me.payload.user.role, 'owner');
   const trustedHeaders = {
-    'x-ghrab-upstream-secret': 'trusted-ghrab-upstream-secret',
+    'x-ghrab-upstream-secret': 'd394aca9c490f20f066b26ef6c265b4270da933926e7965d5f4748aed1f7e836',
     'x-ghrab-user-id': encodeURIComponent('teacher-central-id'),
     'x-ghrab-user-name': encodeURIComponent('Centrální učitel'),
     'x-ghrab-user-roles': 'teacher',

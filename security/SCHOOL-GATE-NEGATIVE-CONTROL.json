@@ -1,0 +1,77 @@
+{
+  "gate": "GARP-2.5.1-RELEASE-GATE-R2",
+  "profile": "school",
+  "status": "RED",
+  "serviceWorker": "/mnt/data/lh122_deployment_stage/sw.js",
+  "criticalAssetList": "/mnt/data/lh122_candidate_stage/lesson-hub-main/security/security-critical-assets.json",
+  "stepsRun": 8,
+  "steps": [
+    {
+      "step": "deployment-leaks",
+      "script": "scan-deployment-leaks.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"root\": \"/mnt/data/lh122_deployment_stage\",\n  \"info\": [\n    \"binary-no-private-key-detected:assets/brand/school-logo.png\",\n    \"binary-no-private-key-detected:icons/apple-touch-icon.png\",\n    \"binary-no-private-key-detected:icons/icon-128.png\",\n    \"binary-no-private-key-detected:icons/icon-192.png\",\n    \"binary-no-private-key-detected:icons/icon-32.png\",\n    \"binary-no-private-key-detected:icons/icon-48.png\",\n    \"binary-no-private-key-detected:icons/icon-512.png\",\n    \"binary-no-private-key-detected:icons/icon-72.png\",\n    \"binary-no-private-key-detected:icons/icon-96.png\",\n    \"binary-no-private-key-detected:icons/icon-maskable-512.png\"\n  ]\n}"
+    },
+    {
+      "step": "release-integrity",
+      "script": "verify-release-integrity.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"VERIFIED\",\n  \"files\": 110,\n  \"artifactDigest\": \"e5ce91495df816fdb7be76e33f773bb5bdcb95fb419349236acc9219c593a387\"\n}"
+    },
+    {
+      "step": "release-signature",
+      "script": "verify-release-signature.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"VERIFIED\",\n  \"algorithm\": \"Ed25519\",\n  \"keyId\": \"lesson-hub-prep-20260910-r6\",\n  \"keyStatus\": \"active\"\n}"
+    },
+    {
+      "step": "release-registry",
+      "script": "verify-release-registry.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"APPROVED\",\n  \"appId\": \"lesson-hub\",\n  \"version\": \"1.2.22\",\n  \"artifactDigest\": \"e5ce91495df816fdb7be76e33f773bb5bdcb95fb419349236acc9219c593a387\",\n  \"keyId\": \"lesson-hub-prep-20260910-r6\"\n}"
+    },
+    {
+      "step": "build-provenance",
+      "script": "verify-build-provenance.mjs",
+      "status": "FAIL",
+      "exitCode": 1,
+      "detail": "{\n  \"status\": \"FAIL\",\n  \"errors\": [\n    \"builder-untrusted:local-untrusted-builder\"\n  ]\n}"
+    },
+    {
+      "step": "evidence-manifest",
+      "script": "verify-evidence-manifest.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"files\": 52,\n  \"externalFiles\": 9\n}"
+    },
+    {
+      "step": "sw-security-freeze",
+      "script": "check-sw-security-freeze.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"serviceWorker\": \"/mnt/data/lh122_deployment_stage/sw.js\",\n  \"criticalListSource\": \"/mnt/data/lh122_candidate_stage/lesson-hub-main/security/security-critical-assets.json\",\n  \"precachedEntries\": 102,\n  \"precacheSources\": [\n    {\n      \"source\": \"addAll:expression\",\n      \"entries\": [\n        \"./\",\n        \"./assets/brand/school-logo.png\",\n        \"./build-info.json\",\n        \"./config/brand-manifest.json\",\n        \"./config/data-manifest.json\",\n        \"./config/platform-manifest.json\",\n        \"./config/release-acceptance.json\",\n        \"./ghrab-platform.consumer.json\",\n        \"./icons/apple-touch-icon.png\",\n        \"./icons/icon-128.png\",\n        \"./icons/icon-192.png\",\n        \"./icons/icon-32.png\",\n        \"./icons/icon-48.png\",\n        \"./icons/icon-512.png\",\n        \"./icons/icon-72.png\",\n        \"./icons/icon-96.png\",\n        \"./index.html\",\n        \"./manifest.webmanifest\",\n        \"./manual/bootstrap.js\",\n        \"./manual/index.html\",\n        \"./manual/manual.js\",\n        \"./manual/styles.css\",\n        \"./src/access/access-gate.css\",\n        \"./src/access/error-reporter-adapter.js\",\n        \"./src/access/error-reporter.css\",\n        \"./src/access/"
+    },
+    {
+      "step": "vendored-consistency",
+      "script": "check-vendored-consistency.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "{\n  \"status\": \"PASS\",\n  \"canonicalRoot\": \"../vendor/ghrab-platform-1.1.2\",\n  \"components\": [\n    {\n      \"id\": \"platform\",\n      \"sha256\": \"199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c\"\n    }\n  ],\n  \"checkedCopies\": 2,\n  \"drift\": 0,\n  \"findings\": []\n}"
+    }
+  ],
+  "skippedSteps": [
+    {
+      "step": "ai-assurance-fingerprint",
+      "reason": "no-ai-assurance-inputs-detected"
+    },
+    {
+      "step": "assurance-links",
+      "reason": "verifier-not-present-in-this-tooling-profile"
+    }
+  ],
+  "note": "School profil: povinne vstupy jsou fail-closed; service worker se nesmi overovat bez autoritativniho seznamu kritickych assetu."
+}

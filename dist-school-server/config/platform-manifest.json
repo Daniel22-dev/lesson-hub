@@ -1,0 +1,134 @@
+{
+  "schema": "ghrab-platform-app-integration-v1",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.22",
+  "contract": "ghrab-platform-v1",
+  "requiredPlatformRange": ">=1.1.2 <2.0.0",
+  "platformVersion": "1.1.2",
+  "brandVersion": "1.0.0",
+  "themeContract": "ghrab-theme-v1",
+  "swContract": "ghrab-service-worker-v1",
+  "studioBridge": "ghrab-studio-handoff-v2",
+  "artifactEnvelope": "ghrab-artifact-envelope-v1",
+  "artifactContracts": {
+    "schema": "ghrab-artifact-envelope-v1",
+    "checksum": "SHA-256",
+    "exports": [
+      "lesson-hub-backup"
+    ],
+    "imports": [
+      "lesson-hub-backup"
+    ],
+    "acceptsLegacyJson": true,
+    "nativeFormats": [
+      "json"
+    ]
+  },
+  "storagePrefix": "ghrab.lesson-hub.",
+  "cacheName": "ghrab-lesson-hub-v1.2.22",
+  "capabilities": [
+    "ghrab-platform-v1",
+    "canonical-branding",
+    "theme-contract-v1",
+    "storage-namespace-v1",
+    "artifact-envelope-v1",
+    "sw-contract-v1",
+    "a11y-contract-v1",
+    "performance-budget-v1",
+    "lazy-modules-v1",
+    "suite-session-v1"
+  ],
+  "suiteSession": {
+    "contract": "ghrab-suite-session-v1",
+    "generationKey": "ghrab.platform.suite-session-generation.v1",
+    "acknowledgementKey": "ghrab.lesson-hub.suite-session-seen.v1",
+    "progressKey": "ghrab.lesson-hub.suite-session-progress.v1",
+    "clearApplicationData": true
+  },
+  "quality": {
+    "schema": "ghrab-quality-consumer-v1",
+    "accessibilityContract": "ghrab-a11y-v1",
+    "performanceContract": "ghrab-performance-v1",
+    "moduleContract": "ghrab-lazy-modules-v1",
+    "requireBudget": true,
+    "performanceBudget": {
+      "distBytes": 1180000,
+      "entryHtmlBytes": 10000,
+      "entryCriticalBytes": 220000,
+      "largestInlineScriptBytes": 5000,
+      "precacheBytes": 1145000,
+      "largestFileBytes": 130000,
+      "duplicateLargeBytes": 40000
+    },
+    "modules": {
+      "required": []
+    },
+    "referenceProfile": {
+      "cpuSlowdown": 4,
+      "viewport": "1366x768",
+      "memoryClassGb": 4,
+      "viewportWidths": [
+        1280,
+        390,
+        320
+      ]
+    },
+    "stage": "P5",
+    "a11yContract": "ghrab-a11y-v1",
+    "capacity": {
+      "contract": "lesson-hub-capacity-report-v1",
+      "pilotUsers": 300,
+      "pilotResources": 5000,
+      "databaseMigrationTriggers": [
+        "multi-process",
+        "store>25MiB",
+        "activeResources>10000",
+        "p95Write>1000ms"
+      ]
+    },
+    "requireRuntimeBudget": true,
+    "runtimeBudget": {
+      "maxDomNodes": 1000,
+      "maxRenderReadyMs": 1000,
+      "maxJsHeapUsedBytes": 8000000,
+      "maxLayoutDurationMs": 300,
+      "maxTaskDurationMs": 800
+    },
+    "finalRelease": true,
+    "cleanInstallRequired": true,
+    "a11yGate": "ghrab-p5-runtime-a11y-v2",
+    "releaseGate": "ghrab-p5-release-v2",
+    "runtimeAudit": {
+      "scriptsExecuted": true,
+      "transport": "local-http",
+      "dialogStates": true,
+      "viewports": [
+        1280,
+        390,
+        320
+      ]
+    }
+  },
+  "artifacts": {
+    "ghrab-platform.js": {
+      "sha256": "199d03d9dc9263a9e74ed1f1102df0324f3b63e78704f1c70aeacec5feec530c",
+      "bytes": 58204
+    },
+    "ghrab-platform.css": {
+      "sha256": "eb465488df46f3d1672d721094800b0be3eb1278924b7699873a483f130b07ad",
+      "bytes": 5182
+    },
+    "ghrab-artifact-envelope-v1.schema.json": {
+      "sha256": "8edeaaadd72c7bf60285440dd59eb31d0e7139755e1e4642d5ab457816e46d58",
+      "bytes": 1250
+    },
+    "ghrab-app-registry-v2.schema.json": {
+      "sha256": "47c797999eb93fbd918b968b90a8f8545f938db486fe635b19efcc7936b5672f",
+      "bytes": 2666
+    },
+    "school-logo.png": {
+      "sha256": "300396a48cc36d8c2abda0aea673273d4d985476ba88fb0430630ef89ac86770",
+      "bytes": 57922
+    }
+  }
+}

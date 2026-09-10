@@ -1,0 +1,9 @@
+{
+  "schema": "lesson-hub-sbom-coverage-status-v1",
+  "version": "1.2.22",
+  "status": "NOT_TESTED_COMPLETE",
+  "reason": "Fresh installed tree was not established in this environment; npm registry lookup returned EAI_AGAIN.",
+  "structuralSbomGeneration": "PASS",
+  "deploymentVendoredHashes": "generated from deterministic school-server build",
+  "requiredFollowUp": "Run npm ci, npm ls, npm audit and installed-tree SBOM coverage on the exact 1.2.22 build-input in a registry-capable environment."
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "ghrab-trust-root-v1",
+  "environment": "PREP",
+  "keys": [
+    {
+      "keyId": "lesson-hub-prep-20260910-r6",
+      "algorithm": "Ed25519",
+      "status": "active",
+      "notBefore": "2026-09-10T00:00:00Z",
+      "notAfter": "2026-11-10T00:00:00Z",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAjxXU8V4/jakDOArZmd8GXXzW8rofaw3pOG9KNtzUeCc=\n-----END PUBLIC KEY-----\n"
+    }
+  ],
+  "note": "Disposable PREP public trust root for Lesson Hub 1.2.22 independent review. Private key is not part of delivered artifacts and is destroyed after signing. Not production key custody."
+}

@@ -1,0 +1,22 @@
+
+> lesson-hub@1.2.22 qa:lock
+> node scripts/qa-p5-lock.mjs
+
+{
+  "schema": "ghrab-p5-lock-audit-v3",
+  "status": "passed",
+  "package": "lesson-hub",
+  "version": "1.2.22",
+  "directDependencies": 3,
+  "lockedPackages": 5,
+  "reachablePackages": 5,
+  "registry": "https://registry.npmjs.org",
+  "guarantees": [
+    "root-lock-equals-package-json",
+    "full-registry-package-path",
+    "no-userinfo-port-query-fragment-or-percent-encoding",
+    "sha512-integrity",
+    "no-extraneous-lock-entries"
+  ],
+  "failures": []
+}

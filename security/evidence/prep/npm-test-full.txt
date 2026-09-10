@@ -1,0 +1,800 @@
+
+> lesson-hub@1.2.22 test
+> npm run check && npm run test:core && npm run test:server && npm run test:gateway-hardening && npm run test:wave10 && npm run test:wave11 && npm run test:integration && npm run test:audit-server && npm run test:audit-client && npm run test:school-profile && npm run test:capacity && npm run build && npm run test:suite-session && npm run test:async-security
+
+
+> lesson-hub@1.2.22 check
+> node scripts/check-project.mjs && node scripts/check-versions.mjs
+
+OK  index.html
+OK  src/bootstrap.js
+OK  src/main.js
+OK  src/styles.css
+OK  src/core/access.js
+OK  src/core/database.js
+OK  src/core/studioBridge.js
+OK  src/core/release.js
+OK  src/repositories/BaseRepository.js
+OK  src/ui/layout.js
+OK  public/manifest.webmanifest
+OK  public/sw.js
+OK  public/manual/index.html
+OK  studio/app-manifest.template.json
+OK  qa/qa-manifest.json
+OK  src/services/serverService.js
+OK  src/pages/server.js
+OK  server/app.mjs
+OK  server/index.mjs
+
+Projektová kontrola prošla.
+Verze 1.2.22 je synchronizovaná napříč projektem.
+
+> lesson-hub@1.2.22 test:core
+> node scripts/test-core.mjs
+
+Core test prošel: databáze, akademické jádro, hodiny, šablony, cykly, server-ready fronta, studenti, komunikace, přílohy, materiály, vyhledávání, export, import, integrita a Studio Bridge.
+
+> lesson-hub@1.2.22 test:server
+> node server/test-server.mjs
+
+Serverové testy prošly: health, auth, users, sync, přílohy, komunikace, retence, audit a logout.
+
+> lesson-hub@1.2.22 test:gateway-hardening
+> node server/test-gateway-auth-hardening.mjs
+
+{
+  "status": "PASS",
+  "contract": "lesson-hub-gateway-auth-hardening-v3",
+  "strongSecretRequired": true,
+  "privilegedSsoForbidden": true,
+  "ssoEmailCollisionRejected": true,
+  "nonCanonicalSsoEmailRejected": true,
+  "ssoLocalPasswordForbidden": true,
+  "obviousRepeatedSecretsRejected": true,
+  "unsignedPrivilegedHeaderRejected": true,
+  "expiryBounded": true
+}
+
+> lesson-hub@1.2.22 test:wave10
+> node server/test-mail-substitution.mjs
+
+Serverová vlna 3 prošla: souborové i SMTP doručení, doručenky, omezené zastupování a průběh suplujícího učitele.
+
+> lesson-hub@1.2.22 test:wave11
+> node server/test-operations.mjs
+
+Provozní testy prošly: status, snapshot, údržba, bezpečnostní snapshot, obnova, normalizace legacy visibility/auditu, ukončení relací, úklid osiřelých adresářů a odstranění zálohy.
+
+> lesson-hub@1.2.22 test:integration
+> node server/test-client-integration.mjs
+
+Klient-server integrační test prošel: login, push, pull a aplikace vzdálené změny.
+
+> lesson-hub@1.2.22 test:audit-server
+> node server/test-audit-regressions.mjs
+
+Auditní serverové regrese prošly: validace nedůvěryhodných záznamů, oprávnění, legacy shared K2-N01, N-01/N-02/N-03, K2-N03, RT-04, zotavení zápisu, retence, hesla, kurzory, zastupování, doručenky a hlavičky.
+
+> lesson-hub@1.2.22 test:audit-client
+> node scripts/test-audit-client.mjs
+
+Auditní klientské regrese prošly: lokálně omezený QA přístup, validace nedůvěryhodných importů a synchronizace, hashové QA cesty, evaluate kroky, headless připravenost, vizuální reportér, render race pojistka, XSS detektor, amortizace auditu, SHA-256, konflikty, retry limit, full refresh, replace import a synchronizace obnovené zálohy.
+
+> lesson-hub@1.2.22 test:school-profile
+> node scripts/test-school-profile.mjs
+
+PASS: Lesson Hub school profile uses central memory-only session and stores no bearer token.
+
+> lesson-hub@1.2.22 test:capacity
+> node server/test-capacity.mjs
+
+{
+  "schema": "lesson-hub-capacity-report-v1",
+  "appVersion": "1.2.22",
+  "storageContract": "lesson-hub-store-adapter-v1",
+  "startedAt": "2026-09-10T19:46:04.037Z",
+  "completedAt": "2026-09-10T19:46:12.420Z",
+  "profile": {
+    "node": "v22.16.0",
+    "platform": "linux",
+    "architecture": "x64"
+  },
+  "dataset": {
+    "lessons": 6000,
+    "students": 2000,
+    "materials": 1000,
+    "concurrentNotes": 120,
+    "totalSeedRecords": 9000
+  },
+  "measurements": {
+    "initialOpenMs": 4.699016,
+    "seedSaveMs": 18.873051000000004,
+    "concurrentMs": 8282.258814,
+    "reopenMs": 19.167210000001432,
+    "fileBytes": 3349241
+  },
+  "thresholds": {
+    "seedRecords": 9000,
+    "concurrentSaves": 120,
+    "maxFileBytes": 18874368,
+    "maxSeedSaveMs": 20000,
+    "maxConcurrentMs": 30000,
+    "maxReopenMs": 8000
+  },
+  "assertions": {
+    "jsonValid": true,
+    "queuedAtomicWrites": true,
+    "allConcurrentMutationsPersisted": true,
+    "freezeFailClosed": true,
+    "reopenValid": true
+  },
+  "status": "passed"
+}
+
+> lesson-hub@1.2.22 build
+> node scripts/build.mjs
+
+Verze 1.2.22 je synchronizovaná napříč projektem.
+Build Lesson Hub 1.2.22 dokončen: dist/ · 98 offline souborů
+[P5] lesson-hub 1.2.22: platform 1.1.2, HTML 2, cache ghrab-lesson-hub-v1.2.22
+
+> lesson-hub@1.2.22 postbuild
+> node scripts/ghrab-platform-conformance.mjs
+
+{
+  "schema": "ghrab-platform-conformance-result-v1",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.22",
+  "total": 118,
+  "passed": 118,
+  "failed": 0,
+  "checks": [
+    {
+      "label": "dist exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "satellite dist has no duplicate platform tree",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "satellite source has no duplicate platform tree",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "consumer schema",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "package ↔ consumer version",
+      "ok": true,
+      "detail": "1.2.22 / 1.2.22"
+    },
+    {
+      "label": "platform contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "Studio Bridge contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact envelope contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "suite session consumer contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact exports declared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact imports declared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "native export formats declared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "legacy JSON import policy declared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "cache naming",
+      "ok": true,
+      "detail": "ghrab-lesson-hub-v1.2.22"
+    },
+    {
+      "label": "storage migration declared",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "storage namespace lesson-hub-ui-settings",
+      "ok": true,
+      "detail": "ghrab.lesson-hub.ui-settings.v1"
+    },
+    {
+      "label": "storage namespace lesson-hub-server-session-v1",
+      "ok": true,
+      "detail": "ghrab.lesson-hub.server-session.v1"
+    },
+    {
+      "label": "storage namespace lesson-hub.lesson-draft.v1.",
+      "ok": true,
+      "detail": "ghrab.lesson-hub.lesson-draft.v1."
+    },
+    {
+      "label": "storage namespace sync:",
+      "ok": true,
+      "detail": "ghrab.lesson-hub.sync."
+    },
+    {
+      "label": "storage namespace lesson-hub-",
+      "ok": true,
+      "detail": "ghrab.lesson-hub.legacy."
+    },
+    {
+      "label": "vendor ghrab-platform.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor hash ghrab-platform.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist ghrab-platform.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist hash ghrab-platform.js",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor ghrab-platform.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor hash ghrab-platform.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist ghrab-platform.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist hash ghrab-platform.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor ghrab-artifact-envelope-v1.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor hash ghrab-artifact-envelope-v1.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist ghrab-artifact-envelope-v1.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist hash ghrab-artifact-envelope-v1.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor ghrab-app-registry-v2.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor hash ghrab-app-registry-v2.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist ghrab-app-registry-v2.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist hash ghrab-app-registry-v2.schema.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor school-logo.png",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "vendor hash school-logo.png",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist school-logo.png",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist hash school-logo.png",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist ghrab-platform.consumer.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist config/platform-manifest.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist config/brand-manifest.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "dist platform-build-info.json",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built consumer identity",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built platform manifest contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built platform cache metadata",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built service-worker contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built artifact contracts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built suite session contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built suite acknowledgement key",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built suite session capability",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "data manifest migration id",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "data manifest canonical prefix",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "data manifest artifact exports",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "data manifest artifact imports",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "canonical logo manifest hash",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "no inline school logo base64",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "no legacy school logo reference",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "no obsolete top-level platform references in satellite build",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "platform contract present in build",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "full eligible HTML documents found",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "exactly one platform loader index.html",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "label": "exactly one platform config index.html",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "label": "app identity index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "theme root contract index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "exactly one platform loader manual/index.html",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "label": "exactly one platform config manual/index.html",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "label": "app identity manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "theme root contract manual/index.html",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker canonical cache",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker contract marker",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker legacy cleanup list",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker update protocol",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker platform precache",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker P3 asset list",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "no automatic skipWaiting during install",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker no-store offline fallback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "service worker no obsolete satellite platform asset",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "source PWA platform version",
+      "ok": true,
+      "detail": "1.1.2 / 1.1.2"
+    },
+    {
+      "label": "source PWA required platform range",
+      "ok": true,
+      "detail": ">=1.1.2 <2.0.0 / >=1.1.2 <2.0.0"
+    },
+    {
+      "label": "source PWA suite session contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "PWA manifest exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "PWA version",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "PWA platform contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built PWA platform version",
+      "ok": true,
+      "detail": "1.1.2 / 1.1.2"
+    },
+    {
+      "label": "PWA required platform range",
+      "ok": true,
+      "detail": ">=1.1.2 <2.0.0 / >=1.1.2 <2.0.0"
+    },
+    {
+      "label": "PWA cache metadata",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "PWA app identity",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "built PWA suite session contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "runtime identity",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "runtime suite session contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "runtime previous platform rejected",
+      "ok": true,
+      "detail": "1.1.1"
+    },
+    {
+      "label": "runtime current accepted",
+      "ok": true,
+      "detail": "1.1.2"
+    },
+    {
+      "label": "runtime n+1 accepted",
+      "ok": true,
+      "detail": "1.2.0"
+    },
+    {
+      "label": "runtime major rejected",
+      "ok": true,
+      "detail": "2.0.0"
+    },
+    {
+      "label": "storage alias reads migrated value",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "canonical storage value created",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "storage alias writes canonical key",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "storage migration idempotent",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "storage migration rollback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "rollback restored original value",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "Studio Bridge v2 create",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "Studio Bridge v2 peek",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "Studio Bridge v2 take",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "Studio Bridge consumes once",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact envelope SHA-256",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact envelope unwrap",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact envelope detection",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact envelope unwrapMaybe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "legacy artifact compatibility",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "theme contract runtime",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "artifact compatibility facade",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "accessibility runtime contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "performance runtime contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "lazy module runtime contract",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "lazy script loader available",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
+
+> lesson-hub@1.2.22 test:suite-session
+> node scripts/test-suite-session-node.mjs && node scripts/test-suite-session.mjs
+
+{
+  "schema": "ghrab-suite-session-node-test-v1",
+  "status": "passed",
+  "scenarios": [
+    {
+      "scenario": "open",
+      "status": "passed"
+    },
+    {
+      "scenario": "delayed",
+      "status": "passed"
+    },
+    {
+      "scenario": "failclosed",
+      "status": "passed"
+    },
+    {
+      "scenario": "idempotent",
+      "status": "passed"
+    }
+  ],
+  "negativeControl": {
+    "status": "passed",
+    "expectedTestResult": "FAIL",
+    "observedExitCode": 1,
+    "stderr": "{\"scenario\":\"open\",\"status\":\"failed\",\"message\":\"Suite handler did not complete\",\"detail\":{\"ok\":false,\"reason\":\"no-handler\",\"generation\":\"node-open-generation\"}}"
+  }
+}
+{
+  "schema": "ghrab-suite-session-browser-test-v1",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.22",
+  "platformVersion": "1.1.2",
+  "syntheticCanary": "SYNTHETIC-GHRAB-SUITE-CANARY-2026",
+  "status": "not-tested",
+  "reason": "Managed Chromium URLBlocklist blocks local test pages (/etc/chromium/policies/managed/000_policy_merge.json).",
+  "scenarios": {
+    "openChild": "NOT TESTED",
+    "delayedOpenReplay": "NOT TESTED",
+    "multiTab": "NOT TESTED",
+    "browserBackForward": "NOT TESTED",
+    "failClosed": "NOT TESTED",
+    "negativeControl": "NOT TESTED",
+    "trustBoundaryProbe": "NOT TESTED"
+  },
+  "requiredFollowUp": "Run this browser suite in CI/E2E Chromium without URLBlocklist before release approval."
+}
+
+> lesson-hub@1.2.22 test:async-security
+> node server/test-async-security.mjs
+
+Lesson Hub async scrypt: PASS
+Directory fsync regression passed.
