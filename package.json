@@ -1,6 +1,6 @@
 {
   "name": "lesson-hub",
-  "version": "1.2.22",
+  "version": "1.2.23",
   "private": true,
   "type": "module",
   "description": "Lesson Hub – local-first osobní paměť učitele plně integrovaná do AI Studio GHRAB.",
@@ -49,8 +49,8 @@
     "qa:a11y": "node scripts/qa-p5-runtime.mjs",
     "qa:p4": "npm run qa:p5",
     "qa:p4:ci": "npm run qa:p5:ci",
-    "qa:p5": "npm run qa:lock && npm run build && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
-    "qa:p5:ci": "npm run qa:lock && npm run build && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && npm run qa:axe && AXE_REQUIRED=1 node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
+    "qa:p5": "npm run qa:lock && npm run build && npm run verify:studio-manifest && npm run test:studio-dispatch && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
+    "qa:p5:ci": "npm run qa:lock && npm run build && npm run verify:studio-manifest && npm run test:studio-dispatch && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && npm run qa:axe && AXE_REQUIRED=1 node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
     "test:p5": "npm run qa:p5",
     "qa:runtime": "node scripts/qa-p5-runtime.mjs",
     "test:async-security": "node server/test-async-security.mjs",
@@ -67,7 +67,15 @@
     "qa:garp25:pinned": "node scripts/qa-garp25-pinned-inputs.mjs",
     "qa:garp25:static": "npm run build:school-server && npm run qa:garp25:tooling && npm run qa:garp25:pinned && npm run qa:lock && npm run qa:garp25:control-regressions && npm run qa:security && npm run qa:xss && npm run qa:garp25:sw && npm run qa:garp25:vendored && npm run qa:garp25:sbom && npm run qa:garp25:sbom-coverage && npm run qa:garp25:secrets",
     "test:gateway-hardening": "node server/test-gateway-auth-hardening.mjs",
-    "qa:garp25:control-regressions": "node scripts/test-garp25-control-classes.mjs"
+    "qa:garp25:control-regressions": "node scripts/test-garp25-control-classes.mjs",
+    "build:pages": "npm run build && node scripts/build-pages-profile.mjs",
+    "verify:studio-manifest": "node scripts/verify-studio-manifest-contract.mjs",
+    "prepare:pages": "node scripts/create-pages-release-identity.mjs",
+    "verify:release-chain": "node scripts/verify-release-chain.mjs",
+    "verify:live-release": "node scripts/verify-live-release.mjs",
+    "test:studio-dispatch": "node scripts/test-ai-studio-dispatch.mjs",
+    "qa:safe-promotion": "node scripts/qa-safe-promotion.mjs",
+    "qa:auto-patch-topology": "node scripts/qa-auto-patch-notification.mjs"
   },
   "engines": {
     "node": ">=22"

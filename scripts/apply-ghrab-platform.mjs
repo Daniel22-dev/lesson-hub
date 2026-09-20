@@ -185,9 +185,15 @@ for (const name of ['studio-manifest.json', 'app-manifest.json']) {
   const target = path.join(dist, name);
   if (!fs.existsSync(target)) continue;
   const manifest = JSON.parse(fs.readFileSync(target, 'utf8'));
+  // Preserve the Studio-facing contract from the source manifest and layer the
+  // canonical Platform aliases on top. Replacing the whole object would silently
+  // drop fields such as storagePrefix/studioBridge/artifactEnvelope.
+  const existingPlatform = manifest.platform && typeof manifest.platform === 'object' ? manifest.platform : {};
   manifest.platform = {
+    ...existingPlatform,
     contract: consumer.platform.contract,
     platformVersion: consumer.platform.version,
+    requiredPlatformRange: consumer.platform.requiredRange,
     requiredRange: consumer.platform.requiredRange,
     brandVersion: consumer.brand.version,
     themeContract: 'ghrab-theme-v1',
@@ -199,6 +205,9 @@ for (const name of ['studio-manifest.json', 'app-manifest.json']) {
     moduleContract: consumer.quality.moduleContract,
     cacheName: consumer.cache.name,
     suiteSessionContract: consumer.suiteSession?.contract || 'ghrab-suite-session-v1',
+    studioBridge: existingPlatform.studioBridge ?? 2,
+    artifactEnvelope: existingPlatform.artifactEnvelope ?? 1,
+    storagePrefix: existingPlatform.storagePrefix || `ghrab.${consumer.appId}.`,
   };
   fs.writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`);
 }

@@ -1,3 +1,15 @@
+## 1.2.23 — Safe Promotion + enforced GARP/N5 + exact Pages release identity (2026-09-20)
+
+- production `main` is no longer the normal update entrypoint; the target flow is durable `candidate` → P5/GARP/N5 → PR → protected `main` → main P5 → deploy;
+- full `qa:garp25:static` is wired into non-PR P5/release execution instead of existing only as prepared tooling; N5 selftest remains permanent and currently covers 98/98 checks;
+- GitHub Pages deployment is accepted only from a successful P5 run over `main`; candidate and unverified PR heads cannot deploy;
+- deployment is fail-closed when `AI_STUDIO_DISPATCH_TOKEN` is unavailable, and `app-updated` is emitted only after bounded live verification;
+- Pages releases publish `ghrab-release-integrity-v2` binding app/version/source commit/artifact digest/manifest/SBOM/provenance/security evidence; unsigned state is explicitly `TRANSITIONAL`;
+- Platform 1.1.2 manifest post-processing now merges the existing Studio contract instead of replacing it, preserving `requiredPlatformRange`, `storagePrefix`, `studioBridge` and `artifactEnvelope`;
+- redundant legacy P3/P4 GitHub workflows were removed; their former entrypoints were already delegated to P5 R2;
+- control-class regression fixtures were updated to the new workflow topology without weakening the negative controls;
+- no pedagogical/client feature behavior is intentionally changed.
+
 ## 1.2.22 — GARP 2.5.1 SHIELD-PREP regular hardening after Claude round 4 (2026-09-10)
 
 - N29: canonical source/deployment secret scan detects unquoted lowercase secret assignments in YAML/INI/.properties/Compose/env formats while excluding obvious placeholders and environment references.

@@ -64,14 +64,14 @@
     }
   ],
   "id": "./",
-  "version": "1.2.22",
+  "version": "1.2.23",
   "ghrab_platform": {
     "contract": "ghrab-platform-v1",
     "platform_version": "1.1.2",
     "required_range": ">=1.1.2 <2.0.0",
     "brand_version": "1.0.0",
     "app_id": "lesson-hub",
-    "cache_name": "ghrab-lesson-hub-v1.2.22",
+    "cache_name": "ghrab-lesson-hub-v1.2.23",
     "theme_contract": "ghrab-theme-v1",
     "storage_contract": "ghrab-storage-namespace-v1",
     "bridge_contract": "ghrab-studio-handoff-v2",

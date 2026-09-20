@@ -34,7 +34,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
   <header class="manual-topbar">
     <div class="manual-brand">
       <img src="../assets/brand/school-logo.png" alt="Logo Gymnázia, Ostrava-Hrabůvka" />
-      <div><strong>Lesson Hub</strong><span>Interaktivní manuál · v1.2.22</span></div>
+      <div><strong>Lesson Hub</strong><span>Interaktivní manuál · v1.2.23</span></div>
     </div>
     <div class="manual-actions">
       <button id="manual-theme" type="button" aria-label="Přepnout vzhled">◐</button>
@@ -47,7 +47,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       <label for="manual-search">Hledat v manuálu</label>
       <input id="manual-search" type="search" placeholder="např. postup skupin" />
       <nav>${sections.map(([id, label]) => `<a href="#${id}">${label}</a>`).join('')}</nav>
-      <p class="manual-version">Řízený pilot · Local-first provoz · verze 1.2.22</p>
+      <p class="manual-version">Řízený pilot · Local-first provoz · verze 1.2.23</p>
     </aside>
     <main>
       <section class="manual-hero">
@@ -257,7 +257,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       </section>
       <section id="limits" data-search="omezení není hotové vlna 3 hodiny plán připomínky materiály">
         <h2>Co zatím není hotové</h2>
-        <p>Verze 1.2.22 obsahuje účty, ruční synchronizaci, serverové přílohy, komunikaci, SMTP nebo souborové odesílání, plánovač, doručenky, audit, retenční pravidla, zastupování, provozní monitoring a serverové snapshoty s kontrolovanou obnovou. Zatím chybí automatická synchronizace na pozadí, napojení na konkrétní školní SMTP službu v distribuovaném balíčku a externě spravované hostování s dohledem infrastruktury.</p>
+        <p>Verze 1.2.23 obsahuje účty, ruční synchronizaci, serverové přílohy, komunikaci, SMTP nebo souborové odesílání, plánovač, doručenky, audit, retenční pravidla, zastupování, provozní monitoring a serverové snapshoty s kontrolovanou obnovou. Zatím chybí automatická synchronizace na pozadí, napojení na konkrétní školní SMTP službu v distribuovaném balíčku a externě spravované hostování s dohledem infrastruktury.</p>
       </section>
       <section id="error-report" data-search="nahlásit chybu screenshot koncept zip gmail soukromí">
         <h2>Nahlášení technické chyby</h2>
