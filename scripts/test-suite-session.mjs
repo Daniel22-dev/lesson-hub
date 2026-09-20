@@ -512,7 +512,7 @@ try {
 }
 
 const report = {
-  schema: 'lesson-hub-suite-session-qa-v1', appId: 'lesson-hub', appVersion: '1.2.23', platformVersion: '1.1.2',
+  schema: 'lesson-hub-suite-session-qa-v1', appId: 'lesson-hub', appVersion: '1.2.24', platformVersion: '1.1.2',
   contract: 'ghrab-suite-session-v1', syntheticDataOnly: true, startedAt, finishedAt: new Date().toISOString(),
   scenarios, status: failed ? 'failed' : 'passed', failure: failed,
 };
