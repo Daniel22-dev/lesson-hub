@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { buildDispatchPayload, MAX_TOP_LEVEL_PROPERTIES } from './build-ai-studio-dispatch.mjs';
 const env = {
-  APP_VERSION: '1.2.23',
+  APP_VERSION: '1.2.24',
   SOURCE_REPOSITORY: 'Daniel22-dev/lesson-hub',
   SOURCE_SHA: 'a'.repeat(40),
   DEPLOYED_URL: 'https://daniel22-dev.github.io/lesson-hub/',
