@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.23
+# Lesson Hub 1.2.24
 
-**Aktuální verze:** 1.2.23  
+**Aktuální verze:** 1.2.24  
 **Platforma:** GHRAB Platform 1.1.2 · etapa P3
 
 
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.23 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.24 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -63,7 +63,7 @@ Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při
 
 ## GARP 2.5.1 SHIELD-PREP
 
-Verze 1.2.23 zapojuje existující GARP 2.5.1/N5 tooling přímo do candidate/release cesty a vytváří přesnou Pages release identity. Stav **není school-server production approval**: produkční key custody, plně podepsaný provenance řetězec a další SHIELD-LIVE podmínky zůstávají oddělené; Pages assurance je proto explicitně `TRANSITIONAL`. Historické PREP podklady zůstávají v `security/` jako audit trail.
+Verze 1.2.24 zapojuje existující GARP 2.5.1/N5 tooling přímo do candidate/release cesty a vytváří přesnou Pages release identity. Stav **není school-server production approval**: produkční key custody, plně podepsaný provenance řetězec a další SHIELD-LIVE podmínky zůstávají oddělené; Pages assurance je proto explicitně `TRANSITIONAL`. Historické PREP podklady zůstávají v `security/` jako audit trail.
 
 ## Kontroly
 

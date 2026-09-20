@@ -1,3 +1,9 @@
+## 1.2.24 — end-to-end auto-patch validation release (2026-09-20)
+
+- technical PATCH-only validation release; no pedagogical/client feature behavior is intentionally changed;
+- exercises the enrolled production chain candidate → P5/GARP/N5 → protected main → Pages → live release verification → app-updated → AI Studio auto-patch;
+- retains the 1.2.23 Safe Promotion, exact release identity and TRANSITIONAL assurance model unchanged.
+
 ## 1.2.23 — Safe Promotion + enforced GARP/N5 + exact Pages release identity (2026-09-20)
 
 - production `main` is no longer the normal update entrypoint; the target flow is durable `candidate` → P5/GARP/N5 → PR → protected `main` → main P5 → deploy;
