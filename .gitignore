@@ -8,3 +8,5 @@ qa-results/
 !/.env.example
 server/data/*.json
 server/data/*.tmp
+
+dist-pages/

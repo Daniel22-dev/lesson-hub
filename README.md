@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.22
+# Lesson Hub 1.2.23
 
-**Aktuální verze:** 1.2.22  
+**Aktuální verze:** 1.2.23  
 **Platforma:** GHRAB Platform 1.1.2 · etapa P3
 
 
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.22 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.23 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -21,18 +21,13 @@ npm start
 
 Aplikace se otevře na `http://localhost:4173`. Produkční GitHub Pages build vytváří workflow `.github/workflows/deploy.yml` po úspěšném průchodu všech povinných QA bran.
 
-## Nahrání na GitHub
+## Release workflow
 
-1. Vytvořte repozitář s přesným názvem `lesson-hub`.
-2. Nahrajte obsah ZIPu přímo do kořene repozitáře, nikoli do další vnořené složky.
-3. Použijte větev `main`.
-4. V **Settings → Pages** nastavte zdroj **GitHub Actions**.
-5. Po pushnutí vyčkejte na zelený workflow **Certifikace a nasazení Lesson Hubu**.
-6. Ověřte adresu `https://daniel22-dev.github.io/lesson-hub/manifest.webmanifest`.
+Běžná změna vstupuje do dlouhodobé větve `candidate`, nikoli přímo do produkčního `main`. Candidate musí projít P5/GARP/N5 kontrolami; Safe Promotion poté vytvoří nebo znovu použije PR `candidate → main`. Chráněný `main` přijme pouze změnu se zelenými required checks `candidate-to-main`, `p5-release-gate` a `axe`. Produkční GitHub Pages deploy se spouští pouze z úspěšného P5 běhu nad `main`.
 
-Workflow nasazení nevydá aplikaci, pokud selže čistá instalace, bezpečnostní audit nebo některá povinná QA brána.
+Po deployi se bounded retry ověřením kontroluje skutečně publikovaný `studio-manifest.json` a `release-integrity.json`. Teprve potom aplikace posílá `app-updated` do AI Studia. Release identity váže verzi na source commit, artifact digest, manifest, SBOM, build provenance a security evidence; do zavedení produkčního podpisového klíče je assurance korektně označena `TRANSITIONAL`.
 
-## Stabilizovaná GitHub QA
+## Stabilizovaná GitHub QA — baseline 1.2.22
 
 Verze 1.2.22 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 
@@ -68,7 +63,7 @@ Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při
 
 ## GARP 2.5.1 SHIELD-PREP
 
-Verze 1.2.22 navazuje na PREP release-integrity/supply-chain evidenci z 1.2.18 a fail-closed ochranu service workeru pro bezpečnostně kritické assety. Stav **není school-server production approval**: browser/served DAST, online advisory SCA, produkční key custody a SHIELD-LIVE zůstávají oddělenými podmínkami. Protokoly a strojově čitelné podklady jsou v `security/`.
+Verze 1.2.23 zapojuje existující GARP 2.5.1/N5 tooling přímo do candidate/release cesty a vytváří přesnou Pages release identity. Stav **není school-server production approval**: produkční key custody, plně podepsaný provenance řetězec a další SHIELD-LIVE podmínky zůstávají oddělené; Pages assurance je proto explicitně `TRANSITIONAL`. Historické PREP podklady zůstávají v `security/` jako audit trail.
 
 ## Kontroly
 

@@ -107,9 +107,10 @@ assert.equal(completed.status, 'completed');
 assert.equal(completed.endedAtText, 'Učebnice strana 8.');
 assert.ok(completed.completedAt);
 
+const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 const future = await lessons.createLesson({
   groupInstanceId: groupB.id,
-  date: '2026-09-10',
+  date: futureDate,
   title: 'Unit 1 · Listening',
   status: 'draft',
 });

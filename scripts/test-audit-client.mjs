@@ -26,13 +26,13 @@ await assert.rejects(
   () => setLocalDocument(qaPageProbe, projectRoot, '/../outside.html#/overview', 'http://127.0.0.1:4173'),
   /escapes serve root/,
 );
-const workflowNames = ['axe-supplemental.yml', 'deploy.yml', 'p3-quality.yml', 'p4-release.yml', 'p5-release-gate.yml'];
+const workflowNames = ['axe-supplemental.yml', 'deploy.yml', 'p5-release-gate.yml', 'safe-promotion.yml'];
 for (const workflowName of workflowNames) {
   const workflowSource = await readFile(new URL(`../.github/workflows/${workflowName}`, import.meta.url), 'utf8');
   const actionRefs = [...workflowSource.matchAll(/uses:\s+actions\/[^@\s]+@([^\s#]+)/g)].map((match) => match[1]);
   assert.equal(actionRefs.length > 0, true, `${workflowName} musí obsahovat kontrolované GitHub Actions.`);
   assert.equal(actionRefs.every((ref) => /^[0-9a-f]{40}$/.test(ref)), true, `${workflowName} musí připínat GitHub Actions na neměnný commit SHA.`);
-  assert.match(workflowSource, /npm audit --package-lock-only --audit-level=high/, `${workflowName} musí mít explicitní high-severity dependency audit.`);
+  if (workflowName !== 'safe-promotion.yml') assert.match(workflowSource, /npm audit --package-lock-only --audit-level=high/, `${workflowName} musí mít explicitní high-severity dependency audit.`);
 }
 
 const observedFetchOptions = [];

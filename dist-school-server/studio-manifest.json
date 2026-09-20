@@ -5,7 +5,7 @@
     "cs": "Lesson Hub",
     "en": "Lesson Hub"
   },
-  "version": "1.2.22",
+  "version": "1.2.23",
   "status": {
     "cs": "Připraveno k řízenému pilotu",
     "en": "Ready for controlled pilot"
@@ -86,7 +86,7 @@
     "platformContract": "ghrab-platform-v1",
     "platformRange": ">=1.1.2 <2.0.0"
   },
-  "publishedAt": "2026-09-10T19:50:00.000Z",
+  "publishedAt": "2026-09-20T15:30:00.000Z",
   "aiCore": {
     "schema": "ghrab-ai-app-integration-v1",
     "status": "not-applicable",
@@ -99,19 +99,25 @@
     "manifest": "https://daniel22-dev.github.io/lesson-hub/studio-manifest.json"
   },
   "platform": {
+    "schema": "ghrab-platform-app-integration-v1",
     "contract": "ghrab-platform-v1",
+    "requiredPlatformRange": ">=1.1.2 <2.0.0",
     "platformVersion": "1.1.2",
-    "requiredRange": ">=1.1.2 <2.0.0",
     "brandVersion": "1.0.0",
     "themeContract": "ghrab-theme-v1",
+    "swContract": 1,
+    "studioBridge": 2,
+    "artifactEnvelope": 1,
+    "storagePrefix": "ghrab.lesson-hub.",
+    "cacheName": "ghrab-lesson-hub-v1.2.23",
+    "suiteSessionContract": "ghrab-suite-session-v1",
+    "requiredRange": ">=1.1.2 <2.0.0",
     "storageContract": "ghrab-storage-namespace-v1",
     "bridgeContract": "ghrab-studio-handoff-v2",
     "artifactContract": "ghrab-artifact-envelope-v1",
     "accessibilityContract": "ghrab-a11y-v1",
     "performanceContract": "ghrab-performance-v1",
-    "moduleContract": "ghrab-lazy-modules-v1",
-    "cacheName": "ghrab-lesson-hub-v1.2.22",
-    "suiteSessionContract": "ghrab-suite-session-v1"
+    "moduleContract": "ghrab-lazy-modules-v1"
   },
   "deploymentProfile": "school-server",
   "serverReadyPhase": "P3"

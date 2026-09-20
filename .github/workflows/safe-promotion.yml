@@ -1,0 +1,128 @@
+name: Safe Promotion controller
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_run:
+    workflows: ["P5 R2 pre-production release gate"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: safe-promotion-${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-to-main:
+    name: candidate-to-main
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.22.2
+      - name: Enforce Safe Promotion topology
+        env:
+          SAFE_PROMOTION_HEAD: ${{ github.head_ref }}
+          SAFE_PROMOTION_BASE: ${{ github.base_ref }}
+        run: node scripts/qa-safe-promotion.mjs
+      - name: Verify automation credentials
+        shell: bash
+        env:
+          SAFE_PROMOTION_TOKEN: ${{ secrets.SAFE_PROMOTION_TOKEN }}
+          AI_STUDIO_DISPATCH_TOKEN: ${{ secrets.AI_STUDIO_DISPATCH_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "${SAFE_PROMOTION_TOKEN:-}" || { echo "::error::Missing SAFE_PROMOTION_TOKEN. Promotion is fail-closed."; exit 1; }
+          test -n "${AI_STUDIO_DISPATCH_TOKEN:-}" || { echo "::error::Missing AI_STUDIO_DISPATCH_TOKEN. Release is fail-closed before main changes."; exit 1; }
+      - name: Enforce auto-patch notification topology
+        run: node scripts/qa-auto-patch-notification.mjs
+      - name: Verify N5 fail-closed controls
+        run: node security/garp25/tools/selftest-garp251.mjs
+      - name: Verify pinned workflow inputs
+        run: node scripts/qa-garp25-pinned-inputs.mjs
+
+  open-promotion-pr:
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'candidate'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Verify candidate head and open or reuse promotion PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.SAFE_PROMOTION_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          CHECKED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then echo "::error::Missing SAFE_PROMOTION_TOKEN. Promotion is fail-closed."; exit 1; fi
+          remote_candidate="$(gh api "repos/${REPOSITORY}/git/ref/heads/candidate" --jq '.object.sha')"
+          if [ "$remote_candidate" != "$CHECKED_SHA" ]; then echo "Candidate advanced after this P5 run; stale GREEN ignored."; exit 0; fi
+          changed_files="$(gh api "repos/${REPOSITORY}/compare/main...candidate" --jq '.files | length')"
+          if [ "$changed_files" = "0" ]; then echo "Candidate has no delta against main; safe NO-OP."; exit 0; fi
+          existing="$(gh pr list --repo "$REPOSITORY" --state open --base main --head candidate --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then echo "Promotion PR #${existing} already exists."; exit 0; fi
+          gh pr create --repo "$REPOSITORY" --base main --head candidate --title "chore: safe promotion ${CHECKED_SHA:0:12}" --body "Automated Safe Promotion from durable candidate after GREEN candidate P5. Candidate SHA: ${CHECKED_SHA}."
+
+  merge-promotion-pr:
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Merge only verified candidate to protected main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.SAFE_PROMOTION_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          CHECKED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then echo "::error::Missing SAFE_PROMOTION_TOKEN. Merge blocked."; exit 1; fi
+          pr_number="$(gh api "repos/${REPOSITORY}/commits/${CHECKED_SHA}/pulls" --jq '[.[] | select(.state == "open" and .base.ref == "main" and .head.ref == "candidate")][0].number // empty')"
+          if [ -z "$pr_number" ]; then echo "No canonical candidate -> main PR for this GREEN run; safe NO-OP."; exit 0; fi
+          pr_json="$(gh api "repos/${REPOSITORY}/pulls/${pr_number}")"
+          head_sha="$(jq -r '.head.sha' <<<"$pr_json")"
+          if [ "$(jq -r '.state' <<<"$pr_json")" != "open" ] || [ "$(jq -r '.draft' <<<"$pr_json")" != "false" ] || [ "$(jq -r '.base.ref' <<<"$pr_json")" != "main" ] || [ "$(jq -r '.head.ref' <<<"$pr_json")" != "candidate" ]; then echo "PR #${pr_number} is not canonical; safe NO-OP."; exit 0; fi
+          if [ "$head_sha" != "$CHECKED_SHA" ]; then echo "PR head moved; stale GREEN ignored."; exit 0; fi
+          remote_candidate="$(gh api "repos/${REPOSITORY}/git/ref/heads/candidate" --jq '.object.sha')"
+          if [ "$remote_candidate" != "$CHECKED_SHA" ]; then echo "Candidate moved; stale GREEN ignored."; exit 0; fi
+          branch_json="$(gh api "repos/${REPOSITORY}/branches/main")"
+          if [ "$(jq -r '.protected' <<<"$branch_json")" != "true" ]; then echo "::error::main is not protected."; exit 1; fi
+          rules_json="$(gh api "repos/${REPOSITORY}/rules/branches/main")"
+          for required_type in pull_request required_status_checks deletion non_fast_forward; do
+            if ! jq -e --arg t "$required_type" '[.[] | select(.type == $t)] | length > 0' <<<"$rules_json" >/dev/null; then echo "::error::main Ruleset missing ${required_type}."; exit 1; fi
+          done
+          for required_check in candidate-to-main p5-release-gate axe; do
+            if ! jq -e --arg c "$required_check" '[.[] | select(.type == "required_status_checks") | .parameters.required_status_checks[]? | select(.context == $c)] | length > 0' <<<"$rules_json" >/dev/null; then echo "::error::main Ruleset does not require ${required_check}."; exit 1; fi
+          done
+          mapfile -t ruleset_ids < <(jq -r '.[].ruleset_id // empty' <<<"$rules_json" | sort -u)
+          if [ "${#ruleset_ids[@]}" -eq 0 ]; then echo "::error::main active rules have no ruleset_id."; exit 1; fi
+          for ruleset_id in "${ruleset_ids[@]}"; do
+            detail="$(gh api "repos/${REPOSITORY}/rulesets/${ruleset_id}")"
+            [ "$(jq -r '.enforcement // "disabled"' <<<"$detail")" = "active" ] || { echo "::error::Ruleset ${ruleset_id} inactive."; exit 1; }
+            [ "$(jq -r '.current_user_can_bypass // "unknown"' <<<"$detail")" = "never" ] || { echo "::error::Promotion identity can bypass ruleset ${ruleset_id}."; exit 1; }
+            [ "$(jq -r '.bypass_actors | length' <<<"$detail")" = "0" ] || { echo "::error::Ruleset ${ruleset_id} contains bypass actors."; exit 1; }
+          done
+          checks_json="$(gh api -H 'Accept: application/vnd.github+json' "repos/${REPOSITORY}/commits/${CHECKED_SHA}/check-runs")"
+          for required_check in candidate-to-main p5-release-gate axe; do
+            jq -e --arg c "$required_check" '[.check_runs[] | select(.name == $c and .conclusion == "success")] | length > 0' <<<"$checks_json" >/dev/null || { echo "::error::Required ${required_check} is not GREEN."; exit 1; }
+          done
+          result="$(gh api --method PUT "repos/${REPOSITORY}/pulls/${pr_number}/merge" -f sha="$CHECKED_SHA" -f merge_method='merge')"
+          if [ "$(jq -r '.merged' <<<"$result")" != "true" ]; then echo "::error::GitHub refused merge: $(jq -r '.message // "unknown"' <<<"$result")"; exit 1; fi
+          merge_sha="$(jq -r '.sha' <<<"$result")"
+          if [ -z "$merge_sha" ] || [ "$merge_sha" = "null" ]; then echo "::error::Merge SHA missing."; exit 1; fi
+          gh api --method PATCH "repos/${REPOSITORY}/git/refs/heads/candidate" -f sha="$merge_sha" -F force=false >/dev/null
+          echo "Safe Promotion merged PR #${pr_number} and fast-forwarded candidate to ${merge_sha}."

@@ -3,8 +3,9 @@ name: P5 R2 pre-production release gate
 on:
   workflow_dispatch:
   push:
-    branches: [main, master]
+    branches: [candidate, main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -33,8 +34,28 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
-      - name: Run P5 R2 release gate
+      - name: Run P5 R2 CI gate
         run: npm run qa:p5:ci
+      - name: Set deterministic build time
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)" >> "$GITHUB_ENV"
+      - name: Run full GARP 2.5.1 release gate
+        if: github.event_name != 'pull_request'
+        run: npm run qa:garp25:static
+      - name: Build and verify PREP exact release identity
+        if: github.event_name != 'pull_request'
+        env:
+          GHRAB_SOURCE_REPOSITORY: ${{ github.repository }}
+          GHRAB_SOURCE_COMMIT: ${{ github.sha }}
+          GHRAB_BUILD_ID: p5-${{ github.run_id }}-${{ github.run_attempt }}
+          GHRAB_WORKFLOW_REF: ${{ github.workflow_ref }}
+          GHRAB_RELEASE_STAGE: PREP-VALIDATION
+        run: |
+          npm run build:pages
+          npm run prepare:pages
+          npm run verify:release-chain
+          npm run qa:auto-patch-topology
       - name: Upload audit evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -44,3 +65,9 @@ jobs:
             dist/qa-p5-*.json
             dist/qa-p3-browser-report.json
             dist/quality-report.json
+            qa-results/**
+            dist-pages/release-integrity.json
+            dist-pages/studio-manifest.json
+            dist-pages/sbom.cdx.json
+            dist-pages/build-provenance.json
+            dist-pages/security-evidence-manifest.json
