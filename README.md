@@ -1,7 +1,7 @@
 # Lesson Hub 1.2.25
 
 **Aktuální verze:** 1.2.25  
-**Platforma:** GHRAB Platform 1.1.2 · etapa P3
+**Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
 Lesson Hub je local-first osobní paměť učitele v ekosystému AI Studio GHRAB. Pro běžné pilotní používání **nepotřebuje server**: data ukládá do IndexedDB v prohlížeči a nabízí export, import i lokální body obnovy.
@@ -27,7 +27,7 @@ Běžná změna vstupuje do dlouhodobé větve `candidate`, nikoli přímo do pr
 
 Po deployi se bounded retry ověřením kontroluje skutečně publikovaný `studio-manifest.json` a `release-integrity.json`. Teprve potom aplikace posílá `app-updated` do AI Studia. Release identity váže verzi na source commit, artifact digest, manifest, SBOM, build provenance a security evidence; do zavedení produkčního podpisového klíče je assurance korektně označena `TRANSITIONAL`.
 
-## Stabilizovaná GitHub QA — baseline 1.2.22
+## Historická GitHub QA baseline 1.2.22 (auditní stopa)
 
 Verze 1.2.22 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 

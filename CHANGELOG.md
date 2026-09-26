@@ -1,5 +1,7 @@
 ## 1.2.25 — GARP 2.7 FOUNDATION migration (2026-09-26)
 
+- Final clean-up: README now reports Platform stage P5, obsolete 1.2.3 upload instructions were replaced with the current candidate → Safe Promotion → main workflow, and generated QA/build directories are excluded from the source deliverable.
+- Final audit hardening: GARP 2.7 private-key artifact signatures are stored as split fragments so the canonical secret scanner remains strict without self-triggering; the generic localStorage heuristic now excludes explicit test harnesses, eliminating non-runtime false positives.
 - GARP 2.7 r2 G-02 FIX becomes the active security authority; GARP 2.5.1/N5 remains a mandatory legacy regression layer.
 - Adds application policy, capability inventory, architecture-integrity, G-02 mutation tests, synthetic auto-patch admission tests and evidence-backed FOUNDATION assurance.
 - Locks Lesson Hub to `aiTransport: not-applicable` with local provider keys disabled; the application has no AI-provider operations.

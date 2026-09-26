@@ -104,16 +104,20 @@ for (const p of files) {
       ),
     );
   }
-  for (const issue of findUnsafeLocalStorage(text)) {
-    f.push(
-      finding(
-        "security",
-        "MINOR",
-        "LOCAL_STORAGE_NO_EVIDENCE",
-        `V ${rel}:${issue.line} není v lokálním kontextu statický důkaz ošetření selhání localStorage.`,
-        issue.statement,
-      ),
-    );
+  const localStorageTestFixture =
+    /(?:^|\/)(?:tests?|fixtures?)(?:\/|$)|(?:^|\/)test[^/]*\.(?:js|mjs)$/i.test(rel);
+  if (!localStorageTestFixture) {
+    for (const issue of findUnsafeLocalStorage(text)) {
+      f.push(
+        finding(
+          "security",
+          "MINOR",
+          "LOCAL_STORAGE_NO_EVIDENCE",
+          `V ${rel}:${issue.line} není v lokálním kontextu statický důkaz ošetření selhání localStorage.`,
+          issue.statement,
+        ),
+      );
+    }
   }
 }
 if (m.features?.centralAccessGuard) {
