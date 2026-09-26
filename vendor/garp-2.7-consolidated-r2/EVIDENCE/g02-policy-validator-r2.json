@@ -1,0 +1,19 @@
+{
+  "classification": "GARP27_G02_HARDENING_EVIDENCE",
+  "revision": "2026-09-23-r2",
+  "nodeVersion": "v22.16.0",
+  "scope": "reference policy validator contract behavior only; not APP_BEHAVIOR_TEST or LIVE_TEST",
+  "untouchedTemplate": {
+    "expected": "FAIL",
+    "exitCode": 1,
+    "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"GARP 2.7 policy is not admissible\",\n  \"details\": [\n    \"appId not present in inventory: replace-with-app-id\",\n    \"appVersion 0.0.0 is not admissible\",\n    \"identity: requires at least 1 semantic field(s) from [rule, controls, authentication, authorization, session, standaloneProfile, schoolProfile, provider, roles]\",\n    \"requestApiAi: requires at least 1 semantic field(s) from [registry, registeredOperations, controls, operations, agentic, requestPolicy, aiPolicy, maxCallsPerOperation, modelPolicy]\",\n    \"egress: requires at least 1 semantic field(s) from [standalone, school, crossApp, allowedDestinations, allowedEgress, defaultDeny, networkPolicy, providerEgress]\",\n    \"files: requires at least 1 semantic field(s) from [currentBoundary, serverBoundary, uploads, imports, uploadPolicy, importPolicy, quarantine, allowedMimeTypes, maxBytes]\",\n    \"dataLifecycle: requires at least 1 semantic field(s) from [classification, storage, retention, deletion, retentionDays, temporaryDataTtlMinutes, securityLogContentPolicy]\",\n    \"release: requires at least 1 semantic field(s) from [activeAuthority, promotion, publicAssurance, signing, signedReleaseRequired, antiRollbackRequired, rollback, releasePolicy]\",\n    \"inventory: requires at least 1 semantic field(s) from [source, architecturePolicy, changeRule, components, dependencies, inventoryPolicy]\",\n    \"securityHealth: requires at least 1 semantic field(s) from [localCi, live, failureMode, checks, monitoring, assurance, healthPolicy]\",\n    \"incident: requires at least 1 semantic field(s) from [current, future, response, escalation, contacts, incidentPolicy]\",\n    \"recovery: requires at least 1 semantic field(s) from [current, future, rollback, restore, backup, recoveryPolicy]\",\n    \"appId: placeholder substring: replace-with\",\n    \"identity.mode: forbidden placeholder value\",\n    \"requestApiAi.mode: forbidden placeholder value\",\n    \"egress.mode: forbidden placeholder value\",\n    \"files.mode: forbidden placeholder value\",\n    \"dataLifecycle.mode: forbidden placeholder value\",\n    \"release.mode: forbidden placeholder value\",\n    \"inventory.mode: forbidden placeholder value\",\n    \"securityHealth.mode: forbidden placeholder value\",\n    \"incident.mode: forbidden placeholder value\",\n    \"recovery.mode: forbidden placeholder value\"\n  ]\n}\n",
+    "stderr": ""
+  },
+  "positiveInventoryPolicy": {
+    "expected": "PASS",
+    "exitCode": 0,
+    "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"PASS\",\n  \"contract\": \"garp27-policy-v1\",\n  \"appId\": \"correspondence\",\n  \"appVersion\": \"5.10.28\",\n  \"inventory\": \"/mnt/data/garp27_fix/src/GARP-2.7-KONSOLIDOVANY-FINAL/MASTER/INVENTORY/ecosystem-apps.json\"\n}\n",
+    "stderr": ""
+  },
+  "status": "PASS"
+}

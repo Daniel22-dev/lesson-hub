@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "ghrab-garp-policy-v1",
+  "garpVersion": "2.6",
+  "profile": "FOUNDATION",
+  "app": {
+    "appId": "REPLACE_ME",
+    "name": "REPLACE_ME",
+    "version": "0.0.0",
+    "dataClass": "D0",
+    "agentic": "NO"
+  },
+  "identity": {},
+  "network": {
+    "defaultDeny": true,
+    "allowedEgress": []
+  },
+  "ai": {
+    "enabled": false,
+    "maxCallsPerOperation": 0,
+    "maxConcurrentCalls": 0,
+    "timeoutMs": 0,
+    "maxRetries": 0,
+    "reasonNotApplicable": "AI not used"
+  },
+  "uploads": {
+    "enabled": false,
+    "allowedMimeTypes": [],
+    "allowedExtensions": [],
+    "maxBytes": 0,
+    "maxArchiveDepth": 0,
+    "maxExpandedBytes": 0,
+    "malwareScan": "not-applicable",
+    "reasonNotApplicable": "Uploads not used"
+  },
+  "dataLifecycle": {
+    "temporaryDataTtlMinutes": 0,
+    "notStored": true,
+    "securityLogContentPolicy": "metadata-only",
+    "retentionNotes": "REPLACE_ME"
+  },
+  "release": {
+    "signedReleaseRequired": true,
+    "antiRollbackRequired": true,
+    "policyIncludedInSignedArtifact": true
+  },
+  "inventory": {},
+  "incident": {},
+  "securityHealth": {},
+  "live": {
+    "status": "NOT_TESTED",
+    "reason": "School server enforcement not available in FOUNDATION"
+  }
+}

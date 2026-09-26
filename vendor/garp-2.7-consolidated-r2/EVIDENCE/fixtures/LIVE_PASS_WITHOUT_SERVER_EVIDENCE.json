@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "ghrab-garp-live-profile-v1",
+  "garpVersion": "2.6",
+  "appId": "REPLACE_ME",
+  "version": "0.0.0",
+  "releaseDigest": "REPLACE_ME",
+  "mode": "MONITOR",
+  "environment": "staging",
+  "policyRef": "security/garp-policy.json",
+  "integrations": {
+    "firewall": {
+      "provider": "REPLACE_ME",
+      "status": "NOT_TESTED"
+    },
+    "reverseProxy": {
+      "provider": "REPLACE_ME",
+      "status": "NOT_TESTED"
+    },
+    "avEdR": {
+      "provider": "REPLACE_ME",
+      "status": "NOT_TESTED"
+    },
+    "identityProvider": {
+      "provider": "REPLACE_ME",
+      "status": "NOT_TESTED"
+    },
+    "aiGateway": {
+      "provider": "REPLACE_ME",
+      "status": "NOT_TESTED"
+    }
+  },
+  "controls": {
+    "LIVE-01": "PASS",
+    "LIVE-02": "PASS",
+    "LIVE-03": "PASS",
+    "LIVE-04": "PASS",
+    "LIVE-05": "PASS",
+    "LIVE-06": "PASS",
+    "LIVE-07": "PASS",
+    "LIVE-08": "PASS",
+    "LIVE-09": "PASS",
+    "LIVE-10": "PASS",
+    "LIVE-11": "PASS",
+    "LIVE-12": "PASS",
+    "LIVE-13": "PASS",
+    "LIVE-14": "PASS",
+    "LIVE-15": "PASS",
+    "LIVE-16": "PASS",
+    "LIVE-17": "PASS",
+    "LIVE-18": "PASS",
+    "LIVE-19": "PASS",
+    "LIVE-20": "PASS"
+  },
+  "overall": "PASS"
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "garp27-assurance-status-v1",
+  "garpVersion": "2.7",
+  "environment": "local-ci",
+  "releaseIdentity": {
+    "appId": "replace-with-app-id",
+    "appVersion": "0.0.0",
+    "sourceCommit": "0000000000000000000000000000000000000000"
+  },
+  "overall": "DERIVE",
+  "components": []
+}

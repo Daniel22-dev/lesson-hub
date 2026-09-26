@@ -1,0 +1,63 @@
+{
+  "schema": "garp27-consolidated-package-manifest-v2",
+  "garpVersion": "2.7",
+  "consolidationRevision": "2026-09-23-r2",
+  "status": "IMPLEMENTATION_MASTER_FOR_APP_MIGRATION_G02_HARDENED",
+  "replacesPreviousConsolidatedPackage": true,
+  "singleActiveAuthority": "GARP-2.7",
+  "legacyBaselinesPreserved": [
+    "GARP-2.5.1",
+    "GARP-2.6"
+  ],
+  "referenceValidatorImplementationIncluded": true,
+  "patchedOriginalWorkingPackageIncluded": false,
+  "architectureIntegrityContractRequired": true,
+  "serverImplementation": "DEFERRED_BY_OWNER_DECISION",
+  "liveStatusWithoutTargetEnvironment": "NOT_TESTED",
+  "localAndCiProtectionsMustRemainActiveWithoutServer": true,
+  "selftests": {
+    "package": {
+      "classification": "PACKAGE_SELFTEST",
+      "passed": 19,
+      "checks": 19
+    },
+    "contract": {
+      "classification": "CONTRACT_TEST",
+      "passed": 25,
+      "checks": 25
+    },
+    "appBehaviorTestIncluded": false,
+    "liveTestIncluded": false
+  },
+  "auditFindings": {
+    "A-01": "CLOSED_IN_REFERENCE_MASTER",
+    "A-02": "CLOSED_IN_REFERENCE_MASTER",
+    "A-03": "CLOSED_IN_REFERENCE_MASTER",
+    "A-04": "CLOSED_IN_REFERENCE_MASTER",
+    "A-05": "CLOSED_IN_REFERENCE_MASTER",
+    "A-06": "CLOSED_IN_REFERENCE_MASTER",
+    "A-07": "CLOSED_IN_REFERENCE_MASTER",
+    "G-02": "CLOSED_IN_REFERENCE_MASTER_R2"
+  },
+  "specifications": {
+    "redTeamCases": 67,
+    "benignAiInputs": 8,
+    "architectureIntegrityCases": 5
+  },
+  "recommendedRollout": [
+    "LUDUS_REBASELINE",
+    "KS_SECOND_REFERENCE_APP",
+    "CROSS_APP_REVIEW",
+    "CONTROLLED_ECOSYSTEM_ROLLOUT"
+  ],
+  "mainProtocol": "01-GARP-2.7-BEZPECNOSTNI-PROTOKOL.md",
+  "consolidationNotes": "10-CONSOLIDATION-R2-G02.md",
+  "masterReadme": "MASTER/README.md",
+  "g02Hardening": {
+    "inventoryValidatedAppId": true,
+    "rejectZeroVersion": true,
+    "semanticSectionAdmission": true,
+    "placeholderSubstringDetection": true,
+    "untouchedTemplateNegativeSelftest": true
+  }
+}

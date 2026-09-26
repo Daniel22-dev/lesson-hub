@@ -1,0 +1,24 @@
+{
+  "schema":"garp27-application-migration-profile-v1",
+  "garpVersion":"2.7",
+  "appId":"lesson-hub",
+  "appVersion":"1.2.25",
+  "serverApproval":"DEFERRED_BY_OWNER_DECISION",
+  "requiredComponents":[
+    {"componentId":"AG-01-policy","required":true,"serverDependent":false},
+    {"componentId":"AG-02-identity","required":true,"serverDependent":false},
+    {"componentId":"AG-03-request-api-ai","required":true,"serverDependent":false},
+    {"componentId":"AG-04-egress","required":true,"serverDependent":true},
+    {"componentId":"AG-05-files","required":true,"serverDependent":false},
+    {"componentId":"AG-06-data-lifecycle","required":true,"serverDependent":false},
+    {"componentId":"AG-07-release","required":true,"serverDependent":false},
+    {"componentId":"AG-08-architecture","required":true,"serverDependent":false},
+    {"componentId":"AG-09-inventory","required":true,"serverDependent":false},
+    {"componentId":"AG-10-live-health","required":true,"serverDependent":true},
+    {"componentId":"AG-11-recovery","required":true,"serverDependent":true},
+    {"componentId":"AG-12-orchestration","required":true,"serverDependent":true}
+  ],
+  "trustedEvidence":{},
+  "maxEvidenceAgeHours":168,
+  "releaseIdentity":{"appId":"lesson-hub","appVersion":"1.2.25","sourceCommit":"0000000000000000000000000000000000000000"}
+}

@@ -1,0 +1,136 @@
+{
+  "nodeVersion": "v22.16.0",
+  "scope": "Local validator probes only; no app or server testing",
+  "cases": [
+    {
+      "caseId": "ASSURANCE_PASS_WITH_FAILED_COMPONENT",
+      "validator": "ASSURANCE/TOOLS/validate-assurance-status.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"components\": 1\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/ASSURANCE_PASS_WITH_FAILED_COMPONENT.json"
+    },
+    {
+      "caseId": "ASSURANCE_PASS_WITHOUT_EVIDENCE",
+      "validator": "ASSURANCE/TOOLS/validate-assurance-status.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"components\": 1\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/ASSURANCE_PASS_WITHOUT_EVIDENCE.json"
+    },
+    {
+      "caseId": "ASSURANCE_MISSING_REQUIRED_ENVIRONMENT",
+      "validator": "ASSURANCE/TOOLS/validate-assurance-status.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"components\": 1\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/ASSURANCE_MISSING_REQUIRED_ENVIRONMENT.json"
+    },
+    {
+      "caseId": "ASSURANCE_DUPLICATE_COMPONENT",
+      "validator": "ASSURANCE/TOOLS/validate-assurance-status.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"components\": 2\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/ASSURANCE_DUPLICATE_COMPONENT.json"
+    },
+    {
+      "caseId": "ASSURANCE_REJECTS_27",
+      "validator": "ASSURANCE/TOOLS/validate-assurance-status.mjs",
+      "expected": "ACCEPT_IN_27_CONTRACT",
+      "actual": "REJECT",
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "{\n  \"status\": \"FAIL\",\n  \"errors\": [\n    \"garpVersion\"\n  ]\n}\n",
+      "fixture": "fixtures/ASSURANCE_REJECTS_27.json"
+    },
+    {
+      "caseId": "APG_COMMITTED_EMPTY_GATES",
+      "validator": "AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"state\": \"COMMITTED\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/APG_COMMITTED_EMPTY_GATES.json"
+    },
+    {
+      "caseId": "APG_COMMITTED_MISSING_GATES",
+      "validator": "AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"state\": \"COMMITTED\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/APG_COMMITTED_MISSING_GATES.json"
+    },
+    {
+      "caseId": "APG_COMMITTED_ALL_GATES_NA",
+      "validator": "AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"state\": \"COMMITTED\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/APG_COMMITTED_ALL_GATES_NA.json"
+    },
+    {
+      "caseId": "APG_COMMITTED_SOURCE_NOT_ALLOWED_NO_EVIDENCE",
+      "validator": "AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"state\": \"COMMITTED\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/APG_COMMITTED_SOURCE_NOT_ALLOWED_NO_EVIDENCE.json"
+    },
+    {
+      "caseId": "APG_MISSING_REQUIRED_POLICY",
+      "validator": "AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"state\": \"DISCOVERED\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/APG_MISSING_REQUIRED_POLICY.json"
+    },
+    {
+      "caseId": "APG_REJECTS_27",
+      "validator": "AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs",
+      "expected": "ACCEPT_IN_27_CONTRACT",
+      "actual": "REJECT",
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "{\n  \"status\": \"FAIL\",\n  \"errors\": [\n    \"garpVersion\"\n  ]\n}\n",
+      "fixture": "fixtures/APG_REJECTS_27.json"
+    },
+    {
+      "caseId": "LIVE_PASS_WITHOUT_SERVER_EVIDENCE",
+      "validator": "SHIELD-LIVE/TOOLS/validate-live-profile.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"appId\": \"REPLACE_ME\",\n  \"mode\": \"MONITOR\",\n  \"overall\": \"PASS\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/LIVE_PASS_WITHOUT_SERVER_EVIDENCE.json"
+    },
+    {
+      "caseId": "POLICY_EMPTY_CRITICAL_SECTIONS",
+      "validator": "FOUNDATION/TOOLS/validate-garp-policy.mjs",
+      "expected": "REJECT",
+      "actual": "ACCEPT",
+      "exitCode": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"appId\": \"REPLACE_ME\",\n  \"profile\": \"FOUNDATION\"\n}\n",
+      "stderr": "",
+      "fixture": "fixtures/POLICY_EMPTY_CRITICAL_SECTIONS.json"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema":"garp27-architecture-policy-v1",
+  "garpVersion":"2.7",
+  "appId":"lesson-hub",
+  "appVersion":"1.2.25",
+  "sourceScopes":["src","server","scripts"],
+  "productionArtifacts":["dist","dist-school-server","dist-pages"],
+  "forbiddenSourceEdges":[
+    {"fromPrefix":"src/","toPrefix":"scripts/"},
+    {"fromPrefix":"src/","toPrefix":"security/"},
+    {"fromPrefix":"src/","toPrefix":".github/"},
+    {"fromPrefix":"src/","toPrefix":"audit-evidence/"}
+  ],
+  "forbiddenArtifactFragments":["-----BEGIN PRIVATE KEY-----","-----BEGIN ENCRYPTED PRIVATE KEY-----","-----BEGIN PGP PRIVATE KEY BLOCK-----"],
+  "forbiddenArtifactPathPrefixes":["scripts/","security/","audit-evidence/",".github/","vendor/garp-2.7-consolidated-r2/"],
+  "requiredFiles":["package-lock.json","src/config/deployment.json","src/config/deployment.school-server.json","security/garp27/garp-policy.json","security/garp27/capability-inventory.json","vendor/garp-2.7-consolidated-r2/MASTER/CONTRACTS/garp27-core.json","vendor/garp-2.7-consolidated-r2/MASTER/INVENTORY/ecosystem-apps.json"],
+  "minimumCheckedSourceFiles":40,
+  "liveServerValidationRequired":true,
+  "singleAuthority":"GARP-2.7",
+  "legacyAuthorities":["GARP-2.5.1"]
+}

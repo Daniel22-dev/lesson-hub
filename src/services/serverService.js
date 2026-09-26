@@ -132,8 +132,14 @@ export class ServerService {
   }
 
   configure(input = {}) {
+    const nextBaseUrl = this.schoolProfile ? schoolServerBaseUrl() : normalizeBaseUrl(input.baseUrl ?? this.config.baseUrl);
+    const currentBaseUrl = this.schoolProfile ? schoolServerBaseUrl() : normalizeBaseUrl(this.config.baseUrl);
+    if (!this.schoolProfile && nextBaseUrl !== currentBaseUrl && this.session?.token) {
+      // Bearer session is scoped to the server origin that issued it.
+      this.clearSession();
+    }
     return this.saveConfig({
-      baseUrl: this.schoolProfile ? schoolServerBaseUrl() : normalizeBaseUrl(input.baseUrl ?? this.config.baseUrl),
+      baseUrl: nextBaseUrl,
       rememberSession: this.schoolProfile ? false : (input.rememberSession ?? this.config.rememberSession),
       syncEnabled: input.syncEnabled ?? this.config.syncEnabled,
     });

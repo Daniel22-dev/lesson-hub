@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "ghrab-garp-assurance-status-v1",
+  "garpVersion": "2.6",
+  "appId": "REPLACE_ME",
+  "version": "0.0.0",
+  "releaseDigest": "REPLACE_ME",
+  "generatedAt": "REPLACE_ME_ISO8601",
+  "overall": "NOT_TESTED",
+  "components": [
+    {
+      "componentId": "garp",
+      "presence": "PRESENT",
+      "health": "UNKNOWN",
+      "effectiveness": "NOT_TESTED",
+      "evidenceFreshness": "UNKNOWN",
+      "lastCheckedAt": null,
+      "lastEffectiveTestAt": null,
+      "maxEvidenceAgeSeconds": 86400,
+      "controls": [
+        "FND-13",
+        "LIVE-10",
+        "MAS-02",
+        "MAS-03"
+      ],
+      "evidenceRefs": [],
+      "notes": []
+    }
+  ],
+  "openFindings": []
+}

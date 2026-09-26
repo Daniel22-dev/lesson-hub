@@ -89,11 +89,11 @@ function fallbackConfig() {
     allowedOrigins: ["self", "https://daniel22-dev.github.io"],
     sharedAccessVersion: "p0-fallback",
     authMode: "signed-permit",
-    aiTransport: "direct-provider",
+    aiTransport: "not-applicable",
     telemetryMode: "local",
     features: {
       schoolServerReady: true,
-      allowLocalProviderKeys: true,
+      allowLocalProviderKeys: false,
       serverSessionReady: false,
       schoolGatewayReady: false,
     },

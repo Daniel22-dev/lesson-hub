@@ -1,3 +1,12 @@
+## 1.2.25 — GARP 2.7 FOUNDATION migration (2026-09-26)
+
+- GARP 2.7 r2 G-02 FIX becomes the active security authority; GARP 2.5.1/N5 remains a mandatory legacy regression layer.
+- Adds application policy, capability inventory, architecture-integrity, G-02 mutation tests, synthetic auto-patch admission tests and evidence-backed FOUNDATION assurance.
+- Locks Lesson Hub to `aiTransport: not-applicable` with local provider keys disabled; the application has no AI-provider operations.
+- Invalidates standalone bearer sessions before a configured server target changes, preventing token carry-over to a different origin.
+- P5 and production deploy require the GARP 2.7 FOUNDATION gate in addition to the existing regression/release controls.
+- School-server LIVE controls remain explicitly `NOT_TESTED` until an approved runtime exists.
+
 ## 1.2.24 — end-to-end auto-patch validation release (2026-09-20)
 
 - technical PATCH-only validation release; no pedagogical/client feature behavior is intentionally changed;

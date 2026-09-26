@@ -1,0 +1,77 @@
+{
+  "scope": "Current consolidated-document and archive consistency only. Not an application security PASS. Original local validator probes were not rerun here.",
+  "date": "2026-09-17",
+  "priorEvidence": "Historical files preserved byte-for-byte; prior deliverable-quality-checks.json applies to the source package with 62 specifications.",
+  "checks": [
+    {
+      "check": "all_original_files_retained",
+      "passed": true
+    },
+    {
+      "check": "original_audit_evidence_tools_and_operating_profile_preserved",
+      "passed": true
+    },
+    {
+      "check": "all_json_files_parse",
+      "passed": true
+    },
+    {
+      "check": "protocol_txt_md_identical",
+      "passed": true
+    },
+    {
+      "check": "67_unique_specifications",
+      "passed": true
+    },
+    {
+      "check": "all_62_original_test_ids_retained",
+      "passed": true
+    },
+    {
+      "check": "five_architecture_cases_added",
+      "passed": true
+    },
+    {
+      "check": "specifications_not_claimed_as_executed",
+      "passed": true
+    },
+    {
+      "check": "only_existing_12_control_domains",
+      "passed": true
+    },
+    {
+      "check": "all_source_references_resolve",
+      "passed": true
+    },
+    {
+      "check": "manifest_conserves_garp27_and_honest_implementation_state",
+      "passed": true
+    },
+    {
+      "check": "original_master_zip_unchanged",
+      "passed": true
+    },
+    {
+      "check": "source_package_hash_bound",
+      "passed": true
+    },
+    {
+      "check": "profile_disabled_no_production_targets",
+      "passed": true
+    },
+    {
+      "check": "all_protocol_architecture_sections_present",
+      "passed": true
+    },
+    {
+      "check": "no_new_runtime_engine_claimed",
+      "passed": true
+    },
+    {
+      "check": "no_runtime_or_repository_mutations_in_this_step",
+      "passed": true
+    }
+  ],
+  "passed": 17,
+  "failed": 0
+}

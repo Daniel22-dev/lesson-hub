@@ -40,9 +40,12 @@ jobs:
         if: github.event_name != 'pull_request'
         shell: bash
         run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)" >> "$GITHUB_ENV"
-      - name: Run full GARP 2.5.1 release gate
+      - name: Run legacy GARP 2.5.1 regression gate
         if: github.event_name != 'pull_request'
         run: npm run qa:garp25:static
+      - name: Run GARP 2.7 FOUNDATION gate
+        if: github.event_name != 'pull_request'
+        run: npm run qa:garp27:foundation
       - name: Build and verify PREP exact release identity
         if: github.event_name != 'pull_request'
         env:
@@ -66,6 +69,7 @@ jobs:
             dist/qa-p3-browser-report.json
             dist/quality-report.json
             qa-results/**
+            audit-evidence/garp27-current/**
             dist-pages/release-integrity.json
             dist-pages/studio-manifest.json
             dist-pages/sbom.cdx.json
