@@ -1,0 +1,8 @@
+{
+  "schema": "garp27-live-status-v1",
+  "garpVersion": "2.7",
+  "environment": "school-runtime",
+  "overall": "NOT_TESTED",
+  "controls": [],
+  "runtimeEvidence": []
+}

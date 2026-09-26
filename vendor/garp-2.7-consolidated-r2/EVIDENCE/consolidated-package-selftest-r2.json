@@ -1,0 +1,88 @@
+{
+  "classification": "PACKAGE_SELFTEST",
+  "status": "PASS",
+  "checks": 19,
+  "passed": 19,
+  "scope": "package-integrity-and-contract-consistency-only",
+  "appBehaviorTest": false,
+  "liveTest": false,
+  "checkDigest": "ddc64e0f88ff82e4af9440a3e8f5dcabafa83eb7ab45bf7efb2d84b4b34f47e5",
+  "details": [
+    {
+      "id": "file:00-CTI-ME.txt",
+      "pass": true
+    },
+    {
+      "id": "file:01-GARP-2.7-BEZPECNOSTNI-PROTOKOL.md",
+      "pass": true
+    },
+    {
+      "id": "file:02-AUDIT-VSTUPNIHO-BALIKU.md",
+      "pass": true
+    },
+    {
+      "id": "file:03-RED-TEAM-KATALOG.json",
+      "pass": true
+    },
+    {
+      "id": "file:04-IMPLEMENTACNI-ZADANI.txt",
+      "pass": true
+    },
+    {
+      "id": "file:10-CONSOLIDATION-R2-G02.md",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/CONTRACTS/garp27-core.json",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/INVENTORY/ecosystem-apps.json",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-policy.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-assurance.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-auto-patch.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-live-status.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-runtime-test-request.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/contract-selftest.mjs",
+      "pass": true
+    },
+    {
+      "id": "red-team-catalog-nonempty",
+      "pass": true
+    },
+    {
+      "id": "garp-version-2.7",
+      "pass": true
+    },
+    {
+      "id": "server-deferred",
+      "pass": true
+    },
+    {
+      "id": "policy-semantic-contract-complete",
+      "pass": true
+    },
+    {
+      "id": "ecosystem-inventory-nonempty-unique",
+      "pass": true
+    }
+  ]
+}

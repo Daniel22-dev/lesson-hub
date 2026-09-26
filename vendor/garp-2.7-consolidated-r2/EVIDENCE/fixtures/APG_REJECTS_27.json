@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "ghrab-garp-auto-patch-manifest-v1",
+  "garpVersion": "2.7",
+  "updateId": "REPLACE_ME",
+  "target": {
+    "appId": "REPLACE_ME",
+    "currentVersion": "0.0.0",
+    "currentDigest": "REPLACE_ME",
+    "candidateVersion": "0.0.0",
+    "candidateDigest": "REPLACE_ME"
+  },
+  "source": {
+    "provider": "REPLACE_ME",
+    "repository": "REPLACE_ME",
+    "ref": "REPLACE_ME",
+    "allowlisted": false
+  },
+  "policy": {
+    "signedReleaseRequired": true,
+    "provenanceRequired": true,
+    "antiRollbackRequired": true,
+    "stagingRequired": true,
+    "autoRollbackOnCriticalPostDeployFail": true
+  },
+  "gates": {
+    "source": "NOT_TESTED",
+    "artifactIntegrity": "NOT_TESTED",
+    "signatureProvenance": "NOT_TESTED",
+    "targetBinding": "NOT_TESTED",
+    "garpCompatibility": "NOT_TESTED",
+    "preDeployValidation": "NOT_TESTED",
+    "postDeployHealth": "NOT_TESTED"
+  },
+  "state": "DISCOVERED",
+  "evidenceRefs": []
+}

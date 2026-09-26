@@ -1,0 +1,53 @@
+{
+  "schema": "garp27-policy-v1",
+  "garpVersion": "2.7",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.25",
+  "identity": {
+    "standaloneProfile": "AI Studio signed-permit bootstrap and optional standalone Lesson Hub server bearer session",
+    "schoolProfile": "same-origin school session enforcement remains deferred until an approved school runtime exists",
+    "session": "standalone bearer sessions are cleared before the configured server origin changes; browser-supplied roles never become future server authority"
+  },
+  "requestApiAi": {
+    "registeredOperations": 0,
+    "agentic": false,
+    "controls": "Lesson Hub has no provider AI request operation and no autonomous tool executor; introducing either requires inventory and policy review before admission."
+  },
+  "egress": {
+    "standalone": "same-origin static assets plus the explicitly configured Lesson Hub server endpoint only",
+    "school": "same-origin school runtime only when that runtime is approved",
+    "defaultDeny": "provider AI egress and local provider credentials are not capabilities of Lesson Hub"
+  },
+  "files": {
+    "currentBoundary": "Local lesson/material imports remain browser-parsed and constrained by the existing import contracts, sanitization and size/type checks.",
+    "serverBoundary": "Production upload quarantine and server filesystem isolation remain live-runtime controls and are not claimed by local CI."
+  },
+  "dataLifecycle": {
+    "classification": "D2 teacher lesson/material data",
+    "storage": "namespaced IndexedDB/local browser storage and optional Lesson Hub server persistence under existing suite-session and deletion rules",
+    "retention": "user-controlled lesson/material lifecycle; shared-device cleanup and explicit deletion remain mandatory controls"
+  },
+  "release": {
+    "activeAuthority": "GARP-2.7",
+    "promotion": "candidate -> cumulative security gate -> pull request -> protected main -> exact release identity -> verified public Pages release -> app-updated",
+    "publicAssurance": "TRANSITIONAL Pages release; school-server SHIELD-LIVE and runtime controls remain NOT_TESTED"
+  },
+  "inventory": {
+    "source": "security/garp27/capability-inventory.json",
+    "architecturePolicy": "security/garp27/architecture-policy.json",
+    "changeRule": "new egress, import class, privileged browser/server capability or release authority requires inventory update and matching negative tests"
+  },
+  "securityHealth": {
+    "localCi": "GARP 2.7 contract, architecture, mutation and release gates run with retained GARP 2.5.1/N5 regressions",
+    "live": "NOT_TESTED until an approved target runtime supplies trusted runtime evidence",
+    "failureMode": "missing, stale, mismatched or empty evidence never becomes PASS"
+  },
+  "incident": {
+    "current": "bounded error reporting, release evidence and fail-closed promotion remain active; diagnostic content is minimized",
+    "future": "central runtime monitoring and infrastructure containment require separate server approval"
+  },
+  "recovery": {
+    "current": "Safe Promotion, exact release identity, rollback-aware release integrity and local data export/deletion form the current recovery baseline",
+    "future": "server restore, trust-root custody and live recovery drills remain NOT_TESTED until the school runtime is approved"
+  }
+}

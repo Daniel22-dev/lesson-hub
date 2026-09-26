@@ -1,0 +1,30 @@
+GARP 2.7 - CONSOLIDATED MASTER r2
+================================
+
+THIS IS THE REPLACEMENT MASTER PACKAGE FOR FURTHER MIGRATIONS.
+The security contract remains GARP 2.7; this is not GARP 2.8.
+Consolidation revision: 2026-09-23-r2.
+
+START HERE
+1. 01-GARP-2.7-BEZPECNOSTNI-PROTOKOL.md - complete security contract.
+2. 10-CONSOLIDATION-R2-G02.md - r2 G-02 validator hardening and compatibility notes.
+3. 09-CONSOLIDATION-R1.md - historical r1 consolidation notes.
+4. MASTER/README.md - reference validators and selftests.
+5. 03-RED-TEAM-KATALOG.json - 67 RED TEAM acceptance specifications.
+6. 04-IMPLEMENTACNI-ZADANI.txt - application migration procedure.
+
+IMPORTANT
+- GARP 2.5/2.6 protections remain regression baselines; the active contract line is GARP 2.7.
+- r2 closes G-02 in the reference policy validator: untouched templates, unknown appId,
+  version 0.0.0, placeholder substrings and mode-only policy sections are rejected.
+- Server implementation remains DEFERRED_BY_OWNER_DECISION. Server-dependent checks remain
+  DEFERRED/NOT_TESTED and cannot create a false LIVE PASS.
+- PACKAGE_SELFTEST/CONTRACT_TEST is not an application security certification.
+- G-01 formal authority acceptance is a separate owner/governance action and is not self-issued.
+
+QUICK CHECK
+node MASTER/TOOLS/package-selftest.mjs
+node MASTER/TOOLS/contract-selftest.mjs
+
+PERSONAL DATA
+Use synthetic test data. Do not put real student work, credentials or secrets into evidence.

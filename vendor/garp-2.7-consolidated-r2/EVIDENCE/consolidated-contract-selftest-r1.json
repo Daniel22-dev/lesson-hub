@@ -1,0 +1,171 @@
+{
+  "classification": "CONTRACT_TEST",
+  "status": "PASS",
+  "checks": 20,
+  "passed": 20,
+  "scope": "reference-validator-positive-negative-tests",
+  "appBehaviorTest": false,
+  "liveTest": false,
+  "results": [
+    {
+      "id": "A01-positive-foundation-with-live-deferred",
+      "expectedExit": 0,
+      "actualExit": 0,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"PASS\",\n  \"derivedOverall\": \"FOUNDATION_PASS_LIVE_NOT_TESTED\",\n  \"foundationPass\": true,\n  \"liveStatus\": \"NOT_TESTED\",\n  \"notes\": []\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A01-reject-contradictory-pass",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Assurance admission failed\",\n  \"details\": {\n    \"derivedOverall\": \"FAIL\",\n    \"errors\": [\n      \"AG-01-policy: failing assurance axes\",\n      \"overall mismatch: declared=PASS derived=FAIL\"\n    ]\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A01-reject-pass-without-evidence",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Assurance admission failed\",\n  \"details\": {\n    \"derivedOverall\": \"FAIL\",\n    \"errors\": [\n      \"AG-01-policy: evidence required\"\n    ]\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A01-reject-duplicate-components",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Assurance admission failed\",\n  \"details\": {\n    \"derivedOverall\": \"FAIL\",\n    \"errors\": [\n      \"components must be unique\"\n    ]\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A01-A04-reject-missing-environment",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Assurance admission failed\",\n  \"details\": {\n    \"derivedOverall\": \"FAIL\",\n    \"errors\": [\n      \"environment required\"\n    ]\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A01-reject-untrusted-evidence",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Assurance admission failed\",\n  \"details\": {\n    \"derivedOverall\": \"FAIL\",\n    \"errors\": [\n      \"AG-01-policy: untrusted evidence policy\"\n    ]\n  }\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A02-A03-positive-committed",
+      "expectedExit": 0,
+      "actualExit": 0,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"PASS\",\n  \"state\": \"COMMITTED\",\n  \"releaseId\": \"rel-4\",\n  \"sequence\": 3,\n  \"gates\": 2\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A02-reject-empty-gates",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Auto-patch admission failed\",\n  \"details\": [\n    \"gate foundation: missing\",\n    \"gate architecture: missing\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A02-reject-all-gates-na",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Auto-patch admission failed\",\n  \"details\": [\n    \"gate foundation: N/A forbidden\",\n    \"gate architecture: N/A forbidden\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A03-reject-untrusted-source-and-evidence",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Auto-patch admission failed\",\n  \"details\": [\n    \"source not trusted/allowlisted\",\n    \"gate foundation: untrusted evidence gate1\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A03-reject-replay-sequence",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Auto-patch admission failed\",\n  \"details\": [\n    \"replay sequence below trusted minimum\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A03-valid-transition-prepared-validated",
+      "expectedExit": 0,
+      "actualExit": 0,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"PASS\",\n  \"transition\": \"PREPARED>VALIDATED\",\n  \"releaseId\": \"rel-4\",\n  \"sequence\": 3\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A03-reject-direct-prepared-committed",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"Auto-patch state transition rejected\",\n  \"details\": [\n    \"forbidden transition PREPARED>COMMITTED\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A04-A05-policy-positive-2.7",
+      "expectedExit": 0,
+      "actualExit": 0,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"PASS\",\n  \"contract\": \"garp27-policy-v1\",\n  \"appId\": \"demo\",\n  \"appVersion\": \"1.0.0\"\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A04-A05-policy-reject-empty-and-2.6",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"GARP 2.7 policy is not admissible\",\n  \"details\": [\n    \"garpVersion must be 2.7; legacy 2.5/2.6 requires explicit migration review\",\n    \"identity: required non-empty object\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A04-policy-reject-placeholder",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"GARP 2.7 policy is not admissible\",\n  \"details\": [\n    \"incident.mode: placeholder\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A04-live-false-pass-rejected",
+      "expectedExit": 1,
+      "actualExit": 1,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"FAIL\",\n  \"message\": \"False LIVE PASS is forbidden while server phase is deferred\",\n  \"details\": [\n    \"serverApproval is not APPROVED\"\n  ]\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A04-live-deferred-is-not-tested",
+      "expectedExit": 3,
+      "actualExit": 3,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"LIVE_TEST\",\n  \"status\": \"NOT_TESTED\",\n  \"reason\": \"SERVER_PHASE_DEFERRED\",\n  \"serverApproval\": \"DEFERRED_BY_OWNER_DECISION\"\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A06-unsafe-production-is-not-tested",
+      "expectedExit": 3,
+      "actualExit": 3,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"LIVE_TEST\",\n  \"status\": \"NOT_TESTED\",\n  \"reason\": \"PRODUCTION_PRECONDITIONS_NOT_MET\",\n  \"testId\": \"RVP-01\"\n}",
+      "stderr": ""
+    },
+    {
+      "id": "A06-safe-approved-production-request",
+      "expectedExit": 0,
+      "actualExit": 0,
+      "pass": true,
+      "stdout": "{\n  \"classification\": \"CONTRACT_TEST\",\n  \"status\": \"PASS\",\n  \"testId\": \"RVP-01\",\n  \"environment\": \"production\",\n  \"safetyClass\": \"PROD_SAFE_CONDITIONAL\",\n  \"executionAllowed\": true\n}",
+      "stderr": ""
+    }
+  ]
+}

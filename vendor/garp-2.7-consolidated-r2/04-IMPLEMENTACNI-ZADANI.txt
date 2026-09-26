@@ -1,0 +1,96 @@
+GARP 2.7 — ZADÁNÍ K IMPLEMENTACI A NEZÁVISLÉMU REVIEW
+
+VSTUPY
+1. Tento protokol, audit, testovací katalog a původní pracovní balík.
+2. Přesné aktuální zdroje konkrétní aplikace/platformy a její build konfigurace.
+3. Schválený deployment profil; případně dostupný autorizovaný staging.
+
+ÚKOL
+Převeď GARP 2.7 z deklarativního kontraktu do prokazatelných vynucovacích bodů.
+Nezakládej GARP 2.8 ani další paralelní ochrannou značku. Neoznačuj návrh,
+šablonu, platný JSON, úspěšný selftest nebo mock za důkaz skutečného LIVE provozu.
+
+NEJDŘÍVE
+Zapiš přesné vstupní digests a inventář. Rozliš již implementovaný GARP 2.5/N5,
+release integrity, Platform a AI Core od plánů. Zachovej funkční ochrany a
+regresně je ověř; neimplementuj je automaticky znovu.
+Přiložený audit konstatuje chování dodaných validátorů, nikoli zranitelnosti
+neprozkoumaných aplikací. Ověř jejich skutečné volající a bezpečnostní význam.
+
+POŘADÍ
+A. Potvrď A-01 až A-07 proti přesnému vstupu. Výsledek ACCEPT/PARTIAL/REJECT
+   zdůvodni testem nebo konkrétním kódem, nikoli dojmem.
+B. Namapuj logická místa z protokolu 2.1 na současné repozitáře. Nevytvářej
+   automaticky nový monorepozitář, dvanáct služeb ani kopii jádra v každé aplikaci.
+   Urči jediný aktuální kontrakt 2.7. Historické 2.6/2.5.1 soubory zachovej.
+   Dodej explicitní adaptér pouze tam, kde je skutečně potřebná kompatibilita.
+C. Sjednoť schéma a jeho použití ve validátorech. Odděl validaci tvaru od
+   sémantické, kryptografické a behaviorální verifikace.
+D. Oprav ASSURANCE: povinný scope z důvěryhodného profilu, agregace, stavy,
+   čerstvost, vazby, jedinečnost, N/A, evidence původ a replay.
+E. Oprav AUTO-PATCH: úplné brány, význam stavů, podpis/původ/cíl, auditovaný
+   stavový automat, zámek, idempotence, revokace a bezpečný rollback.
+F. Doplň aplikační/serverové vynucení podle AG-01..12. Knihovna v procesu sama
+   nedokazuje odolnost proti převzetí tohoto procesu; egress, secrets a
+   deployment pravomoci musí mít odpovídající vnější hranici.
+G. Připrav pouze omezené adaptery pro dohled a test runner. Nikdy libovolné
+   execute-command rozhraní, produkční scanning bez scope nebo automatické
+   změny firewallu bez schválené pravomoci.
+H. Zapoj bránu architecture-integrity (protokol 2.3) v důvěryhodném CI a admission.
+   Dolož zakázané vazby, čistý produkční artefakt, úplný scope, důvěryhodný
+   výsledek a jedinou autoritu rozhodování. Změna kontroly nesmí sama sebe
+   schválit. Implementuj G27-AR01 až G27-AR05 a doplněné provozní scénáře.
+   Zapoj testy z katalogu podle relevance. Každá oprava: pozitivní případ,
+   negativní případ, bezpečný mutation check, výpadek a návrat.
+I. Proveď dostupné skutečné testy. Serverově závislé bez prostředí označ
+   NOT_TESTED a blokuj odpovídající LIVE claim, nikoli celou již provedenou práci.
+J. Zkontroluj dopad na druhou odlišnou aplikaci a cross-app tok před hromadnou migrací.
+
+POŽADAVKY NA KÓD
+Malé moduly, jedna odpovědnost, čitelné názvy, typové rozhraní, standardní knihovny.
+Žádné ručně vynalezené kryptografické algoritmy ani samostatný home-made antivirus.
+Žádné univerzální admin tokeny, Docker socket v aplikaci, tajné údaje v prohlížeči.
+Neprováděj zbytečný plošný refaktor nesouvisející s ověřenými nálezy.
+Neoslabuj testy, limity ani kontroly jen proto, aby pipeline zezelenala.
+Neznámá kritická schopnost/konfigurace nesmí projít fail-open.
+Kontroluj všechny cesty ke stejnému citlivému místu, nejen první nalezenou funkci.
+Jádro neimportuje konkrétní aplikace. Aplikace neimportuje runner ani delivery.
+Testy mohou být u zdrojů, nesmějí se distribuovat jako produkční bypass.
+Připni schválené verze sdílených modulů; změna jádra vyžaduje relevantní
+regrese dotčených aplikací, nikoli slepé automatické převzetí.
+Automatické reakce mají omezený rozsah a rozpočet podle protokolu 2.4.
+Nezaručuj rozpoznání veškerého duplicitního či obcházejícího kódu statickým
+nástrojem. Nevyhodnotitelnou kritickou část předej k review nebo blokuj.
+
+POŽADAVKY NA TESTY
+Přesný kandidát, runtime, konfigurace, test pack, scope, očekávání, pozorování
+a sanitizovaný důkaz. Negativní test má doložit skutečnou blokaci a nepřítomnost
+vedlejšího účinku, nikoli jen text „odmítnuto“ v odpovědi modelu.
+Vždy ověř i oprávněné workflow a omezený rozsah zásahu.
+Staging neposkytuje automaticky produkční konfiguraci; odděl přenositelné
+build důkazy od konkrétního runtime důkazu.
+Chyba runneru, timeout a vynechaný test nejsou PASS.
+
+VÝSTUP
+1. Přesný seznam změn, nález -> soubor/funkce -> test -> výsledek.
+2. Opravený kandidát se stabilním digestem.
+3. Strojově čitelné výsledky skutečně provedených testů.
+4. Seznam neprovedených kontrol a konkrétní chybějící předpoklady.
+5. Aktualizovaný incident/runbook a schéma podle relevantních změn.
+6. Předání pro oddělený review bez přepisování posuzovaného kandidáta.
+
+ODDĚLENÝ REVIEWER
+Kontroluje tentýž digest, znovu spouští relevantní pozitivní i negativní testy
+a zkouší obejít důkazní a bezpečnostní hranice. Nepřijímá autorovo „PASS“ bez
+důkazu. AI reviewer sám o sobě není penetrační certifikace.
+Při nevyřešeném povinném controlu nebo relevantním HIGH/CRITICAL zůstává kandidát
+blokovaný. Limit pracovních výměn není důvod oslabit bezpečnost.
+
+KONSOLIDAČNÍ DODATEK 2026-09-23-r1 — SERVEROVÁ FÁZE
+Aktivní příprava školního serveru je rozhodnutím vlastníka ODLOŽENA.
+Při migraci nyní NEVYTVÁŘEJ nové konkrétní serverové endpointy, Docker/VM konfiguraci,
+Fortinet integraci ani jiné infrastrukturové řešení pouze proto, aby byl GARP 2.7
+„kompletní“. Zachovej již existující kompatibilní kód, pokud je součástí aplikace,
+ale nepřidávej nový serverový scope bez samostatného budoucího zadání.
+Server-dependent požadavky označ DEFERRED/NOT_TESTED. Toto nesmí vypnout, změkčit
+ani přeskočit lokální/CI bezpečnostní kontroly. LIVE PASS je bez cílového prostředí zakázán.

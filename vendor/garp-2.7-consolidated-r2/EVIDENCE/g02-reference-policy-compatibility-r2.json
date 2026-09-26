@@ -1,0 +1,26 @@
+{
+  "classification": "GARP27_G02_REFERENCE_POLICY_COMPATIBILITY",
+  "revision": "2026-09-23-r2",
+  "repository": "Daniel22-dev/korespondencni-asistent",
+  "sourceCommitObservedDuringE0": "244ddf0307d4d815f03754d9c887eb0e5956f8e0",
+  "path": "security/garp27/garp-policy.json",
+  "appId": "correspondence",
+  "appVersion": "5.10.28",
+  "inspection": "CURRENT_REPOSITORY_POLICY_SECTION_KEYS",
+  "requiredSections": {
+    "identity": ["standaloneProfile", "schoolProfile", "rule"],
+    "requestApiAi": ["registry", "registeredOperations", "agentic", "controls"],
+    "egress": ["standalone", "school", "crossApp"],
+    "files": ["currentBoundary", "serverBoundary"],
+    "dataLifecycle": ["classification", "storage", "retention"],
+    "release": ["activeAuthority", "legacyRegression", "promotion", "publicAssurance"],
+    "inventory": ["source", "architecturePolicy", "changeRule"],
+    "securityHealth": ["localCi", "live", "failureMode"],
+    "incident": ["current", "future"],
+    "recovery": ["current", "future"]
+  },
+  "templateSentinelPresent": false,
+  "zeroVersion": false,
+  "semanticShapeCompatibleWithR2": true,
+  "note": "Structural compatibility inspection of the current reference policy. This is not a LIVE test."
+}

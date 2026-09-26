@@ -1,0 +1,15 @@
+{
+  "schema": "garp27-auto-patch-trust-v1",
+  "garpVersion": "2.7",
+  "target": {
+    "appId": "replace-with-app-id",
+    "version": "0.0.0",
+    "commitSha": "0000000000000000000000000000000000000000",
+    "artifactSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "policySha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "source": {"repository": "owner/repo", "allowlisted": true},
+  "requiredGates": [],
+  "trustedEvidence": {},
+  "replay": {"minimumSequence": 1, "previousReleaseId": null}
+}

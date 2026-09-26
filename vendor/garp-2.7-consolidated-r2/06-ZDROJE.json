@@ -1,0 +1,102 @@
+{
+  "accessedOn": "2026-09-17",
+  "note": "Primární zdroje a inspirační rámce. Konkrétní GARP pravidla, priority a parametry jsou návrhem pro tento ekosystém, nikoli citací univerzální normy.",
+  "sources": [
+    {
+      "id": "S01",
+      "title": "OWASP Application Security Verification Standard",
+      "url": "https://owasp.org/projects/asvs",
+      "usage": "ASVS 5.0.0; rámec pro konkrétní technické požadavky. Zde je návrh mapování, nikoli prohlášení shody."
+    },
+    {
+      "id": "S02",
+      "title": "OWASP Authorization Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+      "usage": "Default deny, autorizace každého požadavku a minimální oprávnění."
+    },
+    {
+      "id": "S03",
+      "title": "Docker Engine security",
+      "url": "https://docs.docker.com/engine/security/",
+      "usage": "Izolace, oprávnění a bezpečnostní význam správy Docker daemonu."
+    },
+    {
+      "id": "S04",
+      "title": "OWASP LLM01:2025 Prompt Injection",
+      "url": "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+      "usage": "Riziko prompt injection a hranice modelových opatření."
+    },
+    {
+      "id": "S05",
+      "title": "OWASP LLM Prompt Injection Prevention Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+      "usage": "Omezená oprávnění nástrojů, další ochrany a omezení LLM guardrailů."
+    },
+    {
+      "id": "S06",
+      "title": "OWASP Server Side Request Forgery Prevention Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html",
+      "usage": "Allowlisty a ověřování cíle, adres a redirectů."
+    },
+    {
+      "id": "S07",
+      "title": "SLSA v1.2 — Verifying artifacts",
+      "url": "https://slsa.dev/spec/v1.2/verifying-artifacts",
+      "usage": "Ověření podpisu, digestu a očekávání pro původ sestavení."
+    },
+    {
+      "id": "S08",
+      "title": "GitHub — Artifact attestations",
+      "url": "https://docs.github.com/actions/concepts/security/artifact-attestations",
+      "usage": "Atestace musí být ověřena; původ není záruka bezpečnosti kódu."
+    },
+    {
+      "id": "S09",
+      "title": "ZAP — Baseline Scan",
+      "url": "https://www.zaproxy.org/docs/docker/baseline-scan/",
+      "usage": "Baseline scan provádí spider a pasivní analýzu, ne plnohodnotný aktivní audit."
+    },
+    {
+      "id": "S10",
+      "title": "NIST SP 800-218 — SSDF Version 1.1, final",
+      "url": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "usage": "Připnutý finální rámec bezpečného vývoje; nejde o tvrzení, že neexistují další návrhy či revize."
+    },
+    {
+      "id": "S11",
+      "title": "OWASP Logging Cheat Sheet",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "usage": "Obsah a ochrana logů, sanitizace, omezení úniků a testování logovacího systému."
+    },
+    {
+      "id": "S12",
+      "title": "NIST SP 800-61 Rev. 3, final",
+      "url": "https://csrc.nist.gov/pubs/sp/800/61/r3/final",
+      "usage": "Incident response, příprava, detekce, reakce a obnova."
+    },
+    {
+      "id": "S13",
+      "title": "OWASP Developer Guide — Principles of security",
+      "url": "https://devguide.owasp.org/en/02-foundations/03-security-principles/",
+      "usage": "Jednoduchost mechanismů, přezkoumatelnost, přiměřené oddělení a provozovatelnost."
+    },
+    {
+      "id": "S14",
+      "title": "dependency-cruiser — Rules reference",
+      "url": "https://github.com/sverweij/dependency-cruiser/blob/main/doc/rules-reference.md",
+      "usage": "Existující mechanismus pro zakázané/tranzitivní závislosti, nevyřešené importy a cykly; nejde o požadavek instalace."
+    },
+    {
+      "id": "S15",
+      "title": "GitHub — About protected branches",
+      "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches",
+      "usage": "Povinné kontroly, původ výsledku, bypass a omezení závislá na nastavení; konkrétní repozitáře zde nebyly ověřeny."
+    },
+    {
+      "id": "S16",
+      "title": "Microsoft Azure Architecture Center — Bulkhead pattern",
+      "url": "https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead",
+      "usage": "Izolace zdrojů a kaskádových poruch; obecný vzor, nikoli požadavek přejít na Azure."
+    }
+  ]
+}

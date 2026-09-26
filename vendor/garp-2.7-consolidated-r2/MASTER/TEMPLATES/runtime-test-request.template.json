@@ -1,0 +1,10 @@
+{
+  "schema": "garp27-runtime-test-request-v1",
+  "garpVersion": "2.7",
+  "testId": "RVP-01",
+  "safetyClass": "PROD_SAFE_CONDITIONAL",
+  "environment": "staging",
+  "target": {"id": "synthetic-sink", "allowlisted": true, "dedicatedSink": true},
+  "approval": {"approved": true, "approvedBy": "synthetic-review", "expiresAt": "2099-01-01T00:00:00Z"},
+  "limits": {"requests": 1, "bytes": 1024}
+}

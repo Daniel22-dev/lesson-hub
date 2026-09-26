@@ -81,8 +81,10 @@ jobs:
       - name: Set deterministic build time
         shell: bash
         run: echo "SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)" >> "$GITHUB_ENV"
-      - name: Enforce full GARP 2.5.1 release gate
+      - name: Enforce legacy GARP 2.5.1 regression gate
         run: npm run qa:garp25:static
+      - name: Enforce GARP 2.7 FOUNDATION gate
+        run: npm run qa:garp27:foundation
       - name: Verify AI Studio dispatch credential
         shell: bash
         env:

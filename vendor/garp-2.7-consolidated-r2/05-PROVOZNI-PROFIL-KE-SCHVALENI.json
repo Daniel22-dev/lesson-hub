@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "garp27-proposed-operating-profile-v1",
+  "garpVersion": "2.7",
+  "status": "DRAFT_REQUIRES_APPROVAL_AND_MEASURED_VALIDATION",
+  "enabled": false,
+  "approved": false,
+  "warning": "Není produkční konfigurace. Následující hodnoty jsou návrhy, nikoli naměřené limity nebo schválené SLA.",
+  "targetRuntime": {
+    "desiredBaseImage": "node:24-alpine",
+    "testedInThisAudit": "Node.js v22.16.0 only",
+    "actualDeploymentDigest": null
+  },
+  "productionTargets": [],
+  "testSafety": {
+    "productionActiveAttacksAllowed": false,
+    "defaultOnUnknown": "DO_NOT_RUN",
+    "syntheticDataOnly": true,
+    "allowedTargetIds": [],
+    "approvalRef": null,
+    "stagingCampaignProposedLimits": {
+      "maxRequests": 200,
+      "maxConcurrency": 2,
+      "maxDurationSeconds": 300,
+      "maxAICalls": 100,
+      "maxTotalAITokens": 50000
+    },
+    "productionCanaryProposedLimits": {
+      "maxRequests": 20,
+      "maxConcurrency": 1,
+      "maxDurationSeconds": 60,
+      "maxAICalls": 1
+    }
+  },
+  "proposedCadence": {
+    "startupAndPostDeploy": "mandatory-relevant-controls",
+    "requestAuthorization": "every-protected-operation",
+    "healthIntervalSeconds": 60,
+    "heartbeatStaleAfterSeconds": 180,
+    "lightweightCanaryEverySeconds": 86400,
+    "deepStaging": "before-initial-release, after-boundary-changes, monthly-relevant-campaign",
+    "restoreDrill": "before-initial-stateful-release, after-storage-change, quarterly"
+  },
+  "proposedTimingTargets": {
+    "sessionRevocationMaxSeconds": 60,
+    "criticalAlertDeliveryMaxSeconds": 60,
+    "localApprovedPolicyMaxAgeSeconds": null,
+    "humanAcknowledgementDuringCoveredHoursMinutes": null,
+    "RTOSeconds": null,
+    "RPOSeconds": null,
+    "note": "Nejde o garantované cíle; bez schválení a testu zůstávají neověřené."
+  },
+  "evidenceFreshness": {
+    "default": "derive-per-control-from-approved-profile",
+    "perControl": {},
+    "invalidateOn": [
+      "release-change",
+      "policy-change",
+      "relevant-config-change",
+      "model-change",
+      "prompt-change",
+      "tool-schema-change",
+      "relevant-dependency-change"
+    ],
+    "missingProfileAction": "UNKNOWN_AND_NO_RELEVANT_LIVE_PASS"
+  },
+  "logging": {
+    "contentPolicy": "metadata-only-by-default",
+    "secretsAndStudentWorkForbidden": true,
+    "externalCollectorRef": null,
+    "proposedRetentionDays": 30,
+    "retentionApproved": false,
+    "maxQueueBytes": null,
+    "independentAlertChannelRef": null,
+    "pseudonymousIdsAreNotClaimedAnonymous": true
+  },
+  "ownership": {
+    "applicationOwner": null,
+    "infrastructureOwner": null,
+    "incidentDeputy": null,
+    "riskApprover": null,
+    "coverageHours": null
+  },
+  "admission": {
+    "autoUpdateEnabled": false,
+    "requireTrustedSignatureAndOrigin": true,
+    "sourceAllowlist": [],
+    "trustedBuilderIdentities": [],
+    "trustedRootRef": null,
+    "allowMandatoryGateNA": false,
+    "requireCompleteEvidence": true,
+    "denyOnMissingRequiredProductionParameter": true
+  },
+  "capabilityBudgets": {
+    "aiPerOperation": null,
+    "aiPerUser": null,
+    "aiPerApplication": null,
+    "aiGlobal": null,
+    "uploadMaxBytes": null,
+    "archiveMaxExpandedBytes": null,
+    "parserMaxCpuAndMemory": null,
+    "note": "Vyplnit ze skutečných workflow a staging měření. Podvolání a retry sdílejí rozpočet."
+  },
+  "requiredBeforeProduction": [
+    "approved-targets-and-owners",
+    "exact-runtime-staging-validation",
+    "all-applicable-mandatory-parameters-set",
+    "authorization-egress-update-and-recovery-evidence",
+    "tested-external-alerting",
+    "closed-blocking-findings",
+    "approved-data-retention"
+  ]
+}

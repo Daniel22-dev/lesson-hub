@@ -1,0 +1,347 @@
+
+### TOOLS/selftest-garp27-master.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';import {spawnSync} from 'node:child_process';
+   3 const here=path.dirname(new URL(import.meta.url).pathname);const root=path.resolve(here,'..');const checks=[];const c=(n,o,d='')=>checks.push({name:n,ok:o,detail:d});
+   4 for(const f of ['000-ZACNI-TADY.txt','001-GARP-2.7-MASTER-ARCHITEKTURA.txt','002-VERSIONING-A-FREEZE-POLICY.txt','003-MASTER-CONTROLS-A-MAPA.txt','PACKAGE-MANIFEST.json','FOUNDATION/PACKAGE-MANIFEST.json','SHIELD-LIVE/PACKAGE-MANIFEST.json','ASSURANCE/01-SECURITY-ASSURANCE-MODEL.txt','AUTO-PATCH-GUARD/01-AUTO-PATCH-GUARD-MASTER.txt','VALIDATION-PACKS/00-PRAVIDLA-VALIDACNICH-BALICKU.txt','INTEGRATION/01-SERVER-A-INFRASTRUKTURA.txt']) c('exists '+f,fs.existsSync(path.join(root,f)));
+   5 function run(name,args,cwd=root){const r=spawnSync(process.execPath,args,{cwd,encoding:'utf8'});c(name,r.status===0,(r.stderr||'')+(r.stdout||''));}
+   6 run('foundation selftest',[path.join(root,'FOUNDATION/TOOLS/selftest-garp26-foundation.mjs')]);
+   7 run('shield-live selftest',[path.join(root,'SHIELD-LIVE/TOOLS/selftest-garp26-shield-live.mjs')]);
+   8 run('assurance selftest',[path.join(root,'ASSURANCE/TOOLS/selftest-assurance.mjs')]);
+   9 run('auto-patch selftest',[path.join(root,'AUTO-PATCH-GUARD/TOOLS/selftest-auto-patch-guard.mjs')]);
+  10 run('master sha256 verification',[path.join(root,'TOOLS/verify-sha256s.mjs')]);
+  11 function treeHashes(d){const map=new Map();function walk(cur){for(const e of fs.readdirSync(cur,{withFileTypes:true})){const p=path.join(cur,e.name);if(e.isDirectory())walk(p);else{const rel=path.relative(d,p).replaceAll('\\','/');const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');map.set(rel,h)}}}walk(d);return map}
+  12 const a=treeHashes(path.join(root,'FOUNDATION/BASELINE-GARP-2.5.1'));const b=treeHashes(path.join(root,'SHIELD-LIVE/BASELINE-GARP-2.5.1'));let same=a.size===b.size;const diff=[];for(const [k,v] of a){if(b.get(k)!==v){same=false;diff.push(k)}}c('embedded 2.5.1 baselines identical',same,diff.slice(0,10).join(','));
+  13 const mf=JSON.parse(fs.readFileSync(path.join(root,'PACKAGE-MANIFEST.json'),'utf8'));c('manifest working candidate',mf.status==='WORKING-CANDIDATE');c('no live pass without server evidence',mf.claims?.livePassWithoutServerEvidenceAllowed===false);
+  14 const failed=checks.filter(x=>!x.ok);console.log(JSON.stringify({status:failed.length?'FAIL':'PASS',checks:checks.length,passed:checks.length-failed.length,failed},null,2));process.exit(failed.length?1:0);
+
+### TOOLS/verify-sha256s.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';
+   3 const here=path.dirname(new URL(import.meta.url).pathname);const root=path.resolve(here,'..');const sumFile=path.join(root,'SHA256SUMS.txt');
+   4 if(!fs.existsSync(sumFile)){console.error('SHA256SUMS.txt missing');process.exit(1)}
+   5 const lines=fs.readFileSync(sumFile,'utf8').split(/\r?\n/).filter(Boolean);const failed=[];
+   6 for(const line of lines){const m=line.match(/^([0-9a-f]{64})  (.+)$/);if(!m){failed.push({file:line,error:'bad checksum line'});continue}const p=path.join(root,m[2]);if(!fs.existsSync(p)){failed.push({file:m[2],error:'missing'});continue}const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==m[1])failed.push({file:m[2],error:'digest mismatch',expected:m[1],observed:h})}
+   7 console.log(JSON.stringify({status:failed.length?'FAIL':'PASS',checked:lines.length,failed},null,2));process.exit(failed.length?1:0);
+
+### ASSURANCE/TOOLS/validate-assurance-status.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';
+   3 const f=process.argv[2]; if(!f){console.error('usage: validate-assurance-status.mjs FILE');process.exit(2)}
+   4 let x; try{x=JSON.parse(fs.readFileSync(f,'utf8'))}catch(e){console.error('invalid json');process.exit(1)}
+   5 const P=new Set(['PRESENT','MISSING','UNKNOWN','N/A']);
+   6 const H=new Set(['HEALTHY','DEGRADED','DOWN','UNKNOWN','N/A']);
+   7 const E=new Set(['PASS','FAIL','NOT_TESTED','N/A']);
+   8 const F=new Set(['FRESH','STALE','UNKNOWN','N/A']);
+   9 const O=new Set(['PASS','FAIL','DEGRADED','NOT_TESTED']);
+  10 const errs=[];
+  11 if(x.schemaVersion!=='ghrab-garp-assurance-status-v1') errs.push('schemaVersion');
+  12 if(x.garpVersion!=='2.6') errs.push('garpVersion');
+  13 if(!O.has(x.overall)) errs.push('overall');
+  14 if(!x.appId||!x.version||!x.releaseDigest) errs.push('release identity');
+  15 if(!Array.isArray(x.components)||x.components.length<1) errs.push('components');
+  16 for(const c of x.components||[]){if(!c.componentId) errs.push('componentId');if(!P.has(c.presence)) errs.push('presence '+c.componentId);if(!H.has(c.health)) errs.push('health '+c.componentId);if(!E.has(c.effectiveness)) errs.push('effectiveness '+c.componentId);if(!F.has(c.evidenceFreshness)) errs.push('freshness '+c.componentId)}
+  17 if(errs.length){console.error(JSON.stringify({status:'FAIL',errors:errs},null,2));process.exit(1)}
+  18 console.log(JSON.stringify({status:'PASS',components:x.components.length},null,2));
+
+### ASSURANCE/TOOLS/validate-capability-manifest.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';
+   3 const f=process.argv[2]; if(!f){console.error('usage: validate-capability-manifest.mjs FILE');process.exit(2)}
+   4 let x; try{x=JSON.parse(fs.readFileSync(f,'utf8'))}catch(e){console.error('invalid json');process.exit(1)}
+   5 const errs=[];
+   6 if(x.schemaVersion!=='ghrab-garp-capability-manifest-v1') errs.push('schemaVersion');
+   7 if(x.garpVersion!=='2.6') errs.push('garpVersion');
+   8 if(!x.app?.appId||!x.app?.version||!x.app?.releaseDigest) errs.push('app identity');
+   9 if(!Array.isArray(x.components)||x.components.length<1) errs.push('components');
+  10 if(!Array.isArray(x.dependencies)) errs.push('dependencies');
+  11 if(!x.securityBoundaries||typeof x.securityBoundaries!=='object') errs.push('securityBoundaries');
+  12 const ids=new Set();
+  13 for(const c of x.components||[]){if(!c.componentId) errs.push('componentId'); if(ids.has(c.componentId)) errs.push('duplicate componentId '+c.componentId); ids.add(c.componentId); if(typeof c.required!=='boolean') errs.push('required '+c.componentId); if(!Array.isArray(c.capabilities)) errs.push('capabilities '+c.componentId)}
+  14 if(errs.length){console.error(JSON.stringify({status:'FAIL',errors:errs},null,2));process.exit(1)}
+  15 console.log(JSON.stringify({status:'PASS',components:x.components.length},null,2));
+
+### ASSURANCE/SCHEMAS/security-assurance-status.schema.json ###
+   1 {
+   2   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   3   "$id": "ghrab-garp-assurance-status-v1",
+   4   "type": "object",
+   5   "required": [
+   6     "schemaVersion",
+   7     "garpVersion",
+   8     "environment",
+   9     "appId",
+  10     "version",
+  11     "releaseDigest",
+  12     "overall",
+  13     "components"
+  14   ],
+  15   "properties": {
+  16     "schemaVersion": {
+  17       "const": "ghrab-garp-assurance-status-v1"
+  18     },
+  19     "garpVersion": {
+  20       "const": "2.6"
+  21     },
+  22     "overall": {
+  23       "enum": [
+  24         "PASS",
+  25         "FAIL",
+  26         "DEGRADED",
+  27         "NOT_TESTED"
+  28       ]
+  29     },
+  30     "components": {
+  31       "type": "array",
+  32       "items": {
+  33         "type": "object",
+  34         "required": [
+  35           "componentId",
+  36           "presence",
+  37           "health",
+  38           "effectiveness",
+  39           "evidenceFreshness"
+  40         ],
+  41         "properties": {
+  42           "componentId": {
+  43             "type": "string",
+  44             "minLength": 1
+  45           },
+  46           "presence": {
+  47             "enum": [
+  48               "PRESENT",
+  49               "MISSING",
+  50               "UNKNOWN",
+  51               "N/A"
+  52             ]
+  53           },
+  54           "health": {
+  55             "enum": [
+  56               "HEALTHY",
+  57               "DEGRADED",
+  58               "DOWN",
+  59               "UNKNOWN",
+  60               "N/A"
+  61             ]
+  62           },
+  63           "effectiveness": {
+  64             "enum": [
+  65               "PASS",
+  66               "FAIL",
+  67               "NOT_TESTED",
+  68               "N/A"
+  69             ]
+  70           },
+  71           "evidenceFreshness": {
+  72             "enum": [
+  73               "FRESH",
+  74               "STALE",
+  75               "UNKNOWN",
+  76               "N/A"
+  77             ]
+  78           },
+  79           "maxEvidenceAgeSeconds": {
+  80             "type": [
+  81               "integer",
+  82               "null"
+  83             ],
+  84             "minimum": 0
+  85           }
+  86         }
+  87       }
+  88     }
+  89   }
+  90 }
+
+### AUTO-PATCH-GUARD/TOOLS/validate-auto-patch-manifest.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';
+   3 const f=process.argv[2];if(!f){console.error('usage: validate-auto-patch-manifest.mjs FILE');process.exit(2)}
+   4 let x;try{x=JSON.parse(fs.readFileSync(f,'utf8'))}catch(e){console.error('invalid json');process.exit(1)}
+   5 const states=new Set(['DISCOVERED','FETCHED','VERIFIED_SOURCE','VERIFIED_ARTIFACT','COMPATIBILITY_GATED','STAGED','DEPLOYED','POST_DEPLOY_VERIFIED','COMMITTED','REJECTED','QUARANTINED','ROLLED_BACK']);
+   6 const gateStates=new Set(['PASS','FAIL','NOT_TESTED','N/A']);
+   7 const errs=[];
+   8 if(x.schemaVersion!=='ghrab-garp-auto-patch-manifest-v1') errs.push('schemaVersion');
+   9 if(x.garpVersion!=='2.6') errs.push('garpVersion');
+  10 if(!x.updateId) errs.push('updateId');
+  11 if(!x.target?.appId||!x.target?.candidateDigest) errs.push('target');
+  12 if(!x.source?.provider||!x.source?.repository) errs.push('source');
+  13 if(!states.has(x.state)) errs.push('state');
+  14 for(const [k,v] of Object.entries(x.gates||{})) if(!gateStates.has(v)) errs.push('gate '+k);
+  15 if(x.state==='COMMITTED' && Object.values(x.gates||{}).some(v=>v==='FAIL'||v==='NOT_TESTED')) errs.push('committed with incomplete/failed gate');
+  16 if(errs.length){console.error(JSON.stringify({status:'FAIL',errors:errs},null,2));process.exit(1)}
+  17 console.log(JSON.stringify({status:'PASS',state:x.state},null,2));
+
+### AUTO-PATCH-GUARD/SCHEMAS/auto-patch-manifest.schema.json ###
+   1 {
+   2   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   3   "$id": "ghrab-garp-auto-patch-manifest-v1",
+   4   "type": "object",
+   5   "required": [
+   6     "schemaVersion",
+   7     "garpVersion",
+   8     "updateId",
+   9     "target",
+  10     "source",
+  11     "policy",
+  12     "gates",
+  13     "state"
+  14   ],
+  15   "properties": {
+  16     "schemaVersion": {
+  17       "const": "ghrab-garp-auto-patch-manifest-v1"
+  18     },
+  19     "garpVersion": {
+  20       "const": "2.6"
+  21     },
+  22     "state": {
+  23       "enum": [
+  24         "DISCOVERED",
+  25         "FETCHED",
+  26         "VERIFIED_SOURCE",
+  27         "VERIFIED_ARTIFACT",
+  28         "COMPATIBILITY_GATED",
+  29         "STAGED",
+  30         "DEPLOYED",
+  31         "POST_DEPLOY_VERIFIED",
+  32         "COMMITTED",
+  33         "REJECTED",
+  34         "QUARANTINED",
+  35         "ROLLED_BACK"
+  36       ]
+  37     },
+  38     "target": {
+  39       "type": "object"
+  40     },
+  41     "source": {
+  42       "type": "object"
+  43     },
+  44     "policy": {
+  45       "type": "object"
+  46     },
+  47     "gates": {
+  48       "type": "object"
+  49     }
+  50   }
+  51 }
+
+### FOUNDATION/TOOLS/validate-garp-policy.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';
+   3 const path=process.argv[2];
+   4 if(!path){console.error('usage: node validate-garp-policy.mjs <garp-policy.json>');process.exit(2)}
+   5 let p; try{p=JSON.parse(fs.readFileSync(path,'utf8'))}catch(e){console.error('FAIL invalid JSON: '+e.message);process.exit(1)}
+   6 const errors=[];
+   7 const req=['schemaVersion','garpVersion','profile','app','identity','network','ai','uploads','dataLifecycle','release','inventory','incident','securityHealth','live'];
+   8 for(const k of req) if(!(k in p)) errors.push('missing '+k);
+   9 if(p.schemaVersion!=='ghrab-garp-policy-v1') errors.push('schemaVersion');
+  10 if(p.garpVersion!=='2.6') errors.push('garpVersion');
+  11 if(!['FOUNDATION','SHIELD-LIVE'].includes(p.profile)) errors.push('profile');
+  12 if(!p.app?.appId||!p.app?.name||!p.app?.version) errors.push('app identity');
+  13 if(!['D0','D1','D2','D3'].includes(p.app?.dataClass)) errors.push('dataClass');
+  14 if(!['NO','PARTIAL','YES'].includes(p.app?.agentic)) errors.push('agentic');
+  15 if(p.network?.defaultDeny!==true) errors.push('network.defaultDeny must be true');
+  16 if(!Array.isArray(p.network?.allowedEgress)) errors.push('allowedEgress must be array');
+  17 if(p.ai?.enabled===true){for(const k of ['maxCallsPerOperation','maxConcurrentCalls','timeoutMs','maxRetries']) if(!(Number.isFinite(p.ai[k])&&p.ai[k]>=0)) errors.push('ai.'+k)}
+  18 if(p.uploads?.enabled===true){if(!(Number.isFinite(p.uploads.maxBytes)&&p.uploads.maxBytes>0)) errors.push('uploads.maxBytes'); if(!Array.isArray(p.uploads.allowedMimeTypes)||p.uploads.allowedMimeTypes.length===0) errors.push('uploads.allowedMimeTypes');}
+  19 if(['D2','D3'].includes(p.app?.dataClass)&&p.dataLifecycle?.securityLogContentPolicy!=='metadata-only') errors.push('D2/D3 securityLogContentPolicy must be metadata-only');
+  20 if(p.release?.policyIncludedInSignedArtifact!==true) errors.push('policyIncludedInSignedArtifact must be true');
+  21 if(p.live?.status==='PASS'&&p.profile==='FOUNDATION') errors.push('FOUNDATION cannot claim live PASS');
+  22 if(errors.length){console.error(JSON.stringify({status:'FAIL',errors},null,2));process.exit(1)}
+  23 console.log(JSON.stringify({status:'PASS',appId:p.app.appId,profile:p.profile},null,2));
+
+### SHIELD-LIVE/TOOLS/validate-live-profile.mjs ###
+   1 #!/usr/bin/env node
+   2 import fs from 'node:fs';
+   3 const f=process.argv[2];if(!f){console.error('usage: node validate-live-profile.mjs <garp-live-profile.json>');process.exit(2)}
+   4 let p;try{p=JSON.parse(fs.readFileSync(f,'utf8'))}catch(e){console.error('FAIL '+e.message);process.exit(1)}
+   5 const er=[]; if(p.schemaVersion!=='ghrab-garp-live-profile-v1')er.push('schemaVersion'); if(p.garpVersion!=='2.6')er.push('garpVersion'); if(!['AUDIT','MONITOR','ENFORCE'].includes(p.mode))er.push('mode'); if(!p.appId||!p.version)er.push('app identity'); if(!p.controls)er.push('controls'); for(let i=1;i<=20;i++){const k='LIVE-'+String(i).padStart(2,'0');if(!(k in (p.controls||{})))er.push('missing '+k)} if(er.length){console.error(JSON.stringify({status:'FAIL',errors:er},null,2));process.exit(1)} console.log(JSON.stringify({status:'PASS',appId:p.appId,mode:p.mode,overall:p.overall},null,2));
+
+### VALIDATION-PACKS/RUNTIME/PACK-MANIFEST.json ###
+   1 {
+   2   "schemaVersion": "ghrab-garp-validation-pack-v1",
+   3   "packId": "RUNTIME",
+   4   "packVersion": "2026.09-a",
+   5   "garpCompatible": [
+   6     "2.6"
+   7   ],
+   8   "safetyScope": "owned-or-authorized-systems-only",
+   9   "tests": [
+  10     {
+  11       "testId": "RVP-01",
+  12       "safetyClass": "PROD_SAFE"
+  13     },
+  14     {
+  15       "testId": "RVP-02",
+  16       "safetyClass": "STAGING_ONLY"
+  17     },
+  18     {
+  19       "testId": "RVP-03",
+  20       "safetyClass": "STAGING_ONLY"
+  21     },
+  22     {
+  23       "testId": "RVP-04",
+  24       "safetyClass": "STAGING_ONLY"
+  25     },
+  26     {
+  27       "testId": "RVP-05",
+  28       "safetyClass": "STAGING_ONLY"
+  29     },
+  30     {
+  31       "testId": "RVP-06",
+  32       "safetyClass": "STAGING_ONLY"
+  33     },
+  34     {
+  35       "testId": "RVP-07",
+  36       "safetyClass": "PROD_SAFE"
+  37     },
+  38     {
+  39       "testId": "RVP-08",
+  40       "safetyClass": "PROD_SAFE"
+  41     },
+  42     {
+  43       "testId": "RVP-09",
+  44       "safetyClass": "STAGING_ONLY"
+  45     },
+  46     {
+  47       "testId": "RVP-10",
+  48       "safetyClass": "PROD_SAFE"
+  49     }
+  50   ]
+  51 }
+
+### VALIDATION-PACKS/RUNTIME/01-RUNTIME-VALIDATION-PACK.txt ###
+   1 GARP 2.7 – RUNTIME VALIDATION PACK
+   2 Version: 2026.09-a
+   3 
+   4 RVP-01 EGRESS DENY CANARY – PROD_SAFE pokud používá schválený lokální/dedicated
+   5 test sink; jinak STAGING_ONLY.
+   6 Expected: nepovolený outbound cíl je blokován mimo child app.
+   7 
+   8 RVP-02 SECURITY DEPENDENCY DOWN – STAGING_ONLY.
+   9 Expected: relevantní capability fail-closed/degraded podle policy, ne fail-open.
+  10 
+  11 RVP-03 RELEASE TAMPER / UNVERIFIED – STAGING_ONLY.
+  12 Expected: artifact není spuštěn / je karanténován.
+  13 
+  14 RVP-04 MIXED VERSION – STAGING_ONLY.
+  15 Expected: nekompatibilní kombinace je detekována a podle policy blokována.
+  16 
+  17 RVP-05 CRITICAL CONFIG DRIFT – STAGING_ONLY.
+  18 Expected: detection + block/rollback/AMBER podle mapované kritičnosti.
+  19 
+  20 RVP-06 UNMANAGED ENDPOINT – STAGING_ONLY.
+  21 Expected: nový endpoint/service se objeví v inventory eventu a není tiše ignorován.
+  22 
+  23 RVP-07 CERT/TIME/FRESHNESS – PROD_SAFE pro read-only kontroly.
+  24 Expected: expirovaný/neplatný cert nebo stale evidence != GREEN.
+  25 
+  26 RVP-08 ALERT PIPELINE – PROD_SAFE se syntetickým eventem bez citlivých dat.
+  27 Expected: event dorazí, je redigovaný, evidence ref je dohledatelný.
+  28 
+  29 RVP-09 QUARANTINE BLAST RADIUS – STAGING_ONLY.
+  30 Expected: quarantine jedné app neodstaví unrelated apps.
+  31 
+  32 RVP-10 SERVER COMPATIBILITY – PROD_SAFE read-only.
+  33 Expected: reverse proxy/TLS/routes/required egress/cert trust/container identity
+  34 odpovídají approved deployment profilu.

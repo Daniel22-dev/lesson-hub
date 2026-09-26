@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { buildDispatchPayload, MAX_TOP_LEVEL_PROPERTIES } from './build-ai-studio-dispatch.mjs';
 const env = {
-  APP_VERSION: '1.2.24',
+  APP_VERSION: '1.2.25',
   SOURCE_REPOSITORY: 'Daniel22-dev/lesson-hub',
   SOURCE_SHA: 'a'.repeat(40),
   DEPLOYED_URL: 'https://daniel22-dev.github.io/lesson-hub/',
@@ -13,7 +13,7 @@ const env = {
   BUILD_PROVENANCE_SHA256: 'f'.repeat(64),
   ASSURANCE_MODE: 'TRANSITIONAL',
   RELEASE_STAGE: 'LIVE-PUBLIC-PAGES',
-  GARP_PROFILE: 'GARP-2.5.1-SHIELD-PREP',
+  GARP_PROFILE: 'GARP-2.7-FOUNDATION',
   RELEASE_GATE: 'P5-R2',
 };
 const live = { status: 'PASS', version: env.APP_VERSION, artifactDigest: env.ARTIFACT_DIGEST, releaseIntegrityUrl: 'https://daniel22-dev.github.io/lesson-hub/release-integrity.json', verifiedAt: '2026-09-20T10:00:00Z' };

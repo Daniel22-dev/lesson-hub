@@ -1,7 +1,7 @@
-# Lesson Hub 1.2.24
+# Lesson Hub 1.2.25
 
-**Aktuální verze:** 1.2.24  
-**Platforma:** GHRAB Platform 1.1.2 · etapa P3
+**Aktuální verze:** 1.2.25  
+**Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
 Lesson Hub je local-first osobní paměť učitele v ekosystému AI Studio GHRAB. Pro běžné pilotní používání **nepotřebuje server**: data ukládá do IndexedDB v prohlížeči a nabízí export, import i lokální body obnovy.
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.24 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.25 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -27,7 +27,7 @@ Běžná změna vstupuje do dlouhodobé větve `candidate`, nikoli přímo do pr
 
 Po deployi se bounded retry ověřením kontroluje skutečně publikovaný `studio-manifest.json` a `release-integrity.json`. Teprve potom aplikace posílá `app-updated` do AI Studia. Release identity váže verzi na source commit, artifact digest, manifest, SBOM, build provenance a security evidence; do zavedení produkčního podpisového klíče je assurance korektně označena `TRANSITIONAL`.
 
-## Stabilizovaná GitHub QA — baseline 1.2.22
+## Historická GitHub QA baseline 1.2.22 (auditní stopa)
 
 Verze 1.2.22 zachovává ověřené opravy z předchozího vydání a staví na zeleném běhu GitHub Actions:
 
@@ -61,15 +61,19 @@ Pokud je zapnuta centrální GHRAB gateway, `LESSON_HUB_GHRAB_UPSTREAM_SECRET` g
 
 Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při startu i v provozním centru zobrazí výrazné varování, dokud není nastaveno `LESSON_HUB_BACKUP_ENABLED=true`.
 
-## GARP 2.5.1 SHIELD-PREP
+## GARP 2.7 FOUNDATION
 
-Verze 1.2.24 zapojuje existující GARP 2.5.1/N5 tooling přímo do candidate/release cesty a vytváří přesnou Pages release identity. Stav **není school-server production approval**: produkční key custody, plně podepsaný provenance řetězec a další SHIELD-LIVE podmínky zůstávají oddělené; Pages assurance je proto explicitně `TRANSITIONAL`. Historické PREP podklady zůstávají v `security/` jako audit trail.
+Verze 1.2.25 používá **GARP 2.7 r2 G-02 FIX jako aktivní bezpečnostní autoritu**. Existující GARP 2.5.1/N5 tooling zůstává povinnou regresní vrstvou, není však vydáván za GARP 2.7. Lesson Hub nemá AI-provider transport ani agentní executor; GARP 2.7 tuto absenci explicitně uzamyká v capability inventory a architektonické bráně.
+
+Lokální/CI FOUNDATION může projít jako `FOUNDATION_PASS_LIVE_NOT_TESTED`. To **není school-server production approval**: reverse proxy, produkční filesystem boundary, centrální monitoring/orchestrace a live recovery zůstávají do schválení školního runtime `NOT_TESTED`. GitHub Pages assurance zůstává `TRANSITIONAL`, protože produkční podpisový klíč se tímto kolem nezavádí.
 
 ## Kontroly
 
 ```bash
 npm test
 npm run qa:release
+npm run qa:garp27:static
+npm run qa:garp27:foundation
 ```
 
 V GitHub Actions je neúspěšné nebo přeskočené `npm ci` či `npm audit` blokující. Lokální QA při nedostupném registru používá verdikt `AUTOMATED_INCOMPLETE`, nikoli `AUTOMATED_READY`.

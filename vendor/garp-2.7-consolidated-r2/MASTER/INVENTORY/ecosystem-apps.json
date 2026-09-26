@@ -1,0 +1,52 @@
+{
+  "schema": "garp27-ecosystem-app-inventory-v1",
+  "garpVersion": "2.7",
+  "revision": "2026-09-23-r2",
+  "source": "AI Studio runtime/deployment inventory reviewed during AEGIS E0",
+  "apps": [
+    {
+      "appId": "ai-studio",
+      "repository": "Daniel22-dev/AI-Studio-GHRAB"
+    },
+    {
+      "appId": "ai-academy",
+      "repository": "Daniel22-dev/AI-Akademie-GHRAB"
+    },
+    {
+      "appId": "generator",
+      "repository": "Daniel22-dev/generator-testu"
+    },
+    {
+      "appId": "differentiator",
+      "repository": "Daniel22-dev/diferenciator"
+    },
+    {
+      "appId": "essay-evaluator",
+      "repository": "Daniel22-dev/Hodnotitel-maturitnich-slohu"
+    },
+    {
+      "appId": "correspondence",
+      "repository": "Daniel22-dev/korespondencni-asistent"
+    },
+    {
+      "appId": "ludus",
+      "repository": "Daniel22-dev/Ludus"
+    },
+    {
+      "appId": "activity-builder",
+      "repository": "Daniel22-dev/ACTIVA"
+    },
+    {
+      "appId": "sortio",
+      "repository": "Daniel22-dev/SORTIO"
+    },
+    {
+      "appId": "lesson-hub",
+      "repository": "Daniel22-dev/lesson-hub"
+    },
+    {
+      "appId": "maturita-desk",
+      "repository": "Daniel22-dev/maturita-desk"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "garp27-capability-inventory-v1",
+  "garpVersion": "2.7",
+  "appId": "lesson-hub",
+  "appVersion": "1.2.25",
+  "dataClass": "D2",
+  "agentic": false,
+  "aiOperations": [],
+  "aiCore": "not-applicable",
+  "platform": "1.1.2",
+  "runtimeProfiles": {
+    "standalone": {"allowedEgress":["configured-lesson-hub-server"],"aiTransport":"not-applicable","allowLocalProviderKeys":false},
+    "school": {"allowedEgress":["same-origin-school-runtime"],"aiTransport":"not-applicable","allowLocalProviderKeys":false,"status":"DEFERRED_BY_OWNER_DECISION"}
+  },
+  "localInputClasses": ["lesson-hub-backup","ghrab-material-v1","teacher-authored-lesson-data"],
+  "storageClasses": ["IndexedDB","localStorage","sessionStorage","CacheStorage","optional-lesson-hub-server"],
+  "crossAppInterfaces": ["AI Studio signed permit and Access Guard bootstrap","suite-session events","studio-manifest contract","repository_dispatch app-updated after verified public release"],
+  "privilegedBrowserCapabilities": [],
+  "autonomousToolCapabilities": [],
+  "releaseAuthorities": ["GARP-2.7","GARP-2.5.1-legacy-regression","P5-R2","Safe-Promotion"],
+  "serverCapabilities": {"schoolSession":"DEFERRED","reverseProxyValidation":"DEFERRED","filesystemIsolation":"DEFERRED","centralMonitoring":"DEFERRED","liveRecovery":"DEFERRED"}
+}

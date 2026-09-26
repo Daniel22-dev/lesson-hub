@@ -44,7 +44,7 @@
   },
   "features": {
     "schoolServerReady": true,
-    "allowLocalProviderKeys": true,
+    "allowLocalProviderKeys": false,
     "serverSessionReady": true,
     "schoolGatewayReady": false,
     "sharedDeviceControls": true,

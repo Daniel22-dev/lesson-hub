@@ -1,0 +1,16 @@
+{
+  "schema": "garp27-policy-v1",
+  "garpVersion": "2.7",
+  "appId": "replace-with-app-id",
+  "appVersion": "0.0.0",
+  "identity": {"mode": "explicit-app-policy"},
+  "requestApiAi": {"mode": "explicit-app-policy"},
+  "egress": {"mode": "explicit-app-policy"},
+  "files": {"mode": "explicit-app-policy"},
+  "dataLifecycle": {"mode": "explicit-app-policy"},
+  "release": {"mode": "explicit-app-policy"},
+  "inventory": {"mode": "explicit-app-policy"},
+  "securityHealth": {"mode": "explicit-app-policy"},
+  "incident": {"mode": "explicit-app-policy"},
+  "recovery": {"mode": "explicit-app-policy"}
+}

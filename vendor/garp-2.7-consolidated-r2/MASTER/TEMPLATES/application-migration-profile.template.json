@@ -1,0 +1,22 @@
+{
+  "schema": "garp27-application-migration-profile-v1",
+  "garpVersion": "2.7",
+  "appId": "replace-with-app-id",
+  "appVersion": "0.0.0",
+  "serverApproval": "DEFERRED_BY_OWNER_DECISION",
+  "requiredComponents": [
+    {"componentId": "AG-01-policy", "required": true, "serverDependent": false},
+    {"componentId": "AG-02-identity", "required": true, "serverDependent": false},
+    {"componentId": "AG-03-request-api-ai", "required": true, "serverDependent": false},
+    {"componentId": "AG-07-release", "required": true, "serverDependent": false},
+    {"componentId": "AG-08-architecture", "required": true, "serverDependent": false},
+    {"componentId": "AG-10-live-health", "required": true, "serverDependent": true}
+  ],
+  "trustedEvidence": {},
+  "maxEvidenceAgeHours": 168,
+  "releaseIdentity": {
+    "appId": "replace-with-app-id",
+    "appVersion": "0.0.0",
+    "sourceCommit": "0000000000000000000000000000000000000000"
+  }
+}

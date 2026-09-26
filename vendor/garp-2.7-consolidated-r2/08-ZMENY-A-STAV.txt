@@ -1,0 +1,68 @@
+GARP 2.7 — KONSOLIDACE ARCHITEKTURY A ROZSAH OVĚŘENÍ
+Datum: 17. 9. 2026
+Stav: návrh kontraktu k implementaci a review, nikoli provozní ověření.
+
+ROZHODNUTÍ
+Zachovat GARP 2.7 a AG-01 až AG-12. Nepřidávat další runtime engine.
+Doplnit jednu předrelease bránu architecture-integrity do FOUNDATION.
+Zpřesnit stávající automatické reakce AG-10..12, ne vytvořit novou službu.
+
+JEDINÝ NORMATIVNÍ ZDROJ PO PŘIJETÍ NÁVRHU
+01-GARP-2.7-BEZPECNOSTNI-PROTOKOL.txt, totožný s variantou .md.
+Katalog 03 rozpracovává přejímku, 04 organizuje implementaci.
+Tento soubor je pouze přehled změn, není další konkurenční kontrakt.
+Původní pracovní ZIP slouží pro reprodukci auditních nálezů a historický kontext.
+
+KONKRÉTNÍ ZMĚNY
+2.1 — oddělení mapy odpovědností, kódu a nasazovaných služeb; mapování na
+existující repozitáře bez vynuceného monorepozitáře.
+2.2 — co musí vynucovat aplikace; testy mohou být u zdrojů, ne jako produkční bypass.
+2.3 — graf závislostí, kontrola artefaktu, rozdíl schopností, důvěryhodnost brány,
+jediná implementační autorita a přiznané limity statické analýzy.
+2.4 — omezený rozsah/rozpočet automatických zásahů, oddělení detektoru a vykonávače,
+ochrana před kaskádovou poruchou bez fail-open.
+2.5 — podmínky prokazatelné přehlednosti a měření dopadu na legitimní použití.
+Kapitoly 4 a 11 — zapojení brány do vydání a freeze.
+Katalog — 62 původních ID zachováno, G27-AR01..05 doplněny, R08/R10/R11 zpřesněny.
+Zadání, readme, manifest a zdroje — sladěny s kontraktem.
+
+HISTORICKÝ STAV PŘED KONSOLIDACÍ 2026-09-23-r1
+Původní konsolidační krok ještě neměnil repozitáře aplikací, školní server, Fortinet,
+produkční přístupy ani nasazení a tehdy ještě neobsahoval implementované referenční
+validátory A-01 až A-07. Tento odstavec je zachován pouze jako historický kontext.
+Aktuální stav po r1 je uveden níže; MASTER nyní obsahuje opravené referenční
+validátory a jejich pozitivní/negativní contract selftesty.
+
+DŮKAZY
+Původní audit 02, soubory původních lokálních sond, jejich reprodukční nástroj
+a předchozí deliverable-quality-checks.json zůstaly byte-for-byte zachované.
+Posledně uvedený soubor se vztahuje na PŮVODNÍ balík s 62 specifikacemi.
+Aktuální kontrola dokumentů: EVIDENCE/consolidation-quality-checks.json.
+Ani jedna kontrola konzistence dokumentů není důkazem bezpečnosti aplikací.
+SHA256SUMS.txt pokrývá aktuální obsah; nejde o podpis vydavatele.
+
+PODMÍNKA DALŠÍHO POSTUPU
+Implementaci nejprve namapovat na přesné aktuální zdroje. Ověřit dvě odlišné
+aplikace, jejich spolupráci, legitimní provoz i záporné scénáře. Bez těchto
+důkazů nelze tvrdit, že skutečný kód je přehledný nebo že je ochrana účinná.
+
+
+KONSOLIDACE 2026-09-23-r1
+-------------------------
+- Balík je nyní náhradní master pro další aplikační migrace; kontrakt zůstává GARP 2.7.
+- Přidán MASTER s opravenými referenčními validátory pro A-01 až A-07.
+- PACKAGE_SELFTEST: 15/15 PASS. CONTRACT_TEST: 20/20 PASS.
+- Přidán strojový rozdíl PASS / FAIL / HARNESS_ERROR / NOT_TESTED.
+- Serverová implementace je DEFERRED_BY_OWNER_DECISION; lokální/CI ochrany zůstávají aktivní.
+- LIVE PASS bez cílového prostředí je explicitně zakázán.
+- Doporučený rollout: re-baseline LUDUS -> druhá odlišná aplikace KS -> cross-app review -> zbytek.
+
+
+KONSOLIDACE 2026-09-23-r2 / G-02
+--------------------------------
+- validate-policy now validates appId against trusted inventory.
+- appVersion 0.0.0 is rejected for admissible policy.
+- every required policy section must contain recognized semantic content.
+- placeholder substring/token detection added; explicit-app-policy is a template sentinel and FAIL.
+- contract selftest includes untouched-template, unknown-app, zero-version, mode-only and substring negatives.
+- G-02 is closed in the reference master after r2 selftests; G-01 governance acceptance remains separate.

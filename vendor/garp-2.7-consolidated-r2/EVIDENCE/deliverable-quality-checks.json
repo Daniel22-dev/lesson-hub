@@ -1,0 +1,51 @@
+{
+  "scope": "Deliverable consistency and reproduction-tool checks only; not an application security PASS.",
+  "checks": [
+    {
+      "check": "all_existing_json_files_parse",
+      "passed": true
+    },
+    {
+      "check": "plain_text_and_markdown_protocol_identical",
+      "passed": true
+    },
+    {
+      "check": "62_unique_test_specifications",
+      "passed": true
+    },
+    {
+      "check": "test_specifications_do_not_claim_execution",
+      "passed": true
+    },
+    {
+      "check": "all_control_references_use_existing_12_domains",
+      "passed": true
+    },
+    {
+      "check": "operating_profile_disabled_unapproved_no_targets",
+      "passed": true
+    },
+    {
+      "check": "protocol_source_references_resolve",
+      "passed": true
+    },
+    {
+      "check": "original_uploaded_archive_unchanged",
+      "passed": true
+    },
+    {
+      "check": "reproduction_script_parses",
+      "passed": true
+    },
+    {
+      "check": "13_original_observations_independently_reproduced",
+      "passed": true
+    },
+    {
+      "check": "reproducer_refuses_different_archive_before_execution",
+      "passed": true
+    }
+  ],
+  "passed": 11,
+  "failed": 0
+}

@@ -1,6 +1,6 @@
 {
   "name": "lesson-hub",
-  "version": "1.2.24",
+  "version": "1.2.25",
   "private": true,
   "type": "module",
   "description": "Lesson Hub – local-first osobní paměť učitele plně integrovaná do AI Studio GHRAB.",
@@ -49,8 +49,8 @@
     "qa:a11y": "node scripts/qa-p5-runtime.mjs",
     "qa:p4": "npm run qa:p5",
     "qa:p4:ci": "npm run qa:p5:ci",
-    "qa:p5": "npm run qa:lock && npm run build && npm run verify:studio-manifest && npm run test:studio-dispatch && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
-    "qa:p5:ci": "npm run qa:lock && npm run build && npm run verify:studio-manifest && npm run test:studio-dispatch && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && npm run qa:axe && AXE_REQUIRED=1 node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
+    "qa:p5": "npm run qa:lock && npm run build && npm run verify:studio-manifest && npm run test:studio-dispatch && npm run qa:garp27:static && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
+    "qa:p5:ci": "npm run qa:lock && npm run build && npm run verify:studio-manifest && npm run test:studio-dispatch && npm run qa:garp27:static && npm run verify:platform && npm run qa:quality && npm run qa:browser && npm run qa:runtime && npm run qa:xss && npm run test:capacity:transaction && npm run qa:axe && AXE_REQUIRED=1 node scripts/qa-p5-release.mjs && node scripts/qa-p5-acceptance.mjs",
     "test:p5": "npm run qa:p5",
     "qa:runtime": "node scripts/qa-p5-runtime.mjs",
     "test:async-security": "node server/test-async-security.mjs",
@@ -75,7 +75,15 @@
     "verify:live-release": "node scripts/verify-live-release.mjs",
     "test:studio-dispatch": "node scripts/test-ai-studio-dispatch.mjs",
     "qa:safe-promotion": "node scripts/qa-safe-promotion.mjs",
-    "qa:auto-patch-topology": "node scripts/qa-auto-patch-notification.mjs"
+    "qa:auto-patch-topology": "node scripts/qa-auto-patch-notification.mjs",
+    "qa:garp27:contracts": "node scripts/garp27/contract-gate.mjs",
+    "qa:garp27:architecture": "node scripts/garp27/architecture-integrity.mjs",
+    "qa:garp27:policy-mutations": "node scripts/garp27/policy-admission-mutations.mjs",
+    "qa:garp27:mutations": "node scripts/test-garp27-mutations.mjs",
+    "qa:garp27:auto-patch": "node scripts/garp27/auto-patch-contract.mjs",
+    "qa:garp27:static": "npm run qa:garp27:contracts && npm run qa:garp27:architecture && npm run qa:garp27:policy-mutations && npm run qa:garp27:mutations && npm run qa:garp27:auto-patch",
+    "qa:garp27": "npm run build && npm run qa:garp27:static",
+    "qa:garp27:foundation": "node scripts/garp27/foundation-gate.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -10,3 +10,6 @@ server/data/*.json
 server/data/*.tmp
 
 dist-pages/
+
+# Generated GARP 2.7 local/CI evidence
+audit-evidence/

@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import {spawnSync} from 'node:child_process'; import fs from 'node:fs'; import path from 'node:path'; import {fileURLToPath} from 'node:url';
+const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..','..'); const V=path.join(ROOT,'vendor','garp-2.7-consolidated-r2');
+const trust=JSON.parse(fs.readFileSync(path.join(ROOT,'security/garp27/trust-anchor.json'),'utf8')); const inventory=path.join(V,'MASTER/INVENTORY/ecosystem-apps.json'); const core=path.join(V,'MASTER/CONTRACTS/garp27-core.json');
+function run(id,args,expected=0){const r=spawnSync('node',args,{cwd:ROOT,encoding:'utf8'}); return {id,expectedExit:expected,actualExit:r.status,pass:r.status===expected,stdout:(r.stdout||'').trim(),stderr:(r.stderr||'').trim()};}
+const results=[]; results.push(run('package-selftest',[path.join(V,'MASTER/TOOLS/package-selftest.mjs')])); let report; try{report=JSON.parse(results.at(-1).stdout)}catch{}
+results.push({id:'trusted-package-check-digest',expectedExit:0,actualExit:report?.checkDigest===trust.canonicalPackageContractCheckSha256?0:1,pass:report?.checkDigest===trust.canonicalPackageContractCheckSha256});
+results.push(run('contract-selftest',[path.join(V,'MASTER/TOOLS/contract-selftest.mjs')])); results.push(run('policy',[path.join(V,'MASTER/TOOLS/validate-policy.mjs'),path.join(ROOT,'security/garp27/garp-policy.json'),'--core',core,'--inventory',inventory])); results.push(run('live-deferred',[path.join(V,'MASTER/TOOLS/validate-live-status.mjs'),path.join(ROOT,'security/garp27/live-status.json'),'--profile',path.join(ROOT,'security/garp27/application-migration-profile.json')],3));
+const failed=results.filter(x=>!x.pass).length; console.log(JSON.stringify({classification:'GARP27_CONTRACT_GATE',status:failed?'FAIL':'PASS',garpVersion:'2.7',serverPhase:'DEFERRED_BY_OWNER_DECISION',results,summary:{total:results.length,passed:results.length-failed,failed}},null,2)); process.exit(failed?1:0);

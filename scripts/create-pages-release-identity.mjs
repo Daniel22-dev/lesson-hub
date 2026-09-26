@@ -46,6 +46,8 @@ const releaseStage = process.env.GHRAB_RELEASE_STAGE || (process.env.GITHUB_ACTI
 
 const evidenceRuns = [
   ['garp251-selftest.json', 'security/garp25/tools/selftest-garp251.mjs', []],
+  ['garp27-contract-gate.txt', 'scripts/garp27/contract-gate.mjs', []],
+  ['garp27-architecture-integrity.txt', 'scripts/garp27/architecture-integrity.mjs', []],
   ['studio-manifest-contract.txt', 'scripts/verify-studio-manifest-contract.mjs', [studioManifestPath]],
   ['safe-promotion-topology.txt', 'scripts/qa-safe-promotion.mjs', []],
   ['auto-patch-topology.txt', 'scripts/qa-auto-patch-notification.mjs', []],
@@ -68,8 +70,8 @@ const context = {
   version,
   sourceCommit: source,
   buildRun: { provider: process.env.GITHUB_ACTIONS === 'true' ? 'github-actions' : 'local', repository, workflowRef, runId: String(runId), runAttempt: String(runAttempt) },
-  tooling: { garp: '2.5.1', platform: '1.1.2', node: process.version },
-  profile: 'GARP-2.5.1-SHIELD-PREP',
+  tooling: { garp: '2.7', legacyGarp: '2.5.1', platform: '1.1.2', node: process.version },
+  profile: 'GARP-2.7-FOUNDATION',
   gate: 'P5-R2',
   releaseStage,
   environment: releaseStage === 'LIVE-PUBLIC-PAGES' ? 'github-pages' : 'pre-production',
@@ -77,6 +79,11 @@ const context = {
   createdAt,
 };
 fs.writeFileSync(path.join(evidenceDir, 'release-context.json'), `${JSON.stringify(context, null, 2)}\n`, 'utf8');
+const foundationSummary = path.join(root, 'audit-evidence', 'garp27-current', 'foundation-summary.json');
+if (!fs.existsSync(foundationSummary)) throw new Error('Release identity FAIL: missing admitted GARP 2.7 foundation-summary.json.');
+const foundation = JSON.parse(fs.readFileSync(foundationSummary, 'utf8'));
+if (foundation.status !== 'FOUNDATION_PASS_LIVE_NOT_TESTED') throw new Error(`Release identity FAIL: GARP 2.7 foundation status=${foundation.status}.`);
+fs.copyFileSync(foundationSummary, path.join(evidenceDir, 'garp27-foundation-summary.json'));
 
 runNode('scripts/stamp-live-release-identity.mjs', [studioManifestPath], {
   GHRAB_SOURCE_REPOSITORY: repository,
@@ -99,7 +106,7 @@ runNode('security/garp25/tools/create-build-provenance.mjs', [studioManifestPath
   GHRAB_BUILD_STARTED_AT: process.env.GITHUB_RUN_STARTED_AT || createdAt,
   GHRAB_BUILD_FINISHED_AT: createdAt,
   GHRAB_LOCKFILE: path.join(root, 'package-lock.json'),
-  GHRAB_BUILD_PROFILE: 'GARP-2.5.1-SHIELD-PREP/P5-R2',
+  GHRAB_BUILD_PROFILE: 'GARP-2.7-FOUNDATION/GARP-2.5.1-LEGACY/P5-R2',
 });
 
 const sbomSha256 = sha256(sbomPath);
@@ -121,7 +128,7 @@ Object.assign(integrity, {
   releaseStage,
   status: 'GREEN',
   environment: releaseStage === 'LIVE-PUBLIC-PAGES' ? 'github-pages' : 'pre-production',
-  garpProfile: 'GARP-2.5.1-SHIELD-PREP',
+  garpProfile: 'GARP-2.7-FOUNDATION',
   gate: 'P5-R2',
   manifestSha256,
   sbomSha256,

@@ -1,0 +1,9 @@
+{
+  "schema":"garp27-live-status-v1",
+  "garpVersion":"2.7",
+  "appId":"lesson-hub",
+  "appVersion":"1.2.25",
+  "environment":"school-server",
+  "status":"NOT_TESTED",
+  "reason":"Approved school runtime not yet available for GARP 2.7 live evidence."
+}

@@ -1,0 +1,72 @@
+{
+  "classification": "PACKAGE_SELFTEST",
+  "status": "PASS",
+  "checks": 15,
+  "passed": 15,
+  "scope": "package-integrity-and-contract-consistency-only",
+  "appBehaviorTest": false,
+  "liveTest": false,
+  "checkDigest": "e2f75110e566504eb97d9ea100cbbcdbadebdbf4cb30dd9a69e1b0075b9415a2",
+  "details": [
+    {
+      "id": "file:00-CTI-ME.txt",
+      "pass": true
+    },
+    {
+      "id": "file:01-GARP-2.7-BEZPECNOSTNI-PROTOKOL.md",
+      "pass": true
+    },
+    {
+      "id": "file:02-AUDIT-VSTUPNIHO-BALIKU.md",
+      "pass": true
+    },
+    {
+      "id": "file:03-RED-TEAM-KATALOG.json",
+      "pass": true
+    },
+    {
+      "id": "file:04-IMPLEMENTACNI-ZADANI.txt",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/CONTRACTS/garp27-core.json",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-policy.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-assurance.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-auto-patch.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-live-status.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/validate-runtime-test-request.mjs",
+      "pass": true
+    },
+    {
+      "id": "file:MASTER/TOOLS/contract-selftest.mjs",
+      "pass": true
+    },
+    {
+      "id": "red-team-catalog-nonempty",
+      "pass": true
+    },
+    {
+      "id": "garp-version-2.7",
+      "pass": true
+    },
+    {
+      "id": "server-deferred",
+      "pass": true
+    }
+  ]
+}
