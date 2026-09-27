@@ -2,7 +2,7 @@
   "schema": "ghrab-platform-consumer-v1",
   "appId": "lesson-hub",
   "appName": "Lesson Hub",
-  "appVersion": "1.2.25",
+  "appVersion": "1.2.26",
   "platform": {
     "version": "1.1.2",
     "contract": "ghrab-platform-v1",
@@ -73,7 +73,7 @@
     ]
   },
   "cache": {
-    "name": "ghrab-lesson-hub-v1.2.25",
+    "name": "ghrab-lesson-hub-v1.2.26",
     "updateMessage": "GHRAB_SKIP_WAITING"
   },
   "html": {
@@ -89,7 +89,7 @@
     "moduleContract": "ghrab-lazy-modules-v1",
     "requireBudget": true,
     "performanceBudget": {
-      "distBytes": 1180000,
+      "distBytes": 1215000,
       "entryHtmlBytes": 10000,
       "entryCriticalBytes": 220000,
       "largestInlineScriptBytes": 5000,

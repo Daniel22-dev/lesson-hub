@@ -1,11 +1,11 @@
-# Release / upload checklist — Lesson Hub 1.2.25
+# Release / upload checklist — Lesson Hub 1.2.26
 
 Aktuální release workflow nepoužívá ruční nahrání zdrojů přímo do `main`.
 
 ## Candidate
 
 1. Změny nahrajte do dlouhodobé větve `candidate`.
-2. Ověřte, že `package.json`, platformní manifesty, service-worker cache a `studio/app-manifest.template.json` uvádějí verzi `1.2.25`.
+2. Ověřte, že `package.json`, platformní manifesty, service-worker cache a `studio/app-manifest.template.json` uvádějí verzi `1.2.26`.
 3. Candidate musí projít P5 kontrolami, GARP 2.7 FOUNDATION a zachovanými GARP 2.5.1/N5 regresními kontrolami.
 4. Nepovažujte stav `FOUNDATION_PASS_LIVE_NOT_TESTED` za school-server LIVE schválení. Serverově závislé kontroly zůstávají `NOT_TESTED`, dokud neexistuje schválený runtime.
 

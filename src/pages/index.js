@@ -14,6 +14,7 @@ import { templatesPage, bindTemplatesPage } from './templates.js';
 import { serverPage, bindServerPage } from './server.js';
 import { communicationPage, bindCommunicationPage } from './communication.js';
 import { substitutionPage, bindSubstitutionPage } from './substitution.js';
+import { aboutPage, bindAboutPage } from './about.js';
 
 const pages = {
   [ROUTES.overview]: { render: overviewPage, bind: bindOverviewPage },
@@ -31,6 +32,7 @@ const pages = {
   [ROUTES.server]: { render: serverPage, bind: bindServerPage },
   [ROUTES.communication]: { render: communicationPage, bind: bindCommunicationPage },
   [ROUTES.substitution]: { render: substitutionPage, bind: bindSubstitutionPage },
+  [ROUTES.about]: { render: aboutPage, bind: bindAboutPage },
 };
 
 export function getPage(route) {

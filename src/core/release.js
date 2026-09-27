@@ -1,7 +1,7 @@
 export const APP_RELEASE = Object.freeze({
   appId: 'lesson-hub',
-  version: '1.2.25',
+  version: '1.2.26',
   schema: 'ai-studio-app-manifest-v1',
   status: 'Připraveno k řízenému pilotu',
-  releasedAt: '2026-09-10',
+  releasedAt: '2026-09-27',
 });

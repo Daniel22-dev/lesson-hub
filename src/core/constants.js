@@ -14,6 +14,7 @@ export const ROUTES = Object.freeze({
   server: 'server',
   communication: 'communication',
   substitution: 'substitution',
+  about: 'about',
 });
 
 export const ENTITY_STORES = Object.freeze({

@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { route: ROUTES.communication, label: 'Komunikace', icon: 'user' },
   { route: ROUTES.substitution, label: 'Zastupování', icon: 'calendar' },
   { route: ROUTES.server, label: 'Server', icon: 'shield' },
+  { route: ROUTES.about, label: 'O aplikaci', icon: 'info' },
   { route: ROUTES.more, label: 'Více', icon: 'more' },
 ];
 

@@ -2,7 +2,7 @@
   "schema": "garp27-policy-v1",
   "garpVersion": "2.7",
   "appId": "lesson-hub",
-  "appVersion": "1.2.25",
+  "appVersion": "1.2.26",
   "identity": {
     "standaloneProfile": "AI Studio signed-permit bootstrap and optional standalone Lesson Hub server bearer session",
     "schoolProfile": "same-origin school session enforcement remains deferred until an approved school runtime exists",
