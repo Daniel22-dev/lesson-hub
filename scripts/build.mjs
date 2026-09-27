@@ -40,7 +40,7 @@ function compareSemverDesc(a,b){const l=String(a.version||'').split('.').map(x=>
 function parseChangelog(markdown){const map=new Map();let current=null;for(const rawLine of String(markdown||'').split(/\r?\n/u)){const heading=rawLine.match(/^##\s+(\d+\.\d+\.\d+)\s*(?:[—–-]\s*(.*))?$/u);if(heading){const versionLabel=heading[1];const rest=String(heading[2]||'').trim();const dateMatch=rest.match(/\((\d{4}-\d{2}-\d{2})\)\s*$/u);const title=plainChangelogText(dateMatch?rest.slice(0,dateMatch.index).trim():rest)||'Aktualizace';const existing=map.get(versionLabel);current=existing||{version:versionLabel,date:dateMatch?.[1]||'',title,changes:[]};if(!existing)map.set(versionLabel,current);continue;}if(!current)continue;const bullet=rawLine.match(/^\s*[-*]\s+(.+)$/u);if(!bullet)continue;const change=plainChangelogText(bullet[1]);if(change&&!current.changes.includes(change))current.changes.push(change);}return [...map.values()].sort(compareSemverDesc);}
 const changelogItems=parseChangelog(await readFile(path.join(ROOT,'CHANGELOG.md'),'utf8'));
 if(!changelogItems.some(item=>item.version===version)) throw new Error(`CHANGELOG.md neobsahuje aktuální verzi ${version}.`);
-await writeFile(path.join(DIST,'config','changelog.json'),`${JSON.stringify({schema:'lesson-hub-changelog-v1',current:version,items:changelogItems},null,2)}\n`);
+await writeFile(path.join(DIST,'config','changelog.json'),`${JSON.stringify({schema:'lesson-hub-changelog-v1',current:version,items:changelogItems})}\n`);
 
 const manualPath = path.join(DIST, 'manual', 'manual.js');
 const manualSource = await readFile(manualPath, 'utf8');
