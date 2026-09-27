@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.25
+# Lesson Hub 1.2.26
 
-**Aktuální verze:** 1.2.25  
+**Aktuální verze:** 1.2.26  
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
@@ -10,7 +10,7 @@ Serverová část je v repozitáři připravena pro budoucí školní nasazení,
 
 ## Integrace s AI Studiem GHRAB
 
-Verze 1.2.25 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
+Verze 1.2.26 je kandidát pro koordinovanou release wave AI Studia GHRAB a používá GHRAB Platform 1.1.2 se suite-session lifecycle kontraktem. Build publikuje `studio-manifest.json`, hlavní aplikaci i manuál chrání společný Access Guard, Studio Bridge přijímá pouze anonymní materiály `ghrab-material-v1` a pilotní telemetrie ukládá jen povolené technické počty bez obsahu výuky.
 
 ## Spuštění bez serveru
 
@@ -63,7 +63,7 @@ Automatické serverové snapshoty jsou ve výchozím stavu vypnuté. Server při
 
 ## GARP 2.7 FOUNDATION
 
-Verze 1.2.25 používá **GARP 2.7 r2 G-02 FIX jako aktivní bezpečnostní autoritu**. Existující GARP 2.5.1/N5 tooling zůstává povinnou regresní vrstvou, není však vydáván za GARP 2.7. Lesson Hub nemá AI-provider transport ani agentní executor; GARP 2.7 tuto absenci explicitně uzamyká v capability inventory a architektonické bráně.
+Verze 1.2.26 používá **GARP 2.7 r2 G-02 FIX jako aktivní bezpečnostní autoritu**. Existující GARP 2.5.1/N5 tooling zůstává povinnou regresní vrstvou, není však vydáván za GARP 2.7. Lesson Hub nemá AI-provider transport ani agentní executor; GARP 2.7 tuto absenci explicitně uzamyká v capability inventory a architektonické bráně.
 
 Lokální/CI FOUNDATION může projít jako `FOUNDATION_PASS_LIVE_NOT_TESTED`. To **není school-server production approval**: reverse proxy, produkční filesystem boundary, centrální monitoring/orchestrace a live recovery zůstávají do schválení školního runtime `NOT_TESTED`. GitHub Pages assurance zůstává `TRANSITIONAL`, protože produkční podpisový klíč se tímto kolem nezavádí.
 

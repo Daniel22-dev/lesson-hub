@@ -13,6 +13,7 @@ const items = [
   ['Server a synchronizace', 'Účty, role, konflikty a přenos mezi zařízeními.', 'shield', `#/${ROUTES.server}`],
   ['Data a zálohy', 'Export, import, body obnovy a kontrola dat.', 'database', `#/${ROUTES.data}`],
   ['Diagnostika', 'Self-testy, úložiště a stav aplikace.', 'diagnostics', `#/${ROUTES.diagnostics}`],
+  ['O aplikaci', 'Účel Lesson Hubu, odpovědnost, provozní zásady a katalog změn.', 'info', `#/${ROUTES.about}`],
   ['Nastavení', 'Vzhled, hustota zobrazení a integrace.', 'settings', `#/${ROUTES.settings}`],
 ];
 

@@ -1,3 +1,9 @@
+## 1.2.26 — Karta O aplikaci a sjednocený katalog změn (2026-09-27)
+
+- Hlavní navigace nově obsahuje záložku **O aplikaci**; na mobilu je dostupná také z nabídky **Více**.
+- Karta **O aplikaci** shrnuje účel Lesson Hubu, autora a vývojového garanta, školní projekt, přístupový model, technický stav a základní provozní zásady.
+- **Katalog změn** je nově rozbalovací součástí karty O aplikaci a načítá se až po jejím otevření z build-time JSON odvozeného z kanonického `CHANGELOG.md`.
+
 ## 1.2.25 — GARP 2.7 FOUNDATION migration (2026-09-26)
 
 - Final clean-up: README now reports Platform stage P5, obsolete 1.2.3 upload instructions were replaced with the current candidate → Safe Promotion → main workflow, and generated QA/build directories are excluded from the source deliverable.

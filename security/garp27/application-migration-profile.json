@@ -2,7 +2,7 @@
   "schema":"garp27-application-migration-profile-v1",
   "garpVersion":"2.7",
   "appId":"lesson-hub",
-  "appVersion":"1.2.25",
+  "appVersion":"1.2.26",
   "serverApproval":"DEFERRED_BY_OWNER_DECISION",
   "requiredComponents":[
     {"componentId":"AG-01-policy","required":true,"serverDependent":false},
@@ -20,5 +20,5 @@
   ],
   "trustedEvidence":{},
   "maxEvidenceAgeHours":168,
-  "releaseIdentity":{"appId":"lesson-hub","appVersion":"1.2.25","sourceCommit":"0000000000000000000000000000000000000000"}
+  "releaseIdentity":{"appId":"lesson-hub","appVersion":"1.2.26","sourceCommit":"0000000000000000000000000000000000000000"}
 }
