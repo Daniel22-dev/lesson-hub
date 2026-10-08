@@ -8,7 +8,7 @@
     "start": "npm run build && node scripts/serve.mjs",
     "build": "node scripts/build.mjs",
     "check": "node scripts/check-project.mjs && node scripts/check-versions.mjs",
-    "test": "npm run check && npm run test:core && npm run test:server && npm run test:gateway-hardening && npm run test:wave10 && npm run test:wave11 && npm run test:integration && npm run test:audit-server && npm run test:audit-client && npm run test:school-profile && npm run test:capacity && npm run build && npm run test:suite-session && npm run test:async-security",
+    "test": "npm run check && npm run test:core && npm run test:server && npm run test:gateway-hardening && npm run test:wave10 && npm run test:wave11 && npm run test:integration && npm run test:audit-server && npm run test:audit-client && npm run test:school-profile && npm run test:capacity && npm run build && npm run test:suite-session && npm run test:async-security && npm run test:manual-pdf:structure",
     "test:headless": "node tools/headless-check.mjs",
     "qa:technical": "node scripts/qa-technical.mjs",
     "qa:security": "node scripts/qa-security.mjs",
@@ -83,7 +83,8 @@
     "qa:garp27:auto-patch": "node scripts/garp27/auto-patch-contract.mjs",
     "qa:garp27:static": "npm run qa:garp27:contracts && npm run qa:garp27:architecture && npm run qa:garp27:policy-mutations && npm run qa:garp27:mutations && npm run qa:garp27:auto-patch",
     "qa:garp27": "npm run build && npm run qa:garp27:static",
-    "qa:garp27:foundation": "node scripts/garp27/foundation-gate.mjs"
+    "qa:garp27:foundation": "node scripts/garp27/foundation-gate.mjs",
+    "test:manual-pdf:structure": "node scripts/qa-manual-pdf-structure.mjs"
   },
   "engines": {
     "node": ">=22"
