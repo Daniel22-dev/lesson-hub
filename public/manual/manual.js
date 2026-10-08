@@ -273,6 +273,18 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
   </div>`;
 
 document.documentElement.dataset.ghrabAccess = 'granted';
+window.GHRAB_MANUAL_DOC_INFO=Object.freeze({
+  appId:'lesson-hub',appVersion:'1.2.26',
+  docRevision:'D-2026-10-08',lastReviewedAt:'2026-10-08',
+  reviewStatus:'review-required',pdfContentContract:'static-complete-sections-v1'
+});
+window.GHRAB_MANUAL_EXPORT=[
+  {type:'h2',text:'Doplňující bezpečnostní upozornění'},
+  ...[...document.querySelectorAll('.manual-warning,.manual-tip')].map(el=>({
+    type:'body',text:el.textContent.replace(/\s+/g,' ').trim()
+  }))
+];
+
 document.body.style.visibility = 'visible';
 
 const search = document.querySelector('#manual-search');
