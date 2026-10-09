@@ -274,7 +274,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
 
 document.documentElement.dataset.ghrabAccess = 'granted';
 window.GHRAB_MANUAL_DOC_INFO=Object.freeze({
-  appId:'lesson-hub',appVersion:'1.2.26',
+  appId:'lesson-hub',appVersion:'__APP_VERSION__',
   docRevision:'D-2026-10-08',lastReviewedAt:'2026-10-08',
   reviewStatus:'review-required',pdfContentContract:'static-complete-sections-v1'
 });
