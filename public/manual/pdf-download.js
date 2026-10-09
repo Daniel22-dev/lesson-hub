@@ -15,8 +15,8 @@ function refreshPdfControl() {
   button.id = "manual-pdf";
   button.type = "button";
   const reviewed = window.GHRAB_MANUAL_DOC_INFO?.reviewStatus === "verified";
-  button.textContent = reviewed ? "↓ Stáhnout manuál PDF" : "↓ Náhled PDF (čeká na obsahovou revizi)";
-  button.style.cssText = "padding:12px;margin:12px;border-radius:10px;min-height:44px;cursor:pointer";
+  button.textContent = "↓ Stáhnout PDF";
+  button.style.cssText = "padding:12px;margin:12px;border-radius:10px;min-height:44px;cursor:pointer;background:var(--panel);color:var(--text);border:1px solid var(--line);";
   message.id = "manual-pdf-status";
   message.setAttribute("role", "status");
   main.prepend(button, message);
@@ -40,7 +40,7 @@ function refreshPdfControl() {
         filename: "GHRAB-" + document.documentElement.dataset.ghrabAppId + "-manual.pdf",
         extras
       });
-      message.textContent = reviewed ? "PDF připraveno." : "Náhled PDF připraven; obsah čeká na revizi.";
+      message.textContent = reviewed ? "PDF připraveno." : "PDF připraveno; věcná revize návodu ještě není potvrzena.";
     } catch (error) {
       message.textContent = "PDF se nepodařilo vytvořit: " + String(error?.message || error);
     } finally { button.disabled = false; }
