@@ -42,7 +42,7 @@ export function aboutPage() {
         <div class="section-heading"><div><p class="about-eyebrow">PROVOZNÍ ZÁSADY</p><h2 id="about-principles-title">Co je dobré vědět</h2><p>Stručný kontext pro běžnou práci s Lesson Hubem.</p></div></div>
         <div class="about-principles-grid">
           <article class="content-card about-principle-card"><span class="about-principle-number" aria-hidden="true">01</span><div><h3>Kontinuita výuky</h3><p>Lesson Hub propojuje přípravu, skutečný průběh hodin a navazující úkoly tak, aby bylo možné rychle pokračovat tam, kde výuka skončila.</p></div></article>
-          <article class="content-card about-principle-card"><span class="about-principle-number" aria-hidden="true">02</span><div><h3>Nápověda a bezpečnost</h3><p class="about-links"><a href="${escapeHtml(APP_CONFIG.manualUrl)}">Manuál Lesson Hubu</a><span aria-hidden="true">·</span><a href="${escapeHtml(safetyUrl)}">Bezpečnost</a><span aria-hidden="true">·</span><a href="${escapeHtml(APP_CONFIG.accessUrl)}">Můj přístup</a></p></div></article>
+          <article class="content-card about-principle-card"><span class="about-principle-number" aria-hidden="true">02</span><div><h3>Nápověda a bezpečnost</h3><p class="about-links"><a href="${escapeHtml(APP_CONFIG.manualUrl + (APP_CONFIG.manualUrl.includes("?") ? "&" : "?") + "ghrabFrom=app")}">Manuál Lesson Hubu</a><span aria-hidden="true">·</span><a href="${escapeHtml(safetyUrl)}">Bezpečnost</a><span aria-hidden="true">·</span><a href="${escapeHtml(APP_CONFIG.accessUrl)}">Můj přístup</a></p></div></article>
         </div>
       </section>
       <section class="about-section" aria-labelledby="changelog-summary-title">
