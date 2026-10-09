@@ -96,3 +96,10 @@ test('dark/light contrast and focus styles exist', () => {
   assert.match(style, /:focus-visible/);
   assert.match(style, /@media\s*\(max-width/);
 });
+
+
+test('App-origin link preserves draft work and explicit launch context', () => {
+  const source = readFileSync('src/pages/about.js', 'utf8');
+  assert.match(source, /manualUrl\.searchParams\.set\(['"]from['"],\s*['"]app['"]\)/);
+  assert.match(source, /href="\$\{escapeHtml\(manualUrl\.href\)\}" target="_blank" rel="noopener"/);
+});
