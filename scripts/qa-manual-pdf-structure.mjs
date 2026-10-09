@@ -87,3 +87,54 @@ assert(granted.handlers?.click,"PDF action must have click handler");
 const revoke=simulate("granted","denied",{reviewStatus:"verified"});
 assert(revoke.before && !revoke.after,"PDF control must disappear on revocation");
 console.log("[MANUAL PDF] PASS: CSS/navigation, authorization, review, version, completeness, iframe, revocation");
+
+// Browser-independent navigation VM cases: launch source must decide return action.
+function simulateNavigation(search, {embedded=false, granted=true, referrer=""}={}) {
+  const children=[];
+  const legacy={textContent:"Zpět do aplikace",hidden:false,style:{}};
+  const outerHeader={hidden:false,querySelector(){return null;}};
+  const header={
+    classList:{add(){}},
+    append(node){children.push(node);},
+    closest(){return outerHeader;}
+  };
+  const document={
+    referrer,
+    documentElement:{dataset:{ghrabAccess:granted?"granted":"denied"}},
+    querySelector(){return header;},
+    querySelectorAll(selector){return selector==="header a"?[legacy]:[];},
+    getElementById(id){return children.find(x=>x.id===id)||null;},
+    createElement(tag){return{
+      tagName:tag.toUpperCase(),children:[],classList:{add(){}},attributes:{},
+      setAttribute(k,v){this.attributes[k]=v;},
+      append(node){this.children.push(node);}
+    };}
+  };
+  const win={};
+  win.frameElement=embedded?{id:"manual-frame"}:null;
+  win.parent=embedded?{location:{pathname:"/AI-Studio-GHRAB/manualy/viewer.html"}}:win;
+  const location={
+    href:"https://daniel22-dev.github.io/korespondencni-asistent/manual/"+search,
+    origin:"https://daniel22-dev.github.io",search
+  };
+  class MockObserver{constructor(cb){this.cb=cb;}observe(){}disconnect(){}}
+  const source=read(path.relative(root,navFile));
+  runInNewContext(source,{document,window:win,location,URL,MutationObserver:MockObserver},
+    {filename:navFile});
+  return {labels:(children.find(x=>x.id==="ghrab-manual-navigation")?.children||[])
+    .map(x=>x.textContent),legacyHidden:legacy.hidden,
+    embedded:document.documentElement.dataset.ghrabManualEmbedded,
+    headerHidden:outerHeader.hidden};
+}
+assert.deepEqual(simulateNavigation("?from=studio").labels,
+  ["← Zpět na manuály","AI Studio"],"Catalog entry must not return to application");
+assert.deepEqual(simulateNavigation("?from=app").labels,
+  ["← Zpět do aplikace","AI Studio"],"Application entry must provide app return");
+assert.deepEqual(simulateNavigation("").labels,["AI Studio"],"Direct URL must have safe Studio fallback");
+const nested=simulateNavigation("",{embedded:true});
+assert.equal(nested.labels.length,0,"Embedded manual must use parent viewer header");
+assert(nested.legacyHidden && nested.embedded==="viewer","Embedded navigation must hide duplicates");
+assert.equal(simulateNavigation("?from=studio",{granted:false}).labels.length,0,
+  "Access denial must not install manual return controls");
+console.log("[MANUAL NAV] PASS: catalogue, application, direct, embedded and denied contexts");
+
