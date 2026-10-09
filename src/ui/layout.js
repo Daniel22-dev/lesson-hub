@@ -97,7 +97,7 @@ export function renderLayout({ activeRoute, title, description, content, actions
           <div class="topbar__actions">
             <span class="topbar__page-actions">${actions}</span>
             ${isAdmin() ? `<a class="header-chip header-chip--admin" href="#/${ROUTES.diagnostics}" title="Interní diagnostika">${icon('shield', 17)}<span>Test Lab</span></a>` : ''}
-            <a class="icon-button" href="${escapeHtml(APP_CONFIG.manualUrl)}" aria-label="Otevřít interaktivní manuál" title="Interaktivní manuál">
+            <a class="icon-button" href="${escapeHtml(APP_CONFIG.manualUrl + (APP_CONFIG.manualUrl.includes("?") ? "&" : "?") + "ghrabFrom=app")}" aria-label="Otevřít interaktivní manuál" title="Interaktivní manuál">
               ${icon('book', 20)}
             </a>
             <a class="server-status-chip ${appState.serverService?.isAuthenticated ? 'is-connected' : ''}" href="#/${escapeHtml(ROUTES.server)}" title="Server a synchronizace">${icon('database', 16)}<span>${appState.serverService?.isAuthenticated ? 'Server' : 'Lokálně'}</span></a>
