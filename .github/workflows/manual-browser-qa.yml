@@ -31,7 +31,7 @@ jobs:
       - name: Download SHA-pinned shared PDF exporter
         run: |
           mkdir -p qa-results/manual-browser
-          curl -fsSL --retry 3 https://raw.githubusercontent.com/Daniel22-dev/AI-Studio-GHRAB/76bc629619ea74fdec2f7cace6fc185bf86950fe/src/manualy/pdf-export.js -o qa-results/manual-browser/shared-pdf-export.js
+          curl -fsSL --retry 3 https://raw.githubusercontent.com/Daniel22-dev/AI-Studio-GHRAB/3a933ad043eadf3ac88509ccd3e78a24545a4ea2/src/manualy/pdf-export.js -o qa-results/manual-browser/shared-pdf-export.js
       - name: Install PDF render and extraction tools
         run: |
           sudo apt-get update -qq
