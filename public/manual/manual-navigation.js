@@ -1,0 +1,1 @@
+const b=window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||"/AI-Studio-GHRAB/";try{const u=new URL("manualy/manual-navigation.js",new URL(b,location.href));if(u.origin!==location.origin)throw 0;await import(u)}catch(e){const a=document.querySelector("header a[href='../'],header .manual-back,header .back");if(a){a.href="/AI-Studio-GHRAB/";a.textContent="AI Studio"}}
