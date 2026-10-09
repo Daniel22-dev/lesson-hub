@@ -119,7 +119,7 @@ function simulateNavigation(search, {embedded=false, granted=true, referrer=""}=
   };
   class MockObserver{constructor(cb){this.cb=cb;}observe(){}disconnect(){}}
   const source=read(path.relative(root,navFile));
-  runInNewContext(source,{document,window:win,location,URL,MutationObserver:MockObserver},
+  runInNewContext(source,{document,window:win,location,URL,URLSearchParams,MutationObserver:MockObserver},
     {filename:navFile});
   return {labels:(children.find(x=>x.id==="ghrab-manual-navigation")?.children||[])
     .map(x=>x.textContent),legacyHidden:legacy.hidden,
