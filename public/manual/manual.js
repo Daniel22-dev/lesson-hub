@@ -155,6 +155,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       </section>
       <section id="server-ready" data-search="server synchronizace api účet přihlášení role audit konflikt zařízení">
         <h2>Server a synchronizace</h2>
+        <div class="manual-warning"><b>Důležité pro běžného učitele:</b> Samotná položka Server v nabídce neznamená, že škola již provozuje serverovou službu. Dokud správce nepotvrdí bezpečné nasazení a nepřihlásíte se k aktivní serverové relaci, používejte Lesson Hub lokálně. Synchronizace mezi zařízeními, serverové účty, společné přílohy a provozní zálohy pak nejsou dostupné. Přístup do AI Studia sám o sobě není přihlášením k Lesson Hub Serveru.</div>
         <p>Sekce <b>Server</b> připojuje lokální Lesson Hub k samostatné Node.js službě. Serverová relace je oddělena od centrálního Access Guardu AI Studia: Access Guard chrání vstup do aplikace, serverová relace chrání synchronizovaná data.</p>
         <div class="manual-grid">
           <article><b>Účty a role</b><p>Server rozlišuje vlastníka, správce, učitele a suplujícího učitele. Vlastník a správce mohou spravovat účty a číst serverový audit.</p></article>
@@ -177,6 +178,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       </section>
       <section id="communication" data-search="studenti email import komunikace zpráva šablona příloha plánování schválení retence osobní údaje audit">
         <h2>Studenti, přílohy a komunikace</h2>
+        <div class="manual-note">Tato část kombinuje místní pracovní funkce a serverové možnosti. Přílohy na serveru, SMTP odesílání, doručenky a retenční správa se aktivují pouze s přihlášenou a oprávněnou serverovou relací. Nepovažujte je za dostupné v čistě lokálním režimu.</div>
         <p>Sekce <b>Komunikace</b> obsahuje minimální seznam studentů, serverové přílohy, šablony zpráv, koncepty a retenční nastavení. Není náhradou školního informačního systému ani plnohodnotným e-mailovým klientem.</p>
         <div class="manual-grid">
           <article><b>Import studentů</b><p>Hromadně vložené školní e-mailové adresy se rozdělí, normalizují a zkontrolují proti duplicitám. Jméno odvozené z adresy lze před uložením nebo později upravit.</p></article>
@@ -195,6 +197,7 @@ app.innerHTML = /* qa-safe-html: sections are a fixed internal navigation list *
       </section>
       <section id="substitution" data-search="zastupování suplování nepřítomnost plán období soukromí suplující učitel import historie">
         <h2>Režim zastupování</h2>
+        <div class="manual-warning">Zastupování vyžaduje ověřenou serverovou relaci a odpovídající přístupová práva. Pokud se zobrazí výzva k přihlášení na Lesson Hub Server, nejedná se o chybu lokálního Lesson Hubu; správce musí nejprve server zprovoznit a přidělit účty.</div>
         <p>Sekce <b>Zastupování</b> umožňuje nepřítomnému učiteli připravit omezené podklady pro vybrané skupiny. Soukromý zápisník zůstává neveřejný a suplující účet vidí pouze aktivní období, plány a položky výslovně určené k zastupování.</p>
         <div class="manual-grid">
           <article><b>Období</b><p>Učitel vytvoří dobu nepřítomnosti, popis a stav. Teprve aktivní období se zobrazí oprávněným suplujícím učitelům.</p></article>
