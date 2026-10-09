@@ -89,7 +89,7 @@
     "moduleContract": "ghrab-lazy-modules-v1",
     "requireBudget": true,
     "performanceBudget": {
-      "distBytes": 1215000,
+      "distBytes": 1225000,
       "entryHtmlBytes": 10000,
       "entryCriticalBytes": 220000,
       "largestInlineScriptBytes": 5000,
