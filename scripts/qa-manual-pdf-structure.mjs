@@ -13,7 +13,7 @@ const action = read("public/manual/pdf-download.js");
 execFileSync(process.execPath, ["--check", jsPath], { stdio: "pipe" });
 assert(html.includes('data-ghrab-access="checking"'), "Manual must start gated");
 assert(html.includes('src="./pdf-download.js"'), "Missing local PDF button module");
-assert(action.includes('ghrabAccess === "granted"'), "PDF control must require permit");
+assert(action.includes('root.dataset.ghrabAccess !== "granted"'), "PDF control must fail closed without permit");
 assert(action.includes('downloadManualPdf'), "Missing shared PDF exporter");
 assert(action.includes("manualy/pdf-export.js"), "Incorrect PDF module location");
 assert(action.includes("MutationObserver"), "Access transition not monitored");
@@ -27,45 +27,63 @@ if ("dynamic" === "map") {
 } else if ("dynamic" === "dynamic") {
   assert(guide.includes("GHRAB_MANUAL_EXPORT") && guide.includes("manual-warning"), "Dynamic safety messages missing");
 }
-function simulate(initial, change) {
-  let button, status, observer;
-  const rootNode = { dataset: { ghrabAccess: initial, ghrabAppId: "test-app" } };
-  const main = { prepend(...nodes) { for (const n of nodes) {
-    if (n.id === "manual-pdf") button = n;
-    if (n.id === "manual-pdf-status") status = n;
-  } } };
+const navCss = read("public/manual/navigation-context.css");
+assert(navCss.includes("var(--text,var(--ink,#eef5fb))") && navCss.includes(":focus-visible"), "Navigation and PDF need accessible contrast/focus");
+// The same source-level contract is required in every application.
+const navFile = path.join(path.dirname(jsPath), "navigation-context.js");
+execFileSync(process.execPath, ["--check", navFile], {stdio:"pipe"});
+assert(html.includes('src="./navigation-context.js"') && html.includes('href="./navigation-context.css"'),
+  "Manual must load its navigation script and accessible style");
+assert(action.includes('info.reviewStatus !== "verified"') && action.includes("insideStudioViewer"),
+  "PDF must fail closed for unreviewed guides and hide inside Studio viewer");
+assert(!action.includes("Náhled PDF"), "Do not expose internal review status as a PDF action");
+function simulate(initial, change, {reviewStatus="review-required", embedded=false, version="1.0.0", tour=true}={}) {
+  const elements = new Map();
+  let watcher = null;
+  const nav = { append(...nodes) { for(const node of nodes) elements.set(node.id,node); } };
+  const rootNode = {dataset:{ghrabAccess:initial,ghrabAppId:"test-app",ghrabAppVersion:"1.0.0"}};
   const document = {
-    documentElement: rootNode,
-    querySelector(sel) {
-      if (sel === "main") return main;
-      if (sel === "#manual-pdf") return button;
-      if (sel === "#manual-pdf-status") return status;
-      return null;
-    },
-    createElement(tag) { return {
-      tagName: tag.toUpperCase(), id: "", style: {},
-      addEventListener(event, cb) { this.handlers ??= {}; this.handlers[event] = cb; },
-      setAttribute(name, value) { this[name] = value; },
-      remove() { if (this === button) button = undefined; if (this === status) status = undefined; }
-    }; }
+    documentElement:rootNode,
+    getElementById(id) {return id==="ghrab-manual-navigation" ? nav : elements.get(id);},
+    createElement(tag) {
+      const el={tagName:tag.toUpperCase(),id:"",textContent:"",className:"",
+        disabled:false,handlers:{},attributes:{},
+        setAttribute(k,v){this.attributes[k]=v;},
+        addEventListener(k,fn){this.handlers[k]=fn;},
+        remove(){elements.delete(this.id);}
+      };
+      return el;
+    }
   };
+  const win={
+    GHRAB_MANUAL_DOC_INFO:{appId:"test-app",appVersion:version,reviewStatus,pdfContentContract:"map-tour-v1"},
+    GHRAB_MANUAL_EXPORT:tour?[{type:"h2",text:"Complete steps"}]:[]
+  };
+  win.frameElement=embedded?{id:"manual-frame"}:null;
+  win.parent=embedded?{location:{pathname:"/AI-Studio-GHRAB/manualy/viewer.html"}}:win;
   class MockObserver {
-    constructor(cb) { this.cb = cb; observer = this; }
-    observe() { this.active = true; }
-    disconnect() { this.active = false; }
+    constructor(cb){this.cb=cb;watcher=this;}
+    observe(){this.active=true;}
   }
-  runInNewContext(action, { document, window: {}, URL,
-    MutationObserver: MockObserver, location: { href: "https://daniel22-dev.github.io/" } }, { filename: jsPath });
-  const before = !!button;
-  rootNode.dataset.ghrabAccess = change;
-  if (observer?.active) observer.cb();
-  return { before, after: !!button, label: button?.textContent, handlers: button?.handlers };
+  runInNewContext(action,{document,window:win,URL,MutationObserver:MockObserver,
+    location:{href:"https://daniel22-dev.github.io/test-app/manual/",origin:"https://daniel22-dev.github.io"}},
+    {filename:jsPath});
+  const before=!!elements.get("ghrab-manual-pdf");
+  rootNode.dataset.ghrabAccess=change;
+  watcher?.cb();
+  const btn=elements.get("ghrab-manual-pdf");
+  return {before,after:!!btn,label:btn?.textContent,handlers:btn?.handlers};
 }
-assert.equal(simulate("checking", "denied").after, false, "Denied users see PDF control");
-assert.equal(simulate("checking", "granted").before, false, "PDF before grant");
-const granted = simulate("checking", "granted");
-assert.equal(granted.after, true, "PDF unavailable after grant");
-assert(granted.handlers?.click, "PDF has no functional click handler");
-assert.equal(simulate("granted", "denied").after, false, "PDF control survives revocation");
-assert.match(granted.label, /Náhled PDF/, "Unreviewed manuals should be labelled preview");
-console.log("[MANUAL PDF] PASS: access deny/grant/revoke, complete source, module syntax");
+assert.equal(simulate("checking","denied",{reviewStatus:"verified"}).after,false,"Denied permit");
+assert.equal(simulate("checking","granted").after,false,"Unreviewed manual must not export");
+assert.equal(simulate("checking","granted",{reviewStatus:"verified",version:"0.0.0"}).after,false,"Wrong release version");
+assert.equal(simulate("checking","granted",{reviewStatus:"verified",tour:false}).after,false,"Incomplete map/tour");
+assert.equal(simulate("checking","granted",{reviewStatus:"verified",embedded:true}).after,false,"Embedded manual must not duplicate Studio PDF");
+const granted=simulate("checking","granted",{reviewStatus:"verified"});
+assert.equal(granted.before,false,"PDF before permit");
+assert.equal(granted.after,true,"Verified standalone PDF should be offered");
+assert.match(granted.label,/Stáhnout PDF/,"Download action label");
+assert(granted.handlers?.click,"PDF action must have click handler");
+const revoke=simulate("granted","denied",{reviewStatus:"verified"});
+assert(revoke.before && !revoke.after,"PDF control must disappear on revocation");
+console.log("[MANUAL PDF] PASS: CSS/navigation, authorization, review, version, completeness, iframe, revocation");
