@@ -43,7 +43,7 @@ function simulate(initial, change) {
       return null;
     },
     createElement(tag) { return {
-      tagName: tag.toUpperCase(), id: "",
+      tagName: tag.toUpperCase(), id: "", style: {},
       addEventListener(event, cb) { this.handlers ??= {}; this.handlers[event] = cb; },
       setAttribute(name, value) { this[name] = value; },
       remove() { if (this === button) button = undefined; if (this === status) status = undefined; }
