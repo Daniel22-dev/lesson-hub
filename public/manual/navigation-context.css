@@ -21,3 +21,18 @@ html[data-ghrab-manual-embedded="viewer"] header.manual-topbar { position:relati
   .ghrab-manual-navigation { width:100%; justify-content:flex-start; }
   .ghrab-manual-navigation a { font-size:14px; }
 }
+
+.ghrab-manual-navigation .ghrab-manual-pdf {
+  display:inline-flex; align-items:center; justify-content:center; min-height:44px;
+  padding:9px 14px; border:2px solid currentColor; border-radius:11px;
+  background:var(--panel,var(--paper,#172638));
+  color:var(--text,var(--ink,#eef5fb));
+  font:750 14px/1.35 Inter,system-ui,sans-serif; cursor:pointer;
+}
+.ghrab-manual-navigation .ghrab-manual-pdf:hover { filter:brightness(1.12); }
+.ghrab-manual-navigation .ghrab-manual-pdf:focus-visible {
+  outline:3px solid #53d0e8; outline-offset:3px;
+}
+.ghrab-manual-navigation .ghrab-manual-pdf:disabled { opacity:.6; cursor:wait; }
+.ghrab-manual-pdf-status { max-width:24rem; color:var(--text,var(--ink,#eef5fb)); font-size:13px; }
+.ghrab-manual-pdf-status:empty { display:none; }
