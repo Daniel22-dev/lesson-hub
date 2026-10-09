@@ -1,32 +1,53 @@
-const allowed=()=>document.documentElement.dataset.ghrabAccess==="granted";
-function mount(){
-  if(!allowed()||document.querySelector("#manual-pdf"))return;
-  const main=document.querySelector("main");if(!main)return;
-  const b=document.createElement("button"),msg=document.createElement("span");
-  b.id="manual-pdf";b.type="button";b.textContent="↓ Stáhnout celý manuál PDF";
-  b.style.cssText="padding:12px;margin:12px;border-radius:10px;min-height:44px;cursor:pointer";
-  msg.setAttribute("role","status");main.prepend(b,msg);
-  b.onclick=async()=>{
-    if(!allowed())return;b.disabled=true;msg.textContent="Připravuji PDF…";
-    try{
-      const base=document.querySelector("[data-ghrab-studio-link]")?.href||
-        window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl||
-        new URL("/AI-Studio-GHRAB/",location.href).href;
-      const {downloadManualPdf}=await import(new URL("manualy/pdf-export.js",base).href);
-      const extras=Array.isArray(window.GHRAB_MANUAL_EXPORT)?window.GHRAB_MANUAL_EXPORT:[];
-      const search=document.querySelector("#manual-search"),query=search?.value||"";
-      if(search&&query){search.value="";search.dispatchEvent(new Event("input"))}
-      try{
-      await downloadManualPdf(document,{title:document.title,filename:"GHRAB-"+document.documentElement.dataset.ghrabAppId+"-manual.pdf",extras});
-      }finally{if(search&&query){search.value=query;search.dispatchEvent(new Event("input"))}}
-      msg.textContent="PDF staženo.";
-    }catch(e){msg.textContent="PDF se nepodařilo vytvořit: "+String(e?.message||e)}
-    finally{b.disabled=false}
-  };
+const allowed = () => document.documentElement.dataset.ghrabAccess === "granted";
+function refreshPdfControl() {
+  const old = document.querySelector("#manual-pdf");
+  const status = document.querySelector("#manual-pdf-status");
+  if (!allowed()) {
+    old?.remove();
+    status?.remove();
+    return;
+  }
+  if (old) return;
+  const main = document.querySelector("main");
+  if (!main) return;
+  const button = document.createElement("button");
+  const message = document.createElement("span");
+  button.id = "manual-pdf";
+  button.type = "button";
+  const reviewed = window.GHRAB_MANUAL_DOC_INFO?.reviewStatus === "verified";
+  button.textContent = reviewed ? "↓ Stáhnout manuál PDF" : "↓ Náhled PDF (čeká na obsahovou revizi)";
+  button.style.cssText = "padding:12px;margin:12px;border-radius:10px;min-height:44px;cursor:pointer";
+  message.id = "manual-pdf-status";
+  message.setAttribute("role", "status");
+  main.prepend(button, message);
+  button.addEventListener("click", async () => {
+    if (!allowed()) { message.textContent = "Přístup k manuálu není potvrzen."; return; }
+    button.disabled = true;
+    message.textContent = "Připravuji PDF…";
+    try {
+      const studioBase = document.querySelector("[data-ghrab-studio-link]")?.href ||
+        window.__GHRAB_DEPLOYMENT_CONFIG__?.studioBaseUrl ||
+        new URL("/AI-Studio-GHRAB/", location.href).href;
+      const exporterUrl = new URL("manualy/pdf-export.js", studioBase);
+      if (exporterUrl.protocol !== "https:" && !(exporterUrl.protocol === "http:" &&
+          ["localhost", "127.0.0.1"].includes(exporterUrl.hostname)))
+        throw new Error("Nepovolené umístění PDF modulu.");
+      const { downloadManualPdf } = await import(exporterUrl.href);
+      if (!allowed()) throw new Error("Oprávnění zaniklo během přípravy PDF.");
+      const extras = Array.isArray(window.GHRAB_MANUAL_EXPORT) ? window.GHRAB_MANUAL_EXPORT : [];
+      await downloadManualPdf(document, {
+        title: document.title,
+        filename: "GHRAB-" + document.documentElement.dataset.ghrabAppId + "-manual.pdf",
+        extras
+      });
+      message.textContent = reviewed ? "PDF připraveno." : "Náhled PDF připraven; obsah čeká na revizi.";
+    } catch (error) {
+      message.textContent = "PDF se nepodařilo vytvořit: " + String(error?.message || error);
+    } finally { button.disabled = false; }
+  });
 }
-const observer=new MutationObserver(()=>{
-  if(allowed()){observer.disconnect();mount()}
-  else if(document.documentElement.dataset.ghrabAccess==="denied")observer.disconnect();
+const accessObserver = new MutationObserver(refreshPdfControl);
+accessObserver.observe(document.documentElement, {
+  attributes: true, attributeFilter: ["data-ghrab-access"]
 });
-observer.observe(document.documentElement,{attributes:true,attributeFilter:["data-ghrab-access"]});
-if(allowed()){observer.disconnect();mount()}
+refreshPdfControl();
