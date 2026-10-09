@@ -1,0 +1,23 @@
+/* Shared manual navigation: accessible contrast in dark and light themes. */
+.ghrab-manual-header-navigation { flex-wrap: wrap; }
+.ghrab-manual-navigation { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-left:auto; }
+.ghrab-manual-navigation a {
+  display:inline-flex; align-items:center; justify-content:center; min-height:44px;
+  padding:9px 14px; border-radius:11px; border:1px solid var(--line,#59687b);
+  background:var(--panel,var(--paper,#172638));
+  color:var(--text,var(--ink,#eef5fb)) !important;
+  font:700 14px/1.35 Inter,system-ui,sans-serif; text-decoration:none; white-space:normal;
+}
+.ghrab-manual-navigation a:hover { filter:brightness(1.1); border-color:currentColor; text-decoration:underline; }
+.ghrab-manual-navigation a:focus-visible { outline:3px solid #53d0e8; outline-offset:3px; }
+.ghrab-manual-navigation-primary { border-width:2px !important; }
+html[data-ghrab-manual-embedded="viewer"] .topbar .brand,
+html[data-ghrab-manual-embedded="viewer"] .manual-topbar .manual-brand,
+html[data-ghrab-manual-embedded="viewer"] header.top > img,
+html[data-ghrab-manual-embedded="viewer"] header.top > div:first-of-type { display:none !important; }
+html[data-ghrab-manual-embedded="viewer"] header.topbar,
+html[data-ghrab-manual-embedded="viewer"] header.manual-topbar { position:relative; top:auto; padding-block:6px; }
+@media(max-width:760px) {
+  .ghrab-manual-navigation { width:100%; justify-content:flex-start; }
+  .ghrab-manual-navigation a { font-size:14px; }
+}
