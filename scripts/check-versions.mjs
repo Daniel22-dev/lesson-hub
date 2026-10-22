@@ -1,6 +1,8 @@
 import { readFile } from 'node:fs/promises';
 
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+const reporterTest = JSON.parse(await readFile('reporter-test.config.json', 'utf8'));
+const reporterAdapter = await readFile('src/access/error-reporter-adapter.js', 'utf8');
 const release = await readFile('src/core/release.js', 'utf8');
 const sw = await readFile('public/sw.js', 'utf8');
 const qa = JSON.parse(await readFile('qa/qa-manifest.json', 'utf8'));
@@ -8,6 +10,8 @@ const server = await readFile('server/app.mjs', 'utf8');
 const manual = await readFile('public/manual/manual.js', 'utf8');
 const versions = {
   'package.json': String(pkg.version || ''),
+  'reporter-test.config.json': String(reporterTest.version || ''),
+  'src/access/error-reporter-adapter.js': reporterAdapter.match(/appVersion:\s*['\"]([^'\"]+)['\"]/)?.[1] || '',
   'src/core/release.js': release.match(/version:\s*['"]([^'"]+)['"]/)?.[1] || '',
   'public/sw.js': sw.match(/CACHE_NAME\s*=\s*['"][^'"]*v([^'"]+)['"]/)?.[1] || '',
   'qa/qa-manifest.json': String(qa.appVersion || ''),
