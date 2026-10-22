@@ -3,6 +3,7 @@ import { escapeAttribute, escapeHtml } from '../core/html.js';
 import { navigate } from './router.js';
 import { openModal } from './modal.js';
 import { showToast } from './toast.js';
+import { openCentralGroupDialog } from './centralGroupDialogs.js';
 
 export const COLOR_OPTIONS = Object.freeze([
   ['teal', 'Tyrkysová'],
@@ -187,10 +188,20 @@ export function openGroupDialog(group = null) {
           <label class="form-field form-field--wide"><span>Krátká interní poznámka</span><input name="note" value="${escapeAttribute(group?.note || '')}" placeholder="Volitelná organizační poznámka"></label>
         </div>
         <p class="privacy-hint">Skupina získá trvalou identitu. Při změně názvu nebo postupu do dalšího ročníku zůstane její historie zachována.</p>
+        <section class="notice"><strong>Moje skupiny (volitelné)</strong><p>Místní skupina je výchozí volba; nepřenášejí se studenti ani pedagogické záznamy. Propojení má samostatný náhled a potvrzení.</p><button class="button button--secondary button--small" type="button" data-open-central-editor>${group ? 'Propojit s Moje skupiny / Spravovat propojení' : 'Vytvořit z Moje skupiny'}</button></section>
         <p class="form-error" data-form-error hidden></p>
       </form>`,
     actions: `<button class="button button--ghost" type="button" data-close-modal>Zrušit</button><button class="button button--primary" type="submit" form="group-form">${group ? 'Uložit změny' : 'Přidat skupinu'}</button>`,
     onOpen(backdrop, close) {
+      const groupForm = backdrop.querySelector('#group-form');
+      const originalGroupFields = JSON.stringify([...new FormData(groupForm)]);
+      backdrop.querySelector('[data-open-central-editor]')?.addEventListener('click', () => {
+        if (JSON.stringify([...new FormData(groupForm)]) !== originalGroupFields) {
+          showToast('Nejprve uložte nebo vraťte rozpracované změny skupiny.', 'warning');
+          return;
+        }
+        openCentralGroupDialog({ group, returnToLocal: () => openGroupDialog(group) });
+      });
       bindSubmit(backdrop, '#group-form', async (data) => {
         const input = Object.fromEntries(data);
         if (group) {
