@@ -5,6 +5,7 @@ import { ENTITY_STORES } from '../core/constants.js';
 import { loadSettings, saveSettings } from '../core/settings.js';
 import { SERVER_API_CONTRACT } from '../server/dataGateway.js';
 import { assertSafeUntrustedRecord } from '../core/untrustedData.js';
+import { assertCanonicalLinksConsistent } from './canonicalGroupModel.js';
 
 export const BACKUP_FORMAT = 'lesson-hub-backup-v1';
 export const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
@@ -260,6 +261,8 @@ export class BackupService {
       }
     }
     if (totalRecords > MAX_IMPORT_RECORDS) errors.push(`Záloha obsahuje více než povolených ${MAX_IMPORT_RECORDS} záznamů.`);
+    try { assertCanonicalLinksConsistent(normalizedData[ENTITY_STORES.groupInstances]); }
+    catch (error) { errors.push(`Centrální vazby skupin v záloze nejsou konzistentní: ${error.message}`); }
 
     return {
       valid: errors.length === 0,
@@ -276,6 +279,16 @@ export class BackupService {
     if (!['replace', 'merge'].includes(mode)) throw new Error('Neplatný režim importu.');
     const validation = await this.validatePackage(input);
     if (!validation.valid) throw new Error(validation.errors.join(' '));
+
+    // Merge uses the union of already stored and incoming groups. Each valid
+    // backup could otherwise duplicate an existing canonical identity.
+    if (mode === 'merge') {
+      const existing = await this.repositories.groupInstances.list();
+      const incoming = validation.package.data[ENTITY_STORES.groupInstances] || [];
+      const merged = new Map(existing.map((group) => [group.id, group]));
+      for (const group of incoming) merged.set(group.id, group);
+      assertCanonicalLinksConsistent([...merged.values()]);
+    }
 
     let safetyBackup = null;
     if (createSafetyBackup) {
@@ -389,6 +402,8 @@ export class BackupService {
     const issues = [];
     const issue = (type, id, detail) => issues.push({ type, id, detail });
 
+    try { assertCanonicalLinksConsistent(groups); }
+    catch (error) { issue('group-central-link', '', `Porušená centrální vazba skupiny: ${error.message}`); }
     for (const group of groups) {
       if (!sets.years.has(group.schoolYearId)) issue('group-year', group.id, 'Skupina odkazuje na neexistující školní rok.');
       if (!sets.subjects.has(group.subjectId)) issue('group-subject', group.id, 'Skupina odkazuje na neexistující předmět.');

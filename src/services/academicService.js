@@ -1,4 +1,5 @@
 import { normalizeText } from '../core/html.js';
+import { assertMatchingYear, assertUniqueCanonicalGroup, canonicalLinkFields, localOnlyFields, validateCanonicalMetadata } from './canonicalGroupModel.js';
 
 const GROUP_STATUSES = new Set(['active', 'hidden', 'archived']);
 const YEAR_STATUSES = new Set(['active', 'archived']);
@@ -202,6 +203,15 @@ export class AcademicService {
       throw new Error('Skupina se stejným označením a předmětem v tomto školním roce již existuje.');
     }
 
+    // Canonical identity belongs to a yearly instance, NOT the multi-year groupIdentity.
+    const canonicalMetadata = input.canonicalLink ? validateCanonicalMetadata(input.canonicalLink) : null;
+    if (canonicalMetadata) {
+      if (canonicalMetadata.status !== 'active') throw new Error('CENTRAL_ARCHIVED_CANNOT_CREATE');
+      if (year.status !== 'active') throw new Error('CENTRAL_LOCAL_SELECTION_INVALID');
+      assertMatchingYear(year, canonicalMetadata);
+      assertUniqueCanonicalGroup(await this.repositories.groupInstances.list(), canonicalMetadata.groupId);
+    }
+
     const identity = await this.repositories.groupIdentities.create({
       originDate: input.originDate || new Date().toISOString().slice(0, 10),
       notes: normalizeText(input.identityNotes),
@@ -221,6 +231,7 @@ export class AcademicService {
         cycleId: input.cycleId || null,
         cycleAnchorDate: input.cycleAnchorDate || '',
         cycleStepDurationWeeks: Number(input.cycleStepDurationWeeks) || null,
+        ...(canonicalMetadata ? canonicalLinkFields(canonicalMetadata) : localOnlyFields()),
       });
       await this.audit('group-created', 'groupInstance', group.id, { displayName, schoolYearId: year.id, subjectId: subject.id });
       return group;
@@ -354,6 +365,8 @@ export class AcademicService {
         cycleId: source.cycleId || null,
         cycleAnchorDate: source.cycleAnchorDate || '',
         cycleStepDurationWeeks: source.cycleStepDurationWeeks || null,
+        // Successor: new local instance keeps continuity but requires new canonical ID.
+        ...localOnlyFields(),
       });
       await this.repositories.groupInstances.update(source.id, { status: 'archived' });
       await this.audit('group-promoted', 'groupInstance', created.id, {

@@ -1,4 +1,6 @@
 import { createId, createTimestamps } from '../core/schema.js';
+import { ENTITY_STORES } from '../core/constants.js';
+import { createGroupInstanceAtomic, updateGroupInstanceAtomic } from '../services/canonicalGroupTransaction.js';
 
 export class BaseRepository {
   constructor(database, storeName, idPrefix) {
@@ -22,12 +24,16 @@ export class BaseRepository {
       ...createTimestamps(),
       ...input,
     };
-    await this.database.put(this.storeName, entity);
+    if (this.storeName === ENTITY_STORES.groupInstances) await createGroupInstanceAtomic(this.database, entity);
+    else await this.database.put(this.storeName, entity);
     if (this.storeName === 'auditEvents') await this.#pruneAuditEvents();
     return entity;
   }
 
-  async update(id, patch, { preserveUpdatedAt = false } = {}) {
+  async update(id, patch, { preserveUpdatedAt = false, expectedSnapshot = null } = {}) {
+    if (this.storeName === ENTITY_STORES.groupInstances) {
+      return updateGroupInstanceAtomic(this.database, id, patch, { preserveUpdatedAt, expectedSnapshot });
+    }
     const current = await this.get(id);
     if (!current) throw new Error(`Záznam ${id} nebyl nalezen.`);
 
