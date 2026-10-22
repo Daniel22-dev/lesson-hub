@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { dedupeStage04Assets } from './stage04-asset-dedupe.mjs';
 
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, 'dist');
@@ -32,6 +33,8 @@ await cp(path.join(ROOT, 'src'), path.join(DIST, 'src'), { recursive: true });
 await cp(path.join(ROOT, 'public'), DIST, { recursive: true });
 await mkdir(path.join(DIST, 'config'), { recursive: true });
 await cp(path.join(ROOT, 'src', 'config', 'data-manifest.json'), path.join(DIST, 'config', 'data-manifest.json'));
+// Source files remain untouched; perform verified dist-only deduplication.
+await dedupeStage04Assets(DIST);
 
 function plainChangelogText(value) {
   return String(value || '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1').replace(/__([^_]+)__/g, '$1').replace(/\s+/g, ' ').trim();
