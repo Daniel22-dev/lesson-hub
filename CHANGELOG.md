@@ -1,3 +1,13 @@
+## 1.2.27 — Moje skupiny: propojení bez přesunu pedagogické historie (2026-10-22)
+
+- Učitel může vytvořit skupinu z AI Studia nebo výslovně propojit existující roční skupinu; bez fuzzy párování.
+- Načítají se výhradně metadata kanonických skupin, nikoli studenti, jejich e-maily či pedagogická data.
+- Náhled změn, revizní kontrola, archivace a bezpečné odpojení zachovávají lokální hodiny, úkoly, materiály a kontinuitu.
+- Postup do nového školního roku vytvoří další roční instanci se stejnou pedagogickou identitou, avšak bez automatického převzetí centrálního ID.
+- Nové atomické CAS operace brání duplicitním vazbám a konfliktům mezi kartami; obnova i slučování záloh kontrolují konzistenci.
+- Distribuční sestavení ověřuje identitu duplicitní maskovatelné ikony a manifestu před bezpečnou deduplikací. Rozpočty P5 se nezvyšují.
+- Nové cílené regresní testy jsou součástí povinných QA příkazů.
+
 ## 1.2.26 — Karta O aplikaci a sjednocený katalog změn (2026-09-27)
 
 - Hlavní navigace nově obsahuje záložku **O aplikaci**; na mobilu je dostupná také z nabídky **Více**.
