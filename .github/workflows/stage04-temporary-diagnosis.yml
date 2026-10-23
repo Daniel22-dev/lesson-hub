@@ -31,6 +31,12 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
       - name: Build exact branch
         run: npm run build
+      - name: Isolate server API regression
+        continue-on-error: true
+        run: node server/test-server.mjs
+      - name: Isolate client integration regression
+        continue-on-error: true
+        run: node server/test-client-integration.mjs
       - name: Execute unchanged technical QA
         id: technical
         continue-on-error: true
@@ -46,6 +52,7 @@ jobs:
           console.log('GHRAB_TECHNICAL_STATUS:', report.status);
           for (const issue of report.findings || []) {
             console.log('GHRAB_TECHNICAL_FINDING:', issue.severity, issue.code, issue.message);
+            if (issue.code === 'SERVER_TEST_FAILED') console.log('GHRAB_SERVER_TEST_STDERR:', String(issue.evidence || '').slice(0, 1200));
           }
           if (report.status !== 'PASS') process.exitCode = 1;
           NODE
