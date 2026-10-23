@@ -304,8 +304,25 @@ svg.icon {
 .topbar__actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
   gap: 10px;
   padding-top: 8px;
+}
+
+/* Keep the persistent header controls reachable when a wide editor dialog is open. */
+@media (min-width: 821px) and (max-width: 1500px) {
+  .topbar {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .topbar__actions {
+    flex: 0 1 auto;
+    margin-left: auto;
+  }
 }
 
 .topbar__page-actions {
