@@ -60,6 +60,10 @@ jobs:
       - name: Install pinned Chromium for targeted QA
         if: always()
         run: npx playwright install chromium
+      - name: Use exact pinned Playwright Chromium in all nested QA tests
+        if: always()
+        shell: bash
+        run: node -e "console.log('CHROMIUM_PATH=' + require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
       - name: Run targeted 1366px editor layout regressions
         if: always()
         continue-on-error: true
