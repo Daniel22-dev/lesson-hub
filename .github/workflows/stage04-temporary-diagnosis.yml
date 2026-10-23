@@ -43,6 +43,7 @@ jobs:
         run: npm run qa:technical
       - name: Print sanitized technical findings
         if: always()
+        continue-on-error: true
         shell: bash
         run: |
           if [ ! -f qa-results/technical.json ]; then echo 'TECHNICAL_REPORT_MISSING'; exit 1; fi
@@ -55,6 +56,41 @@ jobs:
             if (issue.code === 'SERVER_TEST_FAILED') console.log('GHRAB_SERVER_TEST_STDERR:', String(issue.evidence || '').slice(0, 1200));
           }
           if (report.status !== 'PASS') process.exitCode = 1;
+          NODE
+      - name: Install pinned Chromium for targeted QA
+        if: always()
+        run: npx playwright install chromium
+      - name: Run targeted 1366px editor layout regressions
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          GHRAB_VISUAL_ATTEMPTS: '2'
+          GHRAB_VISUAL_SCREENSHOT_ATTEMPTS: '2'
+          GHRAB_VISUAL_BROWSER_BATCH: '3'
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const file = 'qa/visual-plan.json';
+          const plan = JSON.parse(fs.readFileSync(file, 'utf8'));
+          const exact = new Set(['lesson-hub-lesson-editor','lesson-hub-quick-record','lesson-hub-material-editor']);
+          plan.scenarios = plan.scenarios.filter(x => exact.has(x.id)).map(x => ({...x, viewports: [{width:1366,height:768}]}));
+          if (plan.scenarios.length !== 3) throw new Error('Expected exactly 3 editor scenarios');
+          fs.writeFileSync(file, JSON.stringify(plan,null,2)+'\\n');
+          console.log('STAGE04_TARGETED_SCENARIOS:',plan.scenarios.map(x=>x.id));
+          NODE
+          npm run qa:visual
+      - name: Print targeted visual QA result
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f qa-results/visual.json ]; then echo 'VISUAL_REPORT_MISSING'; exit 1; fi
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const report = JSON.parse(fs.readFileSync('qa-results/visual.json','utf8'));
+          console.log('GHRAB_VISUAL_STATUS:',report.status, 'total_findings:',(report.findings||[]).length);
+          for (const f of report.findings||[]) console.log('GHRAB_VISUAL_FINDING:', f.message);
+          if (report.status !== 'PASS') process.exitCode=1;
           NODE
       - name: Preserve sanitized QA report
         if: always()
