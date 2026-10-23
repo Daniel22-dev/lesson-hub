@@ -76,7 +76,7 @@ jobs:
           const exact = new Set(['lesson-hub-lesson-editor','lesson-hub-quick-record','lesson-hub-material-editor']);
           plan.scenarios = plan.scenarios.filter(x => exact.has(x.id)).map(x => ({...x, viewports: [{width:1366,height:768}]}));
           if (plan.scenarios.length !== 3) throw new Error('Expected exactly 3 editor scenarios');
-          fs.writeFileSync(file, JSON.stringify(plan,null,2)+'\\n');
+          fs.writeFileSync(file, JSON.stringify(plan,null,2)+'\n');
           console.log('STAGE04_TARGETED_SCENARIOS:',plan.scenarios.map(x=>x.id));
           NODE
           npm run qa:visual
