@@ -8,6 +8,7 @@ import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const root = path.resolve('.');
+const APP_VERSION = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 const dist = path.join(root, 'dist');
 const output = path.join(dist, 'qa-suite-session-report.json');
 const APP_URL = '?qa=1';
@@ -37,7 +38,7 @@ if (managedBlock) {
   const report = {
     schema: 'ghrab-suite-session-browser-test-v1',
     appId: 'lesson-hub',
-    appVersion: JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version,
+    appVersion: APP_VERSION,
     platformVersion: '1.1.2',
     syntheticCanary: CANARY,
     status: 'not-tested',
@@ -512,7 +513,7 @@ try {
 }
 
 const report = {
-  schema: 'lesson-hub-suite-session-qa-v1', appId: 'lesson-hub', appVersion: '1.2.26', platformVersion: '1.1.2',
+  schema: 'lesson-hub-suite-session-qa-v1', appId: 'lesson-hub', appVersion: APP_VERSION, platformVersion: '1.1.2',
   contract: 'ghrab-suite-session-v1', syntheticDataOnly: true, startedAt, finishedAt: new Date().toISOString(),
   scenarios, status: failed ? 'failed' : 'passed', failure: failed,
 };
