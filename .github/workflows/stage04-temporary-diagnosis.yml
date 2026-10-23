@@ -1,0 +1,59 @@
+name: Stage04 temporary QA diagnosis
+
+on:
+  push:
+    branches:
+      - fix/lesson-hub-127-header-overflow-20261023
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage04-diagnosis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  technical-diagnosis:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - name: Checkout exact branch commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Use project Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.22.2
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Build exact branch
+        run: npm run build
+      - name: Execute unchanged technical QA
+        id: technical
+        continue-on-error: true
+        run: npm run qa:technical
+      - name: Print sanitized technical findings
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f qa-results/technical.json ]; then echo 'TECHNICAL_REPORT_MISSING'; exit 1; fi
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const report = JSON.parse(fs.readFileSync('qa-results/technical.json', 'utf8'));
+          console.log('GHRAB_TECHNICAL_STATUS:', report.status);
+          for (const issue of report.findings || []) {
+            console.log('GHRAB_TECHNICAL_FINDING:', issue.severity, issue.code, issue.message);
+          }
+          if (report.status !== 'PASS') process.exitCode = 1;
+          NODE
+      - name: Preserve sanitized QA report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: stage04-technical-diagnosis
+          path: qa-results/technical.json
+          retention-days: 3
+          if-no-files-found: warn
