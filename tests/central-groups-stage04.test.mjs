@@ -163,6 +163,12 @@ test('privacy and integrity boundary: no direct student roster or raw storage in
   assert.doesNotMatch(client,/\.getGroup\s*\(/);
   assert.doesNotMatch(client,/\.listGroups\s*\(/);
   assert.doesNotMatch(client,/localStorage\.|sessionStorage\./);
+  assert.match(client,/groups\/verified-client\.js/, 'new v2 contract is required');
+  assert.match(client,/openVerifiedGroupsV2\('lesson-hub'\)/, 'signed app-scoped v2 authorization');
+  assert.doesNotMatch(client,/createGroupsService\s*\(/, 'no unscoped provider fallback');
+  assert.doesNotMatch(client,/group-service\.js/, 'legacy service import forbidden');
+  assert.match(client,/CENTRAL_LEGACY_MIGRATION_REQUIRED/, 'legacy archive cannot be silently adopted');
+
   assert.doesNotMatch(model,/memberId|schoolEmail|lessonText|results/);
   assert.doesNotMatch(ui,/getRosterProjection\s*\(/);
 });
@@ -289,26 +295,56 @@ test('runtime central client rejects foreign Studio origins before any dynamic i
   await assert.rejects(h.listCentralGroupMetadata(),/CENTRAL_ORIGIN_DENIED/);
   assert.equal(loads,0);
 });
-test('runtime central client uses only approved same-origin Studio metadata contract',async()=>{
-  let rosterCalls=0,metadataCalls=0,imports=0;
+test('runtime central client uses only approved same-origin verified Studio metadata contract',async()=>{
+  let rosterCalls=0,metadataCalls=0,imports=0,verifiedCalls=0;
   const h=centralClientHarness({loader:async(url)=>{
     imports++;
-    assert.equal(url,'https://example.github.io/AI-Studio-GHRAB/groups/group-service.js');
-    return {createGroupsService(){return {schema:'ghrab-groups-service-v1',contractVersion:1,
-      listGroupMetadata(consumer,opts){metadataCalls++;assert.equal(consumer,'lesson-hub');assert.deepEqual(opts,{status:'all'});return[meta()]},
-      getRosterProjection(){rosterCalls++;throw Error('Forbidden')}
-    }}};
+    assert.equal(url,'https://example.github.io/AI-Studio-GHRAB/groups/verified-client.js');
+    return {async openVerifiedGroupsV2(consumer) {
+      verifiedCalls++;
+      assert.equal(consumer,'lesson-hub');
+      return {schema:'ghrab-groups-verified-consumer-v2',consumerAppId:consumer,
+        legacyStorePresent:false,service:{schema:'ghrab-groups-service-v1',contractVersion:1,
+          listGroupMetadata(app,opts){metadataCalls++;assert.equal(app,'lesson-hub');
+            assert.deepEqual(opts,{status:'all'});return [meta()]},
+          getRosterProjection(){rosterCalls++;throw Error('Forbidden')}
+        }};
+    }};
   }});
   const list=await h.listCentralGroupMetadata();
   assert.equal(list.length,1);
   assert.equal(list[0].groupId,CENTRAL_ID);
-  assert.equal(imports,1);assert.equal(metadataCalls,1);assert.equal(rosterCalls,0);
-  await h.listCentralGroupMetadata();assert.equal(imports,1);assert.equal(rosterCalls,0);
+  assert.equal(imports,1);assert.equal(verifiedCalls,1);
+  assert.equal(metadataCalls,1);assert.equal(rosterCalls,0);
+  await h.listCentralGroupMetadata();
+  assert.equal(imports,1);assert.equal(verifiedCalls,1);assert.equal(rosterCalls,0);
 });
-test('runtime central client never stores metadata when source contract is invalid',async()=>{
-  const h=centralClientHarness({loader:async()=>({createGroupsService(){return {
-    schema:'ghrab-groups-service-v2',contractVersion:2,listGroupMetadata(){return[meta()]}}}})});
-  await assert.rejects(h.listCentralGroupMetadata(),/CENTRAL_SERVICE_CONTRACT_UNSUPPORTED/);
+test('runtime central client fails closed if v2 verified client is missing or untrusted',async()=>{
+  const h=centralClientHarness({loader:async()=>({createGroupsService(){throw Error('legacy must not load')}})});
+  await assert.rejects(h.listCentralGroupMetadata(),/CENTRAL_VERIFIED_CLIENT_REQUIRED/);
+
+  const invalid=centralClientHarness({loader:async()=>({openVerifiedGroupsV2:async()=>({
+    schema:'ghrab-groups-verified-consumer-v2',consumerAppId:'sortio',
+    legacyStorePresent:false,service:{schema:'ghrab-groups-service-v1',contractVersion:1,
+      listGroupMetadata(){return [meta()]}}
+  })})});
+  await assert.rejects(invalid.listCentralGroupMetadata(),/CENTRAL_V2_CONTRACT_INVALID/);
+});
+test('runtime verified client denies access without altering local academic data',async()=>{
+  const f=fixture();
+  const original=await f.repos.groupInstances.list();
+  const h=centralClientHarness({loader:async()=>({
+    openVerifiedGroupsV2:async()=>{throw Error('GROUP_ACCESS_DENIED')}})});
+  await assert.rejects(h.listCentralGroupMetadata(),/GROUP_ACCESS_DENIED/);
+  assert.deepEqual(await f.repos.groupInstances.list(),original);
+});
+test('runtime does not silently import legacy v1 metadata when account-scoped v2 is empty',async()=>{
+  const h=centralClientHarness({loader:async()=>({openVerifiedGroupsV2:async()=>({
+    schema:'ghrab-groups-verified-consumer-v2',consumerAppId:'lesson-hub',
+    legacyStorePresent:true,service:{schema:'ghrab-groups-service-v1',contractVersion:1,
+      listGroupMetadata:()=>[]}
+  })})});
+  await assert.rejects(h.listCentralGroupMetadata(),/CENTRAL_LEGACY_MIGRATION_REQUIRED/);
 });
 
 test('central chooser returns to standard local editor without losing the local-only option',()=>{
