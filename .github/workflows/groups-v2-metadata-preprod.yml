@@ -1,0 +1,32 @@
+name: Lesson Hub v2 metadata reader draft QA (NO DEPLOY)
+on:
+  push:
+    branches:
+      - feature/groups-v2-metadata-20261027
+
+permissions:
+  contents: read
+
+jobs:
+  central-groups-v2-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact review source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify metadata-only v2 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node --check src/integration/centralGroupsClient.js
+          node --check tests/central-groups-stage04.test.mjs
+          npm run test:canonical-groups
+      - name: Verify original Lesson Hub baseline contracts
+        run: npm run check
