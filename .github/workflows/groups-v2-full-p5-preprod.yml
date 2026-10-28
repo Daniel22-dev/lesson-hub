@@ -13,18 +13,18 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Assert only QA workflow differs from reviewed v2 app source
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "f7355364c7604f7c16887a4b6d6a665bc7d9c475"
+          git merge-base --is-ancestor "f7355364c7604f7c16887a4b6d6a665bc7d9c475" HEAD
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           test "$(git diff --name-only "f7355364c7604f7c16887a4b6d6a665bc7d9c475" HEAD)" = ".github/workflows/groups-v2-full-p5-preprod.yml"
       - name: Node 22 and locked npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '22'
+          node-version: '22.22.2'
           cache: npm
       - name: Install immutable dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
