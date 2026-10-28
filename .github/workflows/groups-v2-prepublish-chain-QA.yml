@@ -32,17 +32,15 @@ jobs:
           node -e "console.log('CHROMIUM_PATH='+require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
       - name: Rehearse protected-style P5 and exact-source release chain without publication
         shell: bash
-        env:
-          GHRAB_SOURCE_COMMIT: ad833f69b651b48811a7236b7fc9b014988d1085
-          GHRAB_SOURCE_REPOSITORY: Daniel22-dev/lesson-hub
-          GHRAB_RELEASE_STAGE: PREP-VALIDATION
         run: |
           set -euo pipefail
           export SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)"
+          # Keep source-identity variables ABSENT during GARP negative selftests.
+          # Set them only for artefact construction/provenance, never as a bypass.
           npm run qa:p5:ci
-          npm run build:pages
-          npm run prepare:pages
-          npm run verify:release-chain
+          GHRAB_SOURCE_COMMIT=ad833f69b651b48811a7236b7fc9b014988d1085 GHRAB_SOURCE_REPOSITORY=Daniel22-dev/lesson-hub GHRAB_RELEASE_STAGE=PREP-VALIDATION npm run build:pages
+          GHRAB_SOURCE_COMMIT=ad833f69b651b48811a7236b7fc9b014988d1085 GHRAB_SOURCE_REPOSITORY=Daniel22-dev/lesson-hub GHRAB_RELEASE_STAGE=PREP-VALIDATION npm run prepare:pages
+          GHRAB_SOURCE_COMMIT=ad833f69b651b48811a7236b7fc9b014988d1085 GHRAB_SOURCE_REPOSITORY=Daniel22-dev/lesson-hub GHRAB_RELEASE_STAGE=PREP-VALIDATION npm run verify:release-chain
           echo 'RELEASE CHAIN CHECKED - TRANSITIONAL UNSIGNED - NO DEPLOY - NONCERTIFYING'
       - name: Check source checkout did not move to production
         shell: bash
