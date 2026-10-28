@@ -20,7 +20,7 @@ jobs:
           set -euo pipefail
           git merge-base --is-ancestor "f7355364c7604f7c16887a4b6d6a665bc7d9c475" HEAD
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          test "$(git diff --name-only "f7355364c7604f7c16887a4b6d6a665bc7d9c475" HEAD)" = ".github/workflows/groups-v2-full-p5-preprod.yml"
+          test "$(git diff --name-only "f7355364c7604f7c16887a4b6d6a665bc7d9c475" HEAD)" = "$(printf '.github/workflows/groups-v2-full-p5-preprod.yml\n.github/workflows/groups-v2-metadata-preprod.yml')"
       - name: Node 22 and locked npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
