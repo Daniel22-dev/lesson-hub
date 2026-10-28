@@ -1,0 +1,47 @@
+name: Clean Groups v2 immutable-source QA (NO DEPLOY, NONCERTIFYING)
+on:
+  push:
+    branches:
+      - qa/groups-v2-clean-cross-os-20261028
+permissions:
+  contents: read
+jobs:
+  clean-source-regression:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    steps:
+      - name: Checkout exact clean release source, not QA branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: d43e799ebfb93af36d43d9bfaf840c6ad917c321
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Verify SHA and absence of review-only workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "d43e799ebfb93af36d43d9bfaf840c6ad917c321"
+          test ! -e .github/workflows/groups-v2-metadata-preprod.yml
+      - name: Install exact locked dependencies
+        shell: bash
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Run real source regressions and local build without publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check src/integration/centralGroupsClient.js
+          node --check tests/central-groups-stage04.test.mjs
+          npm run test:canonical-groups
+          npm run check
+          npm run build
+      - name: State scope truthfully
+        shell: bash
+        run: echo 'NONCERTIFYING - NO LIVE SSO / NO SCHOOL UAT / NO P5 / NO DEPLOY'
