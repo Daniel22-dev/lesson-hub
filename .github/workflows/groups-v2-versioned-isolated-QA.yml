@@ -18,7 +18,7 @@ jobs:
       - name: Checkout exact reviewed versioned source instead of QA branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 1867f8a2365be1e8bb392ac6756026909a989f38
+          ref: ad833f69b651b48811a7236b7fc9b014988d1085
           persist-credentials: false
           fetch-depth: 0
       - name: Use Node 22
@@ -29,13 +29,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "1867f8a2365be1e8bb392ac6756026909a989f38"
+          test "$(git rev-parse HEAD)" = "ad833f69b651b48811a7236b7fc9b014988d1085"
           test "$(node -p 'require("./package.json").version')" = "1.2.28"
           test "$(node -p 'require("./package-lock.json").version')" = "1.2.28"
           test "$(node -p 'require("./ghrab-platform.consumer.json").appVersion')" = "1.2.28"
           test "$(node -p 'require("./qa/qa-manifest.json").appVersion')" = "1.2.28"
           test "$(node -p 'require("./reporter-test.config.json").version')" = "1.2.28"
-          echo "VERSIONED_SOURCE=1867f8a2365be1e8bb392ac6756026909a989f38; QA_EVENT_SHA=$GITHUB_SHA; NONCERTIFYING"
+          echo "VERSIONED_SOURCE=ad833f69b651b48811a7236b7fc9b014988d1085; QA_EVENT_SHA=$GITHUB_SHA; NONCERTIFYING"
       - name: Locked install
         shell: bash
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
@@ -54,7 +54,7 @@ jobs:
       - name: Checkout exact versioned source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: 1867f8a2365be1e8bb392ac6756026909a989f38
+          ref: ad833f69b651b48811a7236b7fc9b014988d1085
           persist-credentials: false
           fetch-depth: 0
       - name: Use pinned Node major
@@ -65,7 +65,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "1867f8a2365be1e8bb392ac6756026909a989f38"
+          test "$(git rev-parse HEAD)" = "ad833f69b651b48811a7236b7fc9b014988d1085"
           npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
           node -e "const p=require('./node_modules/playwright/package.json');const a=require('./node_modules/axe-core/package.json');if(p.version!=='1.61.1'||a.version!=='4.12.1')process.exit(1)"
       - name: Install pinned Chromium
