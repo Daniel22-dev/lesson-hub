@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.27
+# Lesson Hub 1.2.28
 
-**Aktuální verze:** 1.2.27  
+**Aktuální verze:** 1.2.28  
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
@@ -8,7 +8,7 @@ Lesson Hub je local-first osobní paměť učitele v ekosystému AI Studio GHRAB
 
 Serverová část je v repozitáři připravena pro budoucí školní nasazení, ale ve výchozím stavu není připojena, synchronizace je vypnutá a e-mailová brána je zakázaná.
 
-## Novinky 1.2.27: Moje skupiny
+## Novinky 1.2.28: Moje skupiny
 
 Lesson Hub nyní umožňuje potvrzenou, pouze metadatovou vazbu roční instance skupiny na kanonickou skupinu AI Studia. Pedagogická historie, hodiny a materiály zůstávají uloženy výhradně v Lesson Hubu. Funkce podporuje synchronizaci metadat, archivaci, odpojení a bezpečný postup školního roku bez automatického převzetí starého centrálního ID. Přidány jsou atomické aktualizace skupin, kontrola duplicit a validace importu záloh.
 
