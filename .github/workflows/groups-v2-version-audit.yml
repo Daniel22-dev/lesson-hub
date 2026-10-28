@@ -1,0 +1,92 @@
+name: Groups v2 version-only exact-source diagnostics (NO DEPLOY / NONCERTIFYING)
+on:
+  push:
+    branches:
+      - qa/groups-v2-version-20261028
+permissions:
+  contents: read
+jobs:
+  version-cross-os:
+    name: source regression (noncertifying) on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    steps:
+      - name: Checkout immutable VERSION source, not temporary QA branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 60b9cf8adff4e764baead5123197981c86cc7eee
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up pinned Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.22.2
+      - name: Verify source SHA and version
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "60b9cf8adff4e764baead5123197981c86cc7eee"
+          test "$(node -p 'require("./package.json").version')" = "1.2.28"
+          test ! -e .github/workflows/groups-v2-version-audit.yml
+      - name: Install locked npm dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Exercise actual runtime and version snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run check
+          npm run test:canonical-groups
+          npm run build
+  full-p5-source-diagnostics:
+    name: full P5 and GARP 2.7 (NO DEPLOY / not protected release cert)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - name: Checkout exact version source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 60b9cf8adff4e764baead5123197981c86cc7eee
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.22.2
+          cache: npm
+      - name: Validate immutable source and isolated QA identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "60b9cf8adff4e764baead5123197981c86cc7eee"
+          test ! -e .github/workflows/groups-v2-version-audit.yml
+          echo 'Diagnostic QA event SHA is not the reviewed version release SHA'
+      - name: Install independently locked tools
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Install required browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          node -e "console.log('CHROMIUM_PATH='+require('playwright').chromium.executablePath())" >> "$GITHUB_ENV"
+      - name: Execute actual full P5 and GARP foundation
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run qa:p5:ci
+          npm run qa:garp27:foundation
+      - name: Publish diagnostic nonproduction reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: groups-v2-version-nondeploy-${{ github.sha }}-${{ github.run_id }}
+          path: |
+            dist/qa-p5-*.json
+            dist/quality-report.json
+            qa-results/
+            audit-evidence/garp27-current/
+          if-no-files-found: warn
+          retention-days: 14
