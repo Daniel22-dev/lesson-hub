@@ -24,7 +24,7 @@ jobs:
       - name: Node 22 and locked npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '22.22.2'
+          node-version: 22.22.2
           cache: npm
       - name: Install immutable dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
