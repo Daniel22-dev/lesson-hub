@@ -1,3 +1,9 @@
+## 1.2.28 — Ověřené učitelské skupiny v2: předprodukční sladění (2026-10-28)
+
+- Připraveno vydání čtečky ověřených metadat skupin podle identity učitele, bez přenosu seznamů studentů a bez automatického převzetí úložiště v1.
+- Číslo verze, serverové metadata, PWA cache a manifesty sladěny na 1.2.28. Původní historie hodin, úkolů a lokálních vazeb zůstává zachována.
+- Školní přihlášení, ochrana osobních údajů, úplné testy GARP/P5 a schválení nasazení zatím nejsou dokončené (NO-GO).
+
 ## 1.2.27 — Moje skupiny: propojení bez přesunu pedagogické historie (2026-10-22)
 
 - Učitel může vytvořit skupinu z AI Studia nebo výslovně propojit existující roční skupinu; bez fuzzy párování.

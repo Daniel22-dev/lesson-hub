@@ -1,0 +1,6 @@
+# Ensure Windows Git checkouts preserve exact bytes for pinned vendor assets.
+vendor/ghrab-platform-*/*.js text eol=lf
+vendor/ghrab-platform-*/*.css text eol=lf
+vendor/ghrab-platform-*/*.json text eol=lf
+# Lesson Hub build requires an exact, controlled service-worker precache marker.
+public/sw.js text eol=lf

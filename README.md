@@ -1,6 +1,6 @@
-# Lesson Hub 1.2.27
+# Lesson Hub 1.2.28
 
-**Aktuální verze:** 1.2.27  
+**Aktuální předprodukční verze:** 1.2.28  
 **Platforma:** GHRAB Platform 1.1.2 · etapa P5
 
 
