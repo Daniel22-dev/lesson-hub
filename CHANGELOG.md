@@ -1,3 +1,11 @@
+## 1.2.28 — Moje skupiny v2, sjednocení vydávací identity (předprodukční návrh, 2026-10-28)
+
+- Nová verze je pouze Draft; produkční schválení ani fyzické školní UAT nebyly provedeny.
+- Ověřená čtečka přebírá výhradně metadata kanonické skupiny a nepřenáší studentský seznam nebo e-maily.
+- Sjednoceno verzování runtime, testů, platformní evidence, školního serverového rozhraní a PWA cache. Historie lekcí zůstává lokální a beze změny.
+- Oprava cross-platform integritního sestavení vynucuje LF u ověřovaných zdrojů; bezpečnostní SHA a kontroly jsou zachovány.
+- Migrace v1, přihlášení skutečných učitelů, plný závěrečný GARP/P5 a produkční vydání zůstávají NO-GO.
+
 ## 1.2.27 — Moje skupiny: propojení bez přesunu pedagogické historie (2026-10-22)
 
 - Učitel může vytvořit skupinu z AI Studia nebo výslovně propojit existující roční skupinu; bez fuzzy párování.
