@@ -1,0 +1,45 @@
+name: Groups v2 full protected P5/GARP preproduction (NO DEPLOY)
+
+on:
+  pull_request:
+    branches: ['preprod/groups-v2-clean-20261028']
+    paths:
+      - '.github/workflows/groups-v2-full-preprod-gate.yml'
+      - 'src/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'public/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: groups-v2-full-preprod-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  full-p5-garp:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'preprod/groups-v2-release-identity-1.2.28-20261028' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout exact PR source, never use stored credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install pinned Node toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.22.2
+          cache: npm
+      - name: Install audited lockfile, without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org
+      - name: Install real Chromium for browser gates
+        run: npx playwright install --with-deps chromium
+      - name: Full existing final-SHA P5 / GARP CI chain (read-only)
+        run: npm run qa:p5:ci
+
+# Intentional NO-DEPLOY: no publish, promotion, merge, Pages or upload of school data.
